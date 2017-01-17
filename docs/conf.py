@@ -25,7 +25,8 @@ sys.path.insert(0, os.path.abspath('..'))
 
 
 MOCK_MODULES = ['numpy', 'scipy', 'matplotlib.pyplot', 'pandas', 'iris', 'netCDF4',
-                'osgeo', 'haversine', 'pyspatialite', 'pyspatialite.dbapi2', 'osgeo.ogr', 'exifread', 'gdal', 'simplekml']
+                'osgeo', 'haversine', 'pyspatialite', 'pyspatialite.dbapi2',
+                'osgeo.ogr', 'exifread', 'gdal', 'simplekml', 'rdp']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
