@@ -16,9 +16,20 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import mock
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
+
+
+
+
+MOCK_MODULES = ['numpy', 'scipy', 'matplotlib.pyplot', 'pandas', 'iris', 'netCDF4',
+                'osgeo', 'haversine', 'pyspatialite', 'pyspatialite.dbapi2', 'osgeo.ogr', 'exifread', 'gdal', 'simplekml']
+
+for mod_name in MOCK_MODULES:
+    sys.modules[mod_name] = mock.Mock()
+
 
 import faampy
 
