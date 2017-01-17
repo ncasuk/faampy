@@ -23,12 +23,13 @@ The installation of the module should work as usual::
 
 ============
 Contributors
-============                                                                                                                                              
-                                                                                                                                                          
-    * Axel Wellpott (FAAM)                                                                                                                                                                                                                                                                                            
-                                                                                                                                                          
-=======                                                                                                                                                   
-License                                                                                                                                                   
-=======                                                                                                                                                   
-                                                                                                                                                          
-faampy is licenced under GNU Lesser General Public License (LGPLv3).       
+============
+
+ * Axel Wellpott (FAAM)
+
+ 
+======= 
+License
+=======
+
+faampy is licenced under GNU Lesser General Public License (LGPLv3).

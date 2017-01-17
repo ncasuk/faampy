@@ -1,0 +1,12 @@
+#exifread
+#haversine
+#matplotlib
+#netCDF4
+#numpy
+#scipy
+#setuptools-git
+#simplekml
+#pyspatialite
+#orderedset
+#tephi
+#rdp
