@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import itertools
-import rdp         # Ramer–Douglas–Peucker algorithm (RDP)
+import rdp         # Ramer-Douglas-Peucker algorithm (RDP)
 import netCDF4
 import numpy as np
 import datetime
@@ -222,7 +222,7 @@ class Coords(list):
     def _simplify_(self, step=10):
         """
         Simplifies the coordinates by reducing the number using the
-        Ramer–Douglas–Peucker algorithm (RDP). The list of coordinates
+        Ramer-Douglas-Peucker algorithm (RDP). The list of coordinates
         itself is not shrinked, but rather a mask array is produced. If
         *self.simplified* is called the mask is used as an index.
 
