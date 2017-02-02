@@ -25,7 +25,7 @@ setup(name = "faampy",
       url = "http://www.faam.ac.uk",
       package_dir = {'': '.'},
       packages=find_packages('.'), 
-      #scripts are defined in the faamp.__init__ file
+      # scripts are defined in the faampy.__init__ file
       entry_points={
           'console_scripts': [
                 'faampy = faampy:command_line',]
@@ -38,6 +38,7 @@ setup(name = "faampy",
       data_files = datafiles,
       zip_safe = False,     # http://stackoverflow.com/questions/27964960/pip-why-sometimes-installed-as-egg-sometimes-installed-as-files
       keywords = ['FAAM',
+                  'Facility for Airborne Atmospheric Measurements', 
                   'NCAS',
                   'MetOffice',
                   'data',

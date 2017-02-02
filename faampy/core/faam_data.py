@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import itertools
-import rdp         # Ramer-Douglas-Peucker algorithm (RDP)
+import rdp             #  Ramer-Douglas-Peucker algorithm (RDP)
 import netCDF4
 import numpy as np
 import datetime
@@ -317,7 +317,7 @@ class FAAM_Dataset(object):
             dt = datetime.datetime(self.ds.DATE[2], self.ds.DATE[1], self.ds.DATE[0])
         self.ncattr['DATE'] = [dt.day, dt.month, dt.year]
 
-        if not 'WOW_IND' in self.variables.keys():
+        if 'WOW_IND' not in self.variables.keys():
             # Estimate the WOW_IND using indicated air speed
             wow = np.array([1]*self.variables['Time'].size)
             if len(self.variables['IAS_RVSM'].shape) == 1:
@@ -549,16 +549,18 @@ class FAAM_Dataset(object):
                 dimensions = ('Time', 'sps01')
 
             if as_1Hz:
-                outVar = dsout.createVariable(v_name, datatype, ('Time',))
+                outVar = dsout.createVariable(v_name, datatype, ('Time',), fill_value=-9999.)
                 if hasattr(varin, 'getncattr'):
                     outVar.setncatts({k: varin.getncattr(k) for k in varin.ncattrs()})
                 if len(self.variables[v_name].shape) == 2:
-                    outVar[:] = self.variables[v_name][:,0]
+                    outVar_data = self.variables[v_name][:,0]
                 else:
-                    outVar[:] = self.variables[v_name][:]
+                    outVar_data = self.variables[v_name][:]
             else:
                 outVar = dsout.createVariable(v_name, datatype, dimensions)
                 if hasattr(varin, 'getncattr'):
                     outVar.setncatts({k: varin.getncattr(k) for k in varin.ncattrs()})
-                outVar[:] = self.variables[v_name][:]
+                outVar_data = self.variables[v_name][:]
+            outVar_data[np.isnan(outVar_data)] = -9999.
+            outVar[:] = outVar_data
         dsout.close()

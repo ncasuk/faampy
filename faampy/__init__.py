@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-
-__version__ = '0.1.1'
-__status__ = 'a'
-
-
 """
 faampy main command which call subcommands
 
@@ -15,7 +9,12 @@ The usage is for example
 
 import argparse
 import importlib
+import os
 import sys
+
+
+__version__ = '0.1.2'
+__status__ = 'a'
 
 
 def command_line():
@@ -32,8 +31,8 @@ def command_line():
                ('ncvar_to_kml',       'faampy.mapping.ncvar_to_kml'),
                ('world_map',          'faampy.mapping.world_map'), ]
 
-    parser = argparse.ArgumentParser(description = "faampy",
-        usage = """faampy <command> [<args>]
+    parser = argparse.ArgumentParser(description="faampy",
+                                     usage="""faampy <command> [<args>]
 
 %s
 """ % ('    \n'.join(['  '+m[0] for m in MODULES])))
@@ -50,13 +49,12 @@ def command_line():
         sys.argv = sys.argv[2:]
     # use dispatch pattern to invoke method with same name
     for MOD in MODULES:
-        #print(MOD)
         if args.command == MOD[0]:
-            #mod = __import__(MOD[1])  # magic import command using a string
-            #mod.main()
             mod = importlib.import_module(MOD[1])
-            mod.main() # the main method is called
+            mod.main()  # the main method is called
 
+FAAMPY_DATA_PATH = os.path.join(os.environ['HOME'], 'faampy_data')
+SRTM_DATA_PATH = os.path.join(FAAMPY_DATA_PATH, 'srtm')
 
 FAAM_DATA = ['icons/camera_icon_32x32.png',
              'icons/dot_blue_32x32.png',

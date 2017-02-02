@@ -10,26 +10,20 @@ import re
 import subprocess
 import sys
 
-SRTM_ROOT_FOLDER = '/home/data/mapdata/srtm'
-#SRTM_ROOT_FOLDER = '/home/data/mapdata/srtm/xftp.jrc.it/pub/srtmV4/tiff'
+import faampy
 
 
-def get_srtm_files(directory=None):
+
+def get_srtm_files(path):
     result = []
-    if not directory:
-        directory = SRTM_ROOT_FOLDER
-    file_list = os.listdir(directory)
+    file_list = os.listdir(path)
     for f in file_list:
         if os.path.splitext(f)[1] == '.tif':
-            result.append(os.path.join(directory, f))
+            result.append(os.path.join(path, f))
     return result
 
 
-def get_tif_boundaries(tif_filename, quite=None):
-    if not quite:
-        quite = False
-    else:
-        quite = True
+def get_tif_boundaries(tif_filename):
     cmd = """gdalinfo %s""" % (tif_filename)
     proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     out = proc.stdout.read().splitlines()
@@ -45,60 +39,50 @@ def get_tif_boundaries(tif_filename, quite=None):
             boundaries['lr'] = [float(e) for e in re.split('\(|\)|,', line)[1:3]]
         else:
             pass
-    if not quite:
-        #print(boundaries)
-        pass
-        #sys.stdout.write(os.path.basename(tif_filename))
-        #sys.stdout.write(boundaries)
     return boundaries
 
 
-def find_srtm_file(file_list, lon, lat):
-    result = None
-    for f in file_list:
-        boundary = get_tif_boundaries(f)
-        try:
-            if (lon > boundary['ul'][0]) and (lat < boundary['ul'][1]) and (lon < boundary['lr'][0]) and (lat > boundary['lr'][1]):
-                result = f
-        except:
-            pass
-    return result
+class DEM(object):
+    """Uses gdal and the srtm files that can be downloaded for free from the 
+    internet.
+    """
+    def __init__(self, srtm_data_path=None):
+        if not srtm_data_path:
+            self.SRTM_DATA_PATH = faampy.SRTM_DATA_PATH
+            if not os.path.exists(self.SRTM_DATA_PATH):
+                sys.stdout.write('SRTM data path: %s does not exists.\n' % (self.SRTM_DATA_PATH))        
+        self.SRTM_Files = {}  # initialize an empty dictionary
+        # fill-up the dictionary using the srtm basename as key and add
+        # the four boundaries as values
+        for f in get_srtm_files(self.SRTM_DATA_PATH):
+            self.SRTM_Files[os.path.basename(f)] = {'bounds': get_tif_boundaries(f)}
 
+    def find_srtm_file(self, lon, lat):
+        for k, v in self.SRTM_Files.items():
+            boundary = v['bounds']
+            # check if coordinates are inside boundary box
+            if (lon >= boundary['ul'][0]) and (lat <= boundary['ul'][1]) and \
+               (lon <= boundary['lr'][0]) and (lat >= boundary['lr'][1]):
+                return k
+        return
+    
+    def get_elevation(self, lon, lat):
+        """
+        gives the elevation for a given coordinate
+        :param lon: longitude WGS84
+        :param lat: latitude WGS84
+        """
+        tif_filename = self.find_srtm_file(lon, lat)
+        if not tif_filename:
+            return
+        cmd = """gdallocationinfo %s -wgs84 %f %f""" % (os.path.join(self.SRTM_DATA_PATH, tif_filename), lon, lat)
+        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+        out = proc.stdout.read().splitlines()
+        for line in out:
+            if line.strip().startswith('Value'):
+                return float(line.split(':')[1])
+        return
 
-def get_elevation(tif_filename, lon, lat):
-    result = None
-    cmd = """gdallocationinfo %s -wgs84 %f %f""" % (tif_filename, lon, lat)
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    out = proc.stdout.read().splitlines()
-    for line in out:
-        if line.strip().startswith('Value'):
-            result = float(line.split(':')[1])
-    return result
-
-
-srtm_file_list = get_srtm_files()
-for f in srtm_file_list:
-    get_tif_boundaries(f, quite=True)
-
-
-#for s in sondes:
-#    lon, lat = (s[1], s[2])
-#    f = find_srtm_file(srtm_file_list, lon, lat)
-#    if f:
-#        elev = get_elevation(f, lon, lat)
-#        print(s[0] + ' ' + str(elev))
-#    else:
-#        print(s[0] + ' ' + 'unknown')
-
-
-
-
-#cmd1 = """gdal_translate -of GTiff %s "%s" "%s" """ % (gcps, img_filename, tif_tmp_filename)
-#cmd2 = """gdalwarp -t_srs EPSG:4326 -order -tps -co COMPRESS=NONE  "%s" "%s" """ % (tif_tmp_filename, tif_filename)
-
-
-#tif_filename = '/home/data/mapdata/srtm/srtm_06_09.tif'
-#cmd = """gdalinfo "%s" """ % (tif_filename)
-#print(cmd)
-#proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-#process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+#faampy.SRTM_DATA_PATH = '/home/axel/srtm'
+#dem=DEM()
+#eprint(dem.get_elevation(3, 50))
