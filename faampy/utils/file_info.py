@@ -34,7 +34,7 @@ def get_revision_from_filename(filename):
     for p in parts:
         if re.match('r\d', p):
             result = int(p[1:])
-            return result
+            return result                
     return
 
 
@@ -84,6 +84,10 @@ def get_date_from_filename(filename):
     for p in parts:
         if re.match('20\d{6}', p):
             return p
+        elif re.match('20\d{12}', p):                                                                                                       
+            return p                                                                                                                        
+        else:
+            pass
     return
 
 

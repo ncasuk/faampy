@@ -49,10 +49,10 @@ class File_List(list):
         Compresses the list and keeps only the latest revision file for a FID
         """
         bad_index = []        
-        self.sort(key=lambda i: '%4s_%s_%0.3i' % (i.fid, i.data_type, i.rev))
+        self.sort(key=lambda i: '%4s_%s_%s_%0.3i' % (i.fid, i.date, i.data_type, i.rev))        
         self.reverse()
         for i in range(len(self)-1):
-            if ((self[i].fid, self[i].data_type)) == ((self[i+1].fid, self[i+1].data_type)):
+            if ((self[i].fid, self[i].date, self[i].data_type)) == ((self[i+1].fid, self[i+1].date, self[i+1].data_type)):
                 bad_index.append(self[i+1])
         for b in bad_index:
             self.remove(b)                        
@@ -70,5 +70,4 @@ class File_List(list):
         """
         result = [os.path.join(i.path, i.filename) for i in self]
         return result
-
 
