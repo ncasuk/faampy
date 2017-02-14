@@ -10,4 +10,4 @@
 #collection
 #tephi
 #rdp
-sphinxcontrib-programoutput
+sphinx-argparse
