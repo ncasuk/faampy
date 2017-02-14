@@ -394,11 +394,12 @@ class FAAM_Dataset(object):
             other_var_names = list(recarray.dtype.names)
 
         if not index:
+            # This needs testing
             # guess field name for index by loopin through some common names
             recarray_keys = recarray.dtype.fields.keys()
             index_name_list = ['timestamp', 'time', 'datetime']
             for i, name in enumerate(index_name_list):
-                if name in recarry_keys.lower():
+                if name in [item.lower() for item in recarray_keys]:
                     index = recarray_keys[i]
                     break
 
