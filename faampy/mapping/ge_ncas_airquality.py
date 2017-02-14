@@ -108,7 +108,7 @@ def process(outpath, limit=None):
     return outfile
 
 
-def main():
+def parser():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-o', '--outpath',
@@ -121,6 +121,10 @@ def main():
                         type=int,
                         default=0,
                         help='maximum number of model images to be processed')
+    return parser
+
+def main():
+    parser = parser()
     args = parser.parse_args()
     outfile = process(args.outpath)
     sys.stdout.write('Created ... %s. \n' % outfile)

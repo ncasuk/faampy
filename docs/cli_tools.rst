@@ -5,8 +5,13 @@ Command line tools
 
 ge_ncas_airquality
 ~~~~~~~~~~~~~~~~~~
-.. program-output:: faampy ge_ncas_airquality -h
 
+.. argparse::
+   :module: faampy.mapping.ge_ncas_airquality
+   :func: parser
+   :prog: faampy ge_ncas_airquality
+
+        
 nimrod_to_nc
 ~~~~~~~~~~~~
 .. program-output:: faampy nimrod_to_nc -h
