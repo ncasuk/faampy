@@ -49,9 +49,9 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
 #    'sphinxcontrib.autoprogram',
-    'sphinxarg.ext',
+#    'sphinxarg.ext',
 #    'sphinx.ext.imgmath',
-#    'sphinxcontrib.programoutput',
+    'sphinxcontrib.programoutput',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
