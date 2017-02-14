@@ -50,7 +50,7 @@ extensions = [
     'sphinx.ext.viewcode',
 #    'sphinxcontrib.autoprogram',
     'sphinxarg.ext',
-    'sphinx.ext.imgmath',
+#    'sphinx.ext.imgmath',
 #    'sphinxcontrib.programoutput',
 ]
 
