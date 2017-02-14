@@ -14,7 +14,7 @@ DB description
 --------------
 
 The spatialite DB is stored in one single file, which is very convenient and does not require the setup of an advanced database, which can come with a lots of obstacles. In direct comparison spatialite is less powerful but has all the features that we need. For more information see:
-    
+
   | https://www.gaia-gis.it/fossil/libspatialite/index    
   | http://www.gaia-gis.it/gaia-sins/spatialite-sql-4.4.0.html
   | https://www.gaia-gis.it/gaia-sins/spatialite-tutorial-2.3.1.html    
@@ -44,13 +44,13 @@ For the examples below to work we need to import some common modules.
    import simplekml
    
    try:
-      from faampy.faam_spatial import FAAM_Spatial_DB
+      from faampy.core.faam_spatial import FAAM_Spatial_DB
    except:
       import faam_spatial
    
    LATEST_FID = 'b991'
    
-   DB_FILE = './faam_spatial_db.sqlite'
+   DB_FILE = os.path.join(faampy.FAAMPY_DATA_PATH, 'db', 'faam_spatial_db.sqlite')
    
    # connecting to the database
    db = FAAM_Spatial_DB(DB_FILE)
@@ -169,21 +169,21 @@ using the *GreatCircleLength* function.
    print 'Flight %s was %.2f km long.' % (fid, length)
    
    
-Example: Get all flights when we climbed above a certain altitude
------------------------------------------------------------------
+Example: Get all flights when the ARA climbed above a certain altitude
+----------------------------------------------------------------------
 
 We are trying to find all the flights where we climbed above a certain gps 
 altitude. For this we loop over all individual flight tracks. The steps are:
 1. Get flight track from DB in json format
 2. Use the 'coordinates' key from the json and extract the z-coordinate
 3. Check if the maximum z-value is greater than the MAX_HEIGHT and store
-   the fid in the result list if that's the case
+the fid in the result list if that's the case
    
    
 .. code-block:: python
 
-   MAX_HEIGHT = 11000
-   print 'TASK: Finding flights exceeding %i m altitude' % (int(MAX_HEIGHT,))
+   MAX_ALT = 11000
+   print 'TASK: Finding flights exceeding %i m altitude' % (int(MAX_ALT,))
    sql = """SELECT fid, AsGeoJSON(the_geom) from flight_tracks;"""
    cur = db.conn.cursor()                       # connect
    cur.execute(sql)                             # execute
@@ -197,6 +197,73 @@ altitude. For this we loop over all individual flight tracks. The steps are:
        alt_max = np.nanmax(coords[:,2])                     
        fid_max_alt_list.append((fid, alt_max))
    
-   fids = sorted([i[0] for i in fid_max_alt_list if i[1] > MAX_HEIGHT])
-   print 'N fids with gps height > %i: %i' % (int(MAX_HEIGHT), len(fids),)
+   fids = sorted([i[0] for i in fid_max_alt_list if i[1] > MAX_ALT])
+   print 'N fids with gps height > %i: %i' % (int(MAX_ALT), len(fids),)
    print 'List of flight ids: %s\n' % (','.join(fids),)
+
+
+Example: Get all flights that took off from Cranfield
+-----------------------------------------------------------------
+Some code is needed to calculate the distance between two WGS84 coordinates   
+   
+.. code-block:: python   
+    
+   # http://stackoverflow.com/questions/19412462/getting-distance-between-two-points-based-on-latitude-longitude-python
+   def calc_distance(lat1, lon1, lat2, lon2):
+       from math import sin, cos, sqrt, atan2, radians
+       # approximate radius of earth in m
+       R = 6373000.0
+       lat1 = radians(lat1)
+       lon1 = radians(lon1)
+       lat2 = radians(lat2)
+       lon2 = radians(lon2)
+       dlon = lon2 - lon1
+       dlat = lat2 - lat1
+       a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+       c = 2 * atan2(sqrt(a), sqrt(1 - a))
+   
+       distance = R * c
+       return distance
+
+This is the code to get all the flights from the database.
+        
+.. code-block:: python   
+
+   print 'TASK: Finding flights that took off in Cranfield in every year'
+   Cranfield_Coords = (52.072222, -0.616667)    # Cranfield Airport coordinates    
+   # in m; the distance is rather large to cover flights
+   # when the GIN didn't work straight away
+   MAX_DISTANCE = 15000                         
+   sql = """SELECT fid, date, AsGeoJSON(the_geom) from flight_tracks order by date;"""
+   cur = db.conn.cursor()                       # connect
+   cur.execute(sql)                             # execute
+   result = cur.fetchall()
+   # get a list of all years for which we do the analysis
+   years = list(set([r[1].split('-')[0] for r in result]))
+   dist_dict = {}
+   for y in years:
+       dist_dict[y] = []
+   
+   for r in result:
+       fid = r[0]
+       # get the coordinates from the geojson
+       coords = np.array(json.loads(r[2])['coordinates'])
+       # extract year string from sql result
+       year = r[1].split('-')[0]
+       lat1, lon1 = Cranfield_Coords
+       # pull coordinates form the very first array
+       lon2 = coords[0, 0]
+       lat2 = coords[0, 1]
+       dist = calc_distance(lat1, lon1, lat2, lon2)
+       if dist < MAX_DISTANCE:
+           dist_dict[year].append((fid, dist))
+   
+   # print summary
+   total = 0
+   # print the number for every year
+   for year in sorted(dist_dict.keys()):
+       n = len(dist_dict[year])
+       total += n
+       print('%7s: %3s' % (year, n))
+   print('%7s: %3s' % ('total', total))   
+      
