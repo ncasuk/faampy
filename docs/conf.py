@@ -48,7 +48,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.autoprogram',
+#    'sphinxcontrib.autoprogram',
     'sphinxarg.ext',
 #    'sphinx.ext.imgmath',
 #    'sphinxcontrib.programoutput',
