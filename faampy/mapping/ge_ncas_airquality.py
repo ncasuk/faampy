@@ -110,6 +110,7 @@ def process(outpath, limit=None):
 
 def _argparser():
     import argparse
+    sys.argv.insert(0, 'faampy ge_ncas_airquality')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-o', '--outpath',
                         action="store",

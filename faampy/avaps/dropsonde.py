@@ -150,7 +150,7 @@ class Dropsonde(object):
         data = f.readlines()
         self.lat_raw, self.lon_raw, self.alt_raw = [],[], []
         self.alt = []
-        self.press, self.rh_raw,  self.wspd_raw,  self.wdir_raw,  self.dz,  self.sat_num = [], [], [], [], [], []
+        self.press, self.rh_raw,  self.wspd_raw,  self.wdir_raw,  self.dz,  self.sat_num, self.temp_raw = [], [], [], [], [], [], []
         self.theta_raw,  self.gps_alt = [], []
         self.id=''
         self.launch_time=''
@@ -180,6 +180,7 @@ class Dropsonde(object):
                 P_0 = 1000.0
                 self.theta_raw.append(T * (P/P_0)**(R/cp))
                 self.press.append(float(line.split()[5]))
+                self.temp_raw.append(float(line.split()[6]))
                 self.rh_raw.append(float(line.split()[7]))
                 self.wspd_raw.append(float(line.split()[9]))
                 self.wdir_raw.append(float(line.split()[8]))

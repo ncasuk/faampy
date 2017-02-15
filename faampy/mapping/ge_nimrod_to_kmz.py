@@ -309,6 +309,7 @@ def process(tar_file, outpath):
 def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
+    sys.argv.insert(0, 'faampy ge_nimrod_to_kmz')
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('rain_radar_tar_file', action="store", type=str, help='MetOffice compressed rain radar file')

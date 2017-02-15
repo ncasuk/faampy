@@ -38,12 +38,19 @@ nc_to_gpx
    :func: _argparser
    :prog: faampy nc_to_gpx
 
-ncvar_to_kml
-~~~~~~~~~~~~
+ge_ncvar_to_kml
+~~~~~~~~~~~~~~~
 .. argparse::
-   :module: faampy.mapping.ncvar_to_kml
+   :module: faampy.mapping.ge_ncvar_to_kml
    :func: _argparser
-   :prog: faampy ncvar_to_kml
+   :prog: faampy ge_ncvar_to_kml
+  
+ge_was_to_kmz
+~~~~~~~~~~~~~
+.. argparse::
+   :module: faampy.mapping.ge_was_to_kmz
+   :func: _argparser
+   :prog: faampy ge_was_to_kmz
 
 world_map
 ~~~~~~~~~

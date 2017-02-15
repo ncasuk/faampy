@@ -2,6 +2,8 @@ import os
 
 from setuptools import setup, find_packages
 
+import faampy
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file
@@ -18,7 +20,7 @@ datafiles = [(d, [os.path.join(d, f) for f in files])
 
 
 setup(name = "faampy",
-      version = "0.0.1",
+      version = faampy.__version__,
       description = "python module for dealing with FAAM data",
       author = "Axel Wellpott",
       author_email = "axel dot wellpott at faam dot ac dot uk",
@@ -31,7 +33,7 @@ setup(name = "faampy",
                 'faampy = faampy:command_line',]
           },
       license='LGPLv3',
-      platforms = ["linux"],
+      platforms = ['linux'],
       long_description = long_description,
       install_requires = required,
       include_package_data = True,

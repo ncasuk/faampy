@@ -5,6 +5,7 @@ import netCDF4
 import numpy as np
 import os
 import re
+import sys
 
 from faampy.core.utils import conv_time_to_secs, conv_secs_to_time, get_index_from_secs, get_fid
 
@@ -138,6 +139,7 @@ def process(ncfile, ncvar, time_lag, offset, scale_factor, out_path, _RUNS):
 
 def _argparser():
     import argparse
+    sys.argv.insert(0, 'faampy ge_ncvar_to_kml')
     parser=argparse.ArgumentParser(description='Creates a kml-profile plot for specified netCDF variable.',)
     parser.add_argument('--offset', action='store', type=float, default=0.0,
 			help='Offset value. Value is removed from variable before profiles are created')

@@ -88,7 +88,8 @@ def nc_to_gpx(ncfile, outpath):
 def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
-    parser = argparse.ArgumentParser(description=__doc__,
+    sys.argv.insert(0, 'faampy nc_to_gpx')
+    parser = argparse.ArgumentParser(prog = 'faampy nc_to_gpx', description=__doc__,
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('ncfile',
                         action="store",
@@ -101,13 +102,9 @@ def _argparser():
                         default=os.environ['HOME'],
                         help='file name of output file')
     return parser
+  
 
-    
-def main():
+if __name__ == '__main__':
     parser = _argparser()
     args = parser.parse_args()
     nc_to_gpx(args.ncfile, args.outpath)
-
-
-if __name__ == '__main__':
-    main()

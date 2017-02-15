@@ -296,6 +296,7 @@ def nimrod_to_nc(nimrod_file_list, ncoutfilename):
 def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
+    sys.argv.insert(0, 'faampy nimrod_to_nc')
     parser=argparse.ArgumentParser(description=__doc__,
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('rain_radar_tar_file', action="store", type=str, help='MetOffice compressed rain radar file')
@@ -306,9 +307,9 @@ def _argparser():
                         default=os.environ['HOME'],
                         help='Directory where the netCDF file will be stored. Default: $HOME.')
     return parser    
+
     
-def main():
-    
+def main():    
     global _NUM_PROCESSES
     start_time = time.time()
     parser = _argparser()
@@ -327,17 +328,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-TESTING = False
-
-if TESTING:
-    ipath = '/home/axel/tmp/nimrod/'
-    ifiles = [os.path.join(ipath, f) for f in os.listdir(ipath)]
-    ifiles.sort()
-    ifiles = ifiles
-    nimrod_to_nc(ifiles, '/home/axel/nimrod2.nc')
-
-
-
