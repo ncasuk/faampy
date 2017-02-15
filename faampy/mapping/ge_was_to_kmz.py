@@ -3,10 +3,6 @@
 '''
 WAS log to google-earth kml overlay
 
-Created on 19 May 2010
-
-@author: axel
-
 '''
 
 import netCDF4

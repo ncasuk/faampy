@@ -17,6 +17,7 @@ LonLat information from the file header.
 import datetime
 import netCDF4
 import os
+import sys
 
 from matplotlib.dates import num2date
 

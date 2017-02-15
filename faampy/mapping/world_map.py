@@ -183,7 +183,7 @@ def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
     sys.argv.insert(0, 'faampy world_map')
-    parser=argparse.ArgumentParser(description=__doc__,
+    parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('--din', action="store", type=str, help='Paper size', default='a4')
     parser.add_argument('-o', '--outpath', action="store", type=str, required=False,

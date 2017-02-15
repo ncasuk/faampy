@@ -85,7 +85,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'faampy'
-copyright = u'2016, Axel Wellpott'
+copyright = u'2017, Axel Wellpott'
 author = u'Axel Wellpott'
 
 # The version info for the project you're documenting, acts as replacement for

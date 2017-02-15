@@ -13,7 +13,7 @@ system. However, to make the results work with for example cis it is necessary
 to warp the array to EPSG:4326 so that longitude and latitude are available as
 dimensions.
 
-The created netCDF results were tested with the cis tools [1]. If the netCDF
+The created netCDF results were tested with the cistools_. If the netCDF
 stores more than one timestamp it is necessary to extract one layer using the
 subset command like this::
 
@@ -29,10 +29,7 @@ Now it is possible to plot the data as a heatmap using cis::
 
 Maybe there is a way to skip the subset step but so far I have not found it.
 
-[1] www.cistools.net
-
-TODO:
-    The resulting array could be cropped
+.. _cistools: http://www.cistools.net/
 
 """
 
