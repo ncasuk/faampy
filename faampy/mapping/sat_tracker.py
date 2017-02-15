@@ -25,6 +25,7 @@ import datetime
 import ephem
 import errno
 import math
+import numpy as np
 import os
 import re
 import sys
@@ -164,19 +165,52 @@ class Map(object):
         self.m.drawmapboundary()
 
     def oplot_sattrack(self, trkpts):
-        label, lons, lats=zip(*trkpts)
-        x, y=self.m(lons, lats)
-        #TODO: plots look ugly when satellite goes over the edge
-        #x2, y2=[],[]
-        #label, lons, lats= [],[],[]
-        #for trkpt in trkpts:
-            #pass
-        self.m.plot(x, y)
-        self.m.plot(x, y, 'o')
-        for i in range(len(trkpts)):
-            plt.annotate(label[i], xy=(x[i], y[i]), fontsize=8)        
-        plt.annotate('Created: %sZ' % (datetime.datetime.utcnow().strftime('%d-%m-%Y %H:%M:%S')), xy=(0.02, 0.02), xycoords='figure fraction', fontsize=8)
+        label, lons, lats = zip(*trkpts)
 
+        # The following section takes care of the occassions when the satellite
+        # goes over the edge form -180 to 180 or vice versa.
+        # This section is not very nice and needs improvement
+        _label, _lons, _lats = [label[0],], [lons[0],], [lats[0],]
+        for i in range(1, len(trkpts)):
+            if ((lons[i] > 0) and (lons[i-1] < 0) and (np.abs(lons[i] > 120))):
+                _label.append(None)
+                _label.append(label[i])
+                _lons.append(np.nan)
+                _lons.append(lons[i])
+                _lats.append(np.nan)
+                _lats.append(lats[i])
+            elif ((lons[i] < 0) and (lons[i-1] > 0) and (np.abs(lons[i] > 120))):                
+                _label.append(None)
+                _label.append(label[i])
+                _lons.append(np.nan)
+                _lons.append(lons[i])
+                _lats.append(np.nan)
+                _lats.append(lats[i])
+            else:
+                _label.append(label[i])
+                _lons.append(lons[i])
+                _lats.append(lats[i])
+        label = _label[:]
+        lons = _lons[:]
+        lats = _lats[:]
+
+        x, y=self.m(lons, lats)
+        x = np.array(x)        
+        ix = np.where(~np.isfinite(x))[0]
+        x = list(x)
+        if len(ix) > 0:
+            for i in ix:
+                x[i] = None
+                y[i] = None
+
+
+
+        self.m.plot(x, y, lw=1.5)
+        self.m.plot(x, y, 'o', color='orange')
+        for i in range(len(trkpts)):
+            if label[i]:
+                plt.annotate(label[i], xy=(x[i], y[i]), fontsize=8)        
+        plt.annotate('Created: %sZ' % (datetime.datetime.utcnow().strftime('%d-%m-%Y %H:%M:%S')), xy=(0.02, 0.02), xycoords='figure fraction', fontsize=8)
 
 
 class SatTrack(object):
@@ -332,6 +366,22 @@ def main():
             sys.stdout.write('Map saved as: \n  %s\n\n' % (imgfilename,))
             plt.clf()
 
-
 if __name__ == '__main__':
     main()
+
+TESTING = True
+
+if TESTING:
+    today = datetime.datetime.utcnow().strftime('%Y-%m-%d')
+    tomorrow = (datetime.datetime.utcnow()+datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+
+    tle = TLE()
+    s = SatTrack('39084', today, tomorrow, 60)
+    s.tle_dict = tle
+    s.calc()
+    llcrnrlon, llcrnrlat, urcrnrlon, urcrnrlat = -38, 35, 3, 53
+    m = Map(llcrnrlon=float(llcrnrlon),
+            llcrnrlat=float(llcrnrlat),
+            urcrnrlon=float(urcrnrlon),
+            urcrnrlat=float(urcrnrlat))
+    m.oplot_sattrack(s.trkpts)
