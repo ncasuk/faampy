@@ -25,13 +25,6 @@ work on a Windows OS.
 
 """
 
-__author__="Axel Wellpott"
-__license__="GPL"
-__version__="0.2"
-__maintainer__="Axel Wellpott"
-__email__="axll@faam.ac.uk"
-__status__="Development"
-
 
 import datetime
 import gdal
@@ -205,21 +198,18 @@ def img_to_gtiff(nimrod, img_filename):
 
     """
     tif_27700_filename=os.path.splitext(img_filename)[0] + '_epsg27700.tif'
-    tif_filename=os.path.splitext(img_filename)[0] + '.tif'
-    tif_filename=os.path.join(os.path.dirname(tif_filename), 'files', os.path.basename(tif_filename))
-    #the datum of the data array is the British National grid OSGB1936 == EPSG27700 (http://spatialreference.org/ref/epsg/27700/
-    #The corner values are derived from the information in the nimrod header
-    #see read_nimrod function:
-    #    print "start northing %.1f, row interval %.1f, start easting %.1f, column interval %.1f\n"  %(gen_reals[2], gen_reals[3], gen_reals[4], gen_reals[5])
-    #every pixel is 1000mx1000m in size and the array is 2175x1725 big
-    translate_str="-a_srs EPSG:27700 -a_ullr %i %i %i %i" % (nimrod['start_easting'],
-                                                             nimrod['start_northing'],
-                                                             nimrod['start_easting']+nimrod['rows']*nimrod['row_interval'],
-                                                             nimrod['start_northing']-nimrod['cols']*nimrod['column_interval'])
-    #translate_str="-a_srs EPSG:32632 -a_ullr %i %i %i %i" % (nimrod['start_easting'],
-    #                                                         nimrod['start_northing'],
-    #                                                         nimrod['start_easting']+nimrod['rows']*nimrod['row_interval'],
-    #                                                         nimrod['start_northing']-nimrod['cols']*nimrod['column_interval'])
+    tif_filename = os.path.splitext(img_filename)[0] + '.tif'
+    tif_filename = os.path.join(os.path.dirname(tif_filename), 'files',
+                                os.path.basename(tif_filename))
+    # the datum of the data array is the British National grid OSGB1936 == EPSG27700 (http://spatialreference.org/ref/epsg/27700/
+    # The corner values are derived from the information in the nimrod header
+    # see read_nimrod function:
+    #     print "start northing %.1f, row interval %.1f, start easting %.1f, column interval %.1f\n"  %(gen_reals[2], gen_reals[3], gen_reals[4], gen_reals[5])
+    # every pixel is 1000mx1000m in size and the array is 2175x1725 big
+    translate_str = "-a_srs EPSG:27700 -a_ullr %i %i %i %i" % (nimrod['start_easting'],
+                                                               nimrod['start_northing'],
+                                                               nimrod['start_easting']+nimrod['rows']*nimrod['row_interval'],
+                                                               nimrod['start_northing']-nimrod['cols']*nimrod['column_interval'])
 
     #Add projection/datum information to the img and output a gtiff-file
     cmd="""gdal_translate -q -of GTiff %s "%s" "%s" """ % (translate_str, img_filename, tif_27700_filename)
@@ -316,16 +306,10 @@ def process(tar_file, outpath):
     sys.stdout.write('\nKMZ written to: %s \n' % (kmz_filename))
 
 
-def main():
+def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
-    global _TEMP_FOLDER, _NUM_PROCESSES
-    _TEMP_FOLDER=tempfile.mkdtemp(dir=os.path.join(os.environ['HOME'], 'tmp'))
-    if not os.path.exists(os.path.join(_TEMP_FOLDER, 'files')):
-        os.mkdir(os.path.join(_TEMP_FOLDER, 'files'))
     parser = argparse.ArgumentParser(description=__doc__,
-                                     version=__version__,
-                                     epilog="Report bugs to %s." % __email__,
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('rain_radar_tar_file', action="store", type=str, help='MetOffice compressed rain radar file')
     parser.add_argument('-o', '--outpath', action="store", type=str, required=False,
@@ -333,14 +317,23 @@ def main():
                         help='Directory where the kmz file will be stored. Default: $HOME.')
     parser.add_argument('-k', '--keep-folder', action="store_true", required=False, default=False,
                         help='If option is set the temporary directory will *not* be deleted. Default: False')
-    args=parser.parse_args()
+    return parser
+
+
+def main():
+    global _TEMP_FOLDER, _NUM_PROCESSES
+    _TEMP_FOLDER=tempfile.mkdtemp(dir=os.path.join(os.environ['HOME'], 'tmp'))
+    if not os.path.exists(os.path.join(_TEMP_FOLDER, 'files')):
+        os.mkdir(os.path.join(_TEMP_FOLDER, 'files'))
+    parser = _argparser()
+    args = parser.parse_args()
     # test that the input file is the 1km-composite
     if not args.rain_radar_tar_file.endswith('1km-composite.dat.gz.tar'):
         sys.stdout.write('Sorry, script currently only works with the UK 1km composite file. \nLeaving ... \n')
         sys.exit()
-    start_time=time.time()
+    start_time = time.time()
     process(args.rain_radar_tar_file, args.outpath)
-    #clean_up behind ourselves
+    # clean_up behind ourselves
     if not args.keep_folder:
         sys.stdout.write('Deleting temporary folder %s ... \n' % (_TEMP_FOLDER))
         shutil.rmtree(_TEMP_FOLDER)

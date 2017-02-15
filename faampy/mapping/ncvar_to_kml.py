@@ -6,7 +6,7 @@ import numpy as np
 import os
 import re
 
-from faampy.core.utils import conv_time_to_secs, get_index_from_secs, get_fid
+from faampy.core.utils import conv_time_to_secs, conv_secs_to_time, get_index_from_secs, get_fid
 
 
 KML_HEADER="""<?xml version="1.0" encoding="UTF-8"?>
@@ -136,7 +136,7 @@ def process(ncfile, ncvar, time_lag, offset, scale_factor, out_path, _RUNS):
     kml.close()
 
 
-def main():
+def _argparser():
     import argparse
     parser=argparse.ArgumentParser(description='Creates a kml-profile plot for specified netCDF variable.',)
     parser.add_argument('--offset', action='store', type=float, default=0.0,
@@ -153,8 +153,12 @@ def main():
                         help="FAAM core netCDF data file.")
     parser.add_argument('outpath', action='store', type=str,
 			help='Path to where the kml file is written to.')
-    args = parser.parse_args()
+    return parser
 
+
+def main():
+    parser = _argparser()
+    args = parser.parse_args()
 
     if args.fltsumm:
         from faampy.fltsumm.FlightSummary import FlightSummary

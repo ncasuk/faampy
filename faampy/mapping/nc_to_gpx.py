@@ -85,7 +85,7 @@ def nc_to_gpx(ncfile, outpath):
     f.close()
 
 
-def main():
+def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
     parser = argparse.ArgumentParser(description=__doc__,
@@ -100,6 +100,11 @@ def main():
                         type=str,
                         default=os.environ['HOME'],
                         help='file name of output file')
+    return parser
+
+    
+def main():
+    parser = _argparser()
     args = parser.parse_args()
     nc_to_gpx(args.ncfile, args.outpath)
 

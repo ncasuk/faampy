@@ -2,10 +2,11 @@
 
 """
 This script converts the NIMROD weather radar data format into a netCDF with
-the dimensions::
-    * Timestamp
-    * Longitude
-    * Latitude
+the dimensions:
+
+  * Timestamp
+  * Longitude
+  * Latitude
 
 The original array in the NIMROD data fits the OSGB 1936 spatial reference
 system. However, to make the results work with for example cis it is necessary
@@ -17,7 +18,7 @@ stores more than one timestamp it is necessary to extract one layer using the
 subset command like this::
 
    cis subset rain_intensity:nimrod.nc timestamp=['2012-03-04T00:50'] \
-     -o nimrod_20120304T0050.nc
+-o nimrod_20120304T0050.nc
 
 The above command extracts the data for the timestamp '2012-03-04T00:50' and
 writes a new netCDF with the filename "nimrod_20120304T0050.nc".
@@ -27,7 +28,6 @@ Now it is possible to plot the data as a heatmap using cis::
     cis plot rain_intensity:nimrod_20120304T0050.nc
 
 Maybe there is a way to skip the subset step but so far I have not found it.
-
 
 [1] www.cistools.net
 
@@ -293,11 +293,9 @@ def nimrod_to_nc(nimrod_file_list, ncoutfilename):
     return
 
 
-def main():
+def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
-    global _NUM_PROCESSES
-    start_time = time.time()
     parser=argparse.ArgumentParser(description=__doc__,
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('rain_radar_tar_file', action="store", type=str, help='MetOffice compressed rain radar file')
@@ -307,7 +305,14 @@ def main():
     parser.add_argument('-o', '--outpath', action="store", type=str, required=False,
                         default=os.environ['HOME'],
                         help='Directory where the netCDF file will be stored. Default: $HOME.')
-    args=parser.parse_args()
+    return parser    
+    
+def main():
+    
+    global _NUM_PROCESSES
+    start_time = time.time()
+    parser = _argparser()
+    args = parser.parse_args()
     _NUM_PROCESSES = args.number_of_processes
     extract(args.rain_radar_tar_file)
     nimrod_file_list = [os.path.join(_TEMP_FOLDER, f) for f in os.listdir(_TEMP_FOLDER)]

@@ -9,8 +9,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 import numpy as np
 import os
-import pickle
-import re
 import sys
 import tempfile
 
@@ -18,7 +16,6 @@ import faampy
 from faampy.core.faam_spatial import FAAM_Spatial_DB
 import json
 
-import faampy
 
 ##### SETTINGS #######################################
 
@@ -182,7 +179,7 @@ def get_flight_tracks(m):
     return (x,y,z)
     
 
-def main():
+def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
     parser=argparse.ArgumentParser(description=__doc__,
@@ -194,9 +191,14 @@ def main():
                         help='resolution dot per inch')
     parser.add_argument('--map_background', action="store_true", required=False, default=True,
                         help='whether background map is added or not')
-    args=parser.parse_args()
+    return parser
+
+
+def main():
+    parser = _argparser()
+    args = parser.parse_args()
         
-    m=Basemap(projection='robin', lon_0=0, resolution='c')
+    m = Basemap(projection='robin', lon_0=0, resolution='c')
     
     m.drawcoastlines(linewidth=0,zorder=0)
     plt.tight_layout()
@@ -257,5 +259,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

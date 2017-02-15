@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 """
-Script downloads the model output from the NCAS air quality from:
+Script downloads the model output from the NCAS air quality model from:
 
    https://sci.ncas.ac.uk/airquality/
 
 and creates a kmz file that is viewable in google-earth. This allows for
-example FAAM flight tracks to be overlaid on top of the model images
+example FAAM flight tracks to be overlaid on top of the model images.
 
 """
 
@@ -108,7 +108,7 @@ def process(outpath, limit=None):
     return outfile
 
 
-def parser():
+def _argparser():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-o', '--outpath',
@@ -123,8 +123,9 @@ def parser():
                         help='maximum number of model images to be processed')
     return parser
 
+
 def main():
-    parser = parser()
+    parser = _argparser()
     args = parser.parse_args()
     outfile = process(args.outpath)
     sys.stdout.write('Created ... %s. \n' % outfile)

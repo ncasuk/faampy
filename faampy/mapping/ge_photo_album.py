@@ -118,7 +118,7 @@ def process(path):
     return kml
 
 
-def main():
+def _argparser():
     import argparse
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('path', action="store", type=str,
@@ -127,6 +127,11 @@ def main():
                         action="store",
                         type=str,
                         help='outfile name')
+    return parser
+
+
+def main():
+    parser = _argparser()
     args = parser.parse_args()
     kml = process(args.path)
     kml.savekmz(args.outfile, format=False)
