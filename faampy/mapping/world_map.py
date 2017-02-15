@@ -19,8 +19,6 @@ import json
 
 ##### SETTINGS #######################################
 
-mpl.rcParams['text.usetex']=True
-
 PAPER_SIZE='A4'
 DPI=100
 
@@ -63,8 +61,10 @@ din_dict = {'a0': [(46.8, 33.1), int(12.0*1.41**4)],
             'a3': [(16.5, 11.7), int(12.0*1.41**1)],
             'a4': [(11.7, 8.27), int(12.0*1.41**0)]}
 
-mpl.rcParams['figure.figsize'] = din_dict[str.lower(PAPER_SIZE)][0]
-mpl.rcParams['font.size'] = din_dict[str.lower(PAPER_SIZE)][1]
+
+mpl.rc('text.usetex', True)
+mpl.rc('figure.figsize', din_dict[str.lower(PAPER_SIZE)][0])
+mpl.rc('font.size', din_dict[str.lower(PAPER_SIZE)][1])
 
 
 #http://gis.stackexchange.com/questions/99672/mapnik-rendering-with-osm-carto-style#

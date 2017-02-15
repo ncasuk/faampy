@@ -23,13 +23,26 @@ sys.path.insert(0, os.path.abspath('..'))
 
 
 
-
-MOCK_MODULES = ['numpy', 'scipy', 'matplotlib.pyplot', 'pandas', 'iris', 'netCDF4',
+MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'matplotlib.pyplot',
+                'matplotlib.dates', 'matplotlib.cbook', 
+                'matplotlib.rcParams', 'mpl_toolkits.basemap', 'pandas', 'iris', 'netCDF4',
                 'osgeo', 'haversine', 'pyspatialite', 'pyspatialite.dbapi2',
                 'osgeo.ogr', 'exifread', 'gdal', 'simplekml', 'rdp']
 
-for mod_name in MOCK_MODULES:
-    sys.modules[mod_name] = mock.Mock()
+
+#for mod_name in MOCK_MODULES:
+#    sys.modules[mod_name] = mock.Mock()
+
+from mock import Mock as MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
+
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
+
 
 
 import faampy
