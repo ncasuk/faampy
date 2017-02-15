@@ -2,6 +2,7 @@
 
 """
 Extracts all rain radar data from the tar file and
+
   * creates a 8bit png image file with a custom colour palette
   * convertes the png to a gtiff and adds the projection ESPG:27700=OSGB1936
   * warpes the gtiff image to EPSG:4326

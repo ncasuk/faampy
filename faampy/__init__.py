@@ -30,7 +30,8 @@ def command_line():
                ('ge_was_to_kmz',      'faampy.mapping.ge_was_to_kmz'),
                ('nc_to_gpx',          'faampy.mapping.nc_to_gpx'),
                ('ncvar_to_kml',       'faampy.mapping.ncvar_to_kml'),
-               ('world_map',          'faampy.mapping.world_map'), ]
+               ('world_map',          'faampy.mapping.world_map'),
+               ('sat_tracker',        'faampy.mapping.sat_tracker'),]
 
     parser = argparse.ArgumentParser(description="faampy",
                                      usage="""faampy <command> [<args>]

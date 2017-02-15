@@ -66,3 +66,12 @@ world_map
    :func: _argparser
    :prog: faampy world_map
    :nodefault:
+
+sat_tracker
+~~~~~~~~~~~
+.. argparse::
+   :module: faampy.mapping.sat_tracker
+   :func: _argparser
+   :prog: faampy sat_tracker
+   :nodefault:
+   

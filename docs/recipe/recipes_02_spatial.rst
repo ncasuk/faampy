@@ -91,7 +91,8 @@ Example: Find flights that go over the North Sea
 
 The goal is to find all FAAM flights that go over the North Sea. To do this we need
 the boundaries for the North Sea. A shapefile with the Polygon can be downloaded from
-the web: http://www.marineregions.org/gazetteer.php?p=details&id=2350
+the web:
+  http://www.marineregions.org/gazetteer.php?p=details&id=2350
 
 To read it in we use the osgeo module.
 
@@ -174,10 +175,10 @@ Example: Get all flights when the ARA climbed above a certain altitude
 
 We are trying to find all the flights where we climbed above a certain gps 
 altitude. For this we loop over all individual flight tracks. The steps are:
-1. Get flight track from DB in json format
-2. Use the 'coordinates' key from the json and extract the z-coordinate
-3. Check if the maximum z-value is greater than the MAX_HEIGHT and store
-the fid in the result list if that's the case
+  1. Get flight track from DB in json format
+  2. Use the 'coordinates' key from the json and extract the z-coordinate
+  3. Check if the maximum z-value is greater than the MAX_ALT and store
+     the fid in the result list if that's the case
    
    
 .. code-block:: python
@@ -198,7 +199,7 @@ the fid in the result list if that's the case
        fid_max_alt_list.append((fid, alt_max))
    
    fids = sorted([i[0] for i in fid_max_alt_list if i[1] > MAX_ALT])
-   print 'N fids with gps height > %i: %i' % (int(MAX_ALT), len(fids),)
+   print 'N fids with gps altitude > %i: %i' % (int(MAX_ALT), len(fids),)
    print 'List of flight ids: %s\n' % (','.join(fids),)
 
 
