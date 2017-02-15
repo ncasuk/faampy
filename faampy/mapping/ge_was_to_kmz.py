@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
 '''
-WAS log to google-earth kml overlay
+WAS log as google-earth overlay. Filling times are represented
+as lines showing the location of the bottle fill.
 
 '''
 
@@ -10,6 +11,7 @@ import numpy as np
 import os
 import re
 import sys
+import shutil
 import tempfile
 import zipfile
 
@@ -81,7 +83,8 @@ def __zip__(outfile):
 def __setup_kmz__():
     icon_path = os.path.join(_KMZ_TMP_DIRECTORY, 'icons')
     os.mkdir(icon_path)
-    icon_file = os.path.join(faampy.__path___, 'files', 'icons',
+    icon_file = os.path.join(os.path.dirname(faampy.__file__),
+                             '..', 'files', 'icons',
                              'was_bottle_32x32.png')
     shutil.copy(icon_file, icon_path)
 
