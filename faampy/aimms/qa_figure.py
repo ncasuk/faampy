@@ -1,6 +1,13 @@
 core_filename = '/home/axel/Dropbox/campaigns/vanaheim2016/b988-oct-20/core_faam_20161020_v004_r0_b988.nc'
 aimms_filename = '/home/axel/Dropbox/campaigns/vanaheim2016/b988-oct-20/metoffice-aimms_faam_20161020_v003_r0_b988.nc'
 
+core_filename = '/home/axel/Dropbox/campaigns/wintex2017/b994-feb-03/core_faam_20170203_v004_r0_b994.nc'
+aimms_filename = '/mnt/faamarchive/scanner/aimms/metoffice-aimms_faam_20170203_v003_r0_b994.nc'
+
+
+import sys
+sys.path.insert(0, '/home/axel/git-repos/faampy/')
+
 
 import netCDF4
 import pandas as pd
@@ -86,7 +93,8 @@ for wv in ['u', 'v', 'w', 'tas']:
     ax.text(0.02, 0.95, wv, verticalalignment='top', transform=ax.transAxes)
     ax.set_ylabel(r'%s $(ms^{-1})$' % wv)
     # the delta is plotted for 1Hz averaged data to keep it simple
-    delta = df_c['core_'+wv].resample('S').mean()-df_a['aimms_'+wv].resample('S').mean()
+    #delta = df_c['core_'+wv].resample('S').mean()-df_a['aimms_'+wv].resample('S').mean()
+    delta = df_c['core_'+wv].resample('S')-df_a['aimms_'+wv].resample('S')
     ax2 = _ax['ax_'+wv].twinx()
     l3 = ax2.plot_date(date2num(delta.index.to_pydatetime()), delta.values, '-', color='firebrick', label=r'$\Delta$')
     ax2.set_ylabel(r'$\Delta \quad (ms^{-1})$')
@@ -119,8 +127,8 @@ _ax['ax_tas'] = fig.add_subplot(gs[0], aspect='equal')    #  axes tas wind compo
 
 for wv in ['u', 'v', 'w', 'tas']:
     ax = _ax['ax_'+wv]
-    x = np.array(df_c['core_'+wv].resample('S').mean())
-    y = np.array(df_a['aimms_'+wv].resample('S').mean())
+    x = np.array(df_c['core_'+wv].resample('S'))
+    y = np.array(df_a['aimms_'+wv].resample('S'))
     ax.plot(x, y, '.')
     ax.grid(True)
     _lim=(np.min([ax.axes.get_xlim()[0], ax.axes.get_ylim()[0]]),
