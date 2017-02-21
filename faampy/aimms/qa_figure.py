@@ -28,7 +28,6 @@ plt.style.use('seaborn-deep')
 # plot time series of t and rh and delta
 # plot spectra for u,v,w,tas
 # plot scatter plots matrix for u,v,w,tas
-#
 
 def plot_wind_vector_components():
     pass

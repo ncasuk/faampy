@@ -117,10 +117,6 @@ def process(fid, revision, outpath):
     os.system(cmd)
 
 
-
-
-
-
 def main():
     import argparse
     from argparse import RawTextHelpFormatter
@@ -149,10 +145,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
