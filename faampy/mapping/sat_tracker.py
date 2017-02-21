@@ -207,7 +207,7 @@ class Map(object):
 
         self.m.plot(x, y, lw=1.5)
         self.m.plot(x, y, 'o', color='orange')
-        for i in range(len(trkpts)):
+        for i in range(len(label)):
             if label[i]:
                 plt.annotate(label[i], xy=(x[i], y[i]), fontsize=8)        
         plt.annotate('Created: %sZ' % (datetime.datetime.utcnow().strftime('%d-%m-%Y %H:%M:%S')), xy=(0.02, 0.02), xycoords='figure fraction', fontsize=8)
@@ -369,7 +369,7 @@ def main():
 if __name__ == '__main__':
     main()
 
-TESTING = True
+TESTING = False
 
 if TESTING:
     today = datetime.datetime.utcnow().strftime('%Y-%m-%d')
