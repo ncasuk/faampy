@@ -149,7 +149,7 @@ def process(was_log_file, ncfile, outpath):
     global _FID
 
     __setup_kmz__()
-    _FID = re.search('[b,B]\d{3}', ncfile).group()
+    _FID = re.search('[bBcC]\d{3}', ncfile).group()
     ds = netCDF4.Dataset(ncfile, 'r')
     if hasattr(ds, 'title'):
         flight_desc = str(ds.title).split()[2] + '-' + str(ds.title).split()[4] + '-WAS-Bottles'
