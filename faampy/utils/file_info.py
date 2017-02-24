@@ -2,16 +2,16 @@ import os
 import re
 
 
-DATA_TYPES = {'core-hires':        'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBdD][0-9][0-9][0-9].nc$',
-              'core-lowres':       'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBdD][0-9][0-9][0-9]_1[Hh]z.nc$',
-              'core-descrip':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBdD][0-9][0-9][0-9]_descrip.txt$',
-              'core-quality':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBdD][0-9][0-9][0-9]_quality.txt$',
-              'dropsonde-proc':    '.*dropsonde_faam_.*_r.*_[bBdD][0-9][0-9][0-9]_proc.nc$',                    
-              'dropsonde-raw':     '.*dropsonde_faam_.*_r.*_[bBdD][0-9][0-9][0-9]_raw.nc$',
-              'dropsonde-descrip': '.*dropsonde_faam_.*_r.*_[bBdD][0-9][0-9][0-9]_descrip.txt$',
-              'flight-cst':        'flight-cst_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r.*_[bBdD][0-9][0-9][0-9].txt$',
-              'flight-log':        'flight-log_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBdD][0-9][0-9][0-9].pdf$',
-              'flight-sum':        'flight-sum_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBdD][0-9][0-9][0-9].txt$',
+DATA_TYPES = {'core-hires':        'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBcC][0-9][0-9][0-9].nc$',
+              'core-lowres':       'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBcC][0-9][0-9][0-9]_1[Hh]z.nc$',
+              'core-descrip':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBcC][0-9][0-9][0-9]_descrip.txt$',
+              'core-quality':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBcC][0-9][0-9][0-9]_quality.txt$',
+              'dropsonde-proc':    '.*dropsonde_faam_.*_r.*_[bBcC][0-9][0-9][0-9]_proc.nc$',                    
+              'dropsonde-raw':     '.*dropsonde_faam_.*_r.*_[bBcC][0-9][0-9][0-9]_raw.nc$',
+              'dropsonde-descrip': '.*dropsonde_faam_.*_r.*_[bBcC][0-9][0-9][0-9]_descrip.txt$',
+              'flight-cst':        'flight-cst_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r.*_[bBcC][0-9][0-9][0-9].txt$',
+              'flight-log':        'flight-log_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBcC][0-9][0-9][0-9].pdf$',
+              'flight-sum':        'flight-sum_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bBcC][0-9][0-9][0-9].txt$',
               'rawdrs':            'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bB][0-9][0-9][0-9]_rawdrs.zip$',
               'rawgin':            'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bB][0-9][0-9][0-9]_rawgin.zip$',
               'rawgps':            'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r.*_[bB][0-9][0-9][0-9]_rawgps.zip$',
@@ -63,7 +63,7 @@ def get_fid_from_filename(filename):
     fn = fn.split('.')[0]
     parts = fn.split('_')   
     for p in parts:
-        if re.match('[bBdD][0-9][0-9][0-9]', p):
+        if re.match('[bBcC][0-9][0-9][0-9]', p):
             return p.lower()
     return
 
