@@ -93,6 +93,7 @@ NETCDF_VARIABLE_IDS = """515,Time
 715,U_C
 716,W_C
 723,BTHEIM_C
+724,LWC_JW_U
 725,TWC_TDEW
 730,LAT_INUC
 731,LON_INUC
@@ -311,6 +312,8 @@ class FAAM_Dataset(object):
             dt = datetime.datetime.strptime(str(self.ds.variables['TIME'].units).strip(), 'seconds since %Y-%m-%d 00:00:00 +0000')
         elif 'time' in self.ds.variables.keys():
             dt = datetime.datetime.strptime(re.findall('\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', self.ds.variables['time'].units)[0], '%Y-%m-%d 00:00:00')
+        elif hasattr(self.ds, 'Flight_Date'):
+            dt = datetime.datetime.strptime(self.ds.Flight_Date, '%d-%b-%y')
         elif 'PARA0515' in self.ds.variables.keys():
             dt = datetime.datetime.strptime(self.ds.title.split()[-1], '%d-%b-%y')
         else:
@@ -331,7 +334,7 @@ class FAAM_Dataset(object):
         # using the more sophisticated np.datetime64 data type
         base_time = np.datetime64('%i-%0.2i-%0.2iT00:00:00' % (self.ncattr['DATE'][2], self.ncattr['DATE'][1], self.ncattr['DATE'][0]))
 
-        self.index = base_time + np.array(self.variables['Time'][:], dtype=np.int)
+        self.index = base_time + np.array(self.variables['Time'][:].ravel(), dtype=np.int)
 
         self._set_coordinates_()
 
