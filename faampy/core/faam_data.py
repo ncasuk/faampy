@@ -538,7 +538,7 @@ class FAAM_Dataset(object):
         # Now the dimensions
         for dname, the_dim in self.ds.dimensions.iteritems():
             dsout.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
-        dsout.createDimension('Time', None)
+        #dsout.createDimension('Time', None)
         if not v_name_list:
             self.variables.keys()
         # Writing the variables
