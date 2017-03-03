@@ -104,8 +104,11 @@ def _argparser():
                         help='file name of output file')
     return parser
   
-
-if __name__ == '__main__':
+def main():
     parser = _argparser()
     args = parser.parse_args()
     nc_to_gpx(args.ncfile, args.outpath)
+
+
+if __name__ == '__main__':
+    main()
