@@ -97,10 +97,10 @@ def get_fid(ds):
     """
     #parse the title global attribute of the netcdf
     if hasattr(ds, 'title'):
-        result=str(re.findall('[b,B,d, D, p,P]\d{3}', ds.title)[0])
+        result=str(re.findall('[b,B,c,C,p,P]\d{3}', ds.title)[0])
         result=result.lower()
     elif hasattr(ds, 'Title'):
-        result=str(re.findall('[b,B,d, D, p,P]\d{3}', ds.Title)[0])
+        result=str(re.findall('[b,B,c,C,p,P]\d{3}', ds.Title)[0])
         result=result.lower()
     else:
         result=""
@@ -301,11 +301,3 @@ def core_to_pandas(ds):
     #frame with others    
     df.index.tz=None
     return df    
-
-
-    
-
-
-
-
-
