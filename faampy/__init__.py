@@ -1,5 +1,5 @@
 """
-faampy main command which call subcommands
+faampy main command which calls subcommands
 
 The usage is for example
    faampy nc_to_gpx ....
@@ -31,7 +31,9 @@ def command_line():
                ('nc_to_gpx',          'faampy.mapping.nc_to_gpx'),
                ('ncvar_to_kml',       'faampy.mapping.ncvar_to_kml'),
                ('world_map',          'faampy.mapping.world_map'),
-               ('sat_tracker',        'faampy.mapping.sat_tracker'),]
+               ('sat_tracker',        'faampy.mapping.sat_tracker'),
+               ('plt_quicklooks',     'faampy.plotting.quicklooks'),
+               ('flight_summary',     'faampy.core.flight_summary')]
 
     parser = argparse.ArgumentParser(description="faampy",
                                      usage="""faampy <command> [<args>]
