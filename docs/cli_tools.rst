@@ -74,4 +74,11 @@ sat_tracker
    :func: _argparser
    :prog: faampy sat_tracker
    :nodefault:
-   
+
+quicklooks
+~~~~~~~~~~
+.. argparse::
+   :module: faampy.plotting.quicklooks
+   :func: _argparser
+   :prog: faampy quicklooks
+   :nodefault:
