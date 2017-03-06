@@ -16,9 +16,9 @@ import faampy.core.utils
 params = {'legend.fontsize': 10,}
 plt.rcParams.update(params)
 
-#TODO: add xlabel and ylabel
-#TODO: use flagging
-#TODO: deal with parameter input that do not exist in the core faam data set
+# TODO: add xlabel and ylabel
+# TODO: use flagging
+# TODO: deal with parameter input that do not exist in the core faam data set
 
 
 class Timeseries(object):
