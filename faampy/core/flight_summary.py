@@ -1,23 +1,25 @@
-"""
-
+#!/usr/bin/python
+'''
 FlightSummary module for processing the Flight Managers flight summary.
 The class parses the original text file and extract all entries. The module 
-works with both the "old-style" format (HORACE) and the "new-style" (DECADES).
+works with both the "old" (Horace) format and the "new" (DECADES) one.
 
 All event entries are in a list.
+
+
 
 In [1]: import matplotlib.pyplot as plt
 
 In [2]: import netCDF4
 
-In [3]: from faampy.fltsumm.flight_summary import FLight_Summary
+In [3]: import faampy.fltsumm.FlightSummary as flsum
 
 In [4]: fltsummfile='/home/axel/Dropbox/cast2014/fltsums/edited/flight-sum_faam_20140124_r0_b825.csv' 
 In [5]: ncfile='/home/axel/Dropbox/cast2014/b825-jan-24/core_processed/core_faam_20140124_v004_r2_b825.nc'
 
-In [6]: outpath='~'
+In [6]: outpath='/home/axel/'
 
-In [7]: fs=FlightSummary(fltsummfile)
+In [7]: fs=flsum.FlightSummary(fltsummfile)
 
 In [8]: ds=netCDF4.Dataset(ncfile, 'r')
 
@@ -66,7 +68,7 @@ Number of FS Entries: 9
 
 In [12]: 
 
-In [12]: #get the 4th event from the flight summary
+In [12]: #get the 4th event from the 
 
 In [13]: e04=fs.Entries[3]
 
@@ -76,11 +78,11 @@ Start Time: 2014-01-24 23:10:13
 End Time:   2014-01-24 23:28:36
 Comment:    
 
-In [15]: #get the indices that correspond to the netCDF
+In [15]: #get the indeces that correspond to the netCDF
 
 In [16]: e04.set_index(ds)
 
-In [17]: #pull the non deiced temperature data from the netCDF
+In [17]: #pull the non deiced temperature from the netCDF
 
 In [18]: data=ds.variables['TAT_ND_R'][e04.Index,:]
 
@@ -98,9 +100,7 @@ In [23]: fs=flsum.process(fltsummfile, ncfile, outpath)
 
 In [24]: 
 
-"""
-
-
+'''
 
 import os
 import re
@@ -186,18 +186,20 @@ def __one_point_event_as_kml__(self):
 
 class Event(object):
 
-    Start_time, Start_time_48, Stop_time, Stop_time_48, Coords, fmt=None, None, None, None, None, None
+    Start_time, Start_time_48, Stop_time, Stop_time_48, Coords, format=None, None, None, None, None, None
     Name, Start_height, Stop_height, Hdg, Comment='','','','',''
 
     def __init__(self):
         pass
 
     def fix_time(self, ds):
-        if self.fmt == 'decades':
+        if self.format == 'decades':
             basetime=faampy.core.utils.get_base_time(ds)
             td=datetime.datetime.strptime(self.Start_time, '%Y-%m-%d %H:%M:%S')-basetime
+            #self.Start_time_48=datetime.datetime.strptime("%02d:%02d:%02d" % (td.seconds/3600, td.seconds%3600/60, (td.seconds%3600)%60), '%H:%M:%S')
             seconds=td.total_seconds()
             self.Start_time_48="%02d%02d%02d" % (seconds/3600, seconds%3600/60, (seconds%3600)%60)
+            #self.Start_time_48=basetime.strftime('%Y-%m-%d')+' '+self.Start_time.strftime('%H:%M:%S')
             if self.Stop_time:
                 td=datetime.datetime.strptime(self.Stop_time, '%Y-%m-%d %H:%M:%S')-basetime
                 seconds=td.total_seconds()
@@ -207,23 +209,8 @@ class Event(object):
             self.Start_time_48=self.Start_time
             self.Stop_time_48=self.Stop_time
 
-    def fix_vals(self, ds):
-        """
-        If the flight summary has manually be corrected the hdg and pressure
-        altitude values for the event might not be correct.
-        
-        :param ds: FAAM netCDF file
-        """
-        if self.Stop_time:
-            self.Hdg='%i' % (ds.variables['HDG_GIN'][self.Index[0], 0],)        
-            self.Start_height='%.2f' % (ds.variables['PALT_RVS'][self.Index[0], 0]*3.28084/1000.,)
-            self.Stop_height='%.2f' % (ds.variables['PALT_RVS'][self.Index[-1], 0]*3.28084/1000.,)
-        else:
-            self.Hdg='%i' % (ds.variables['HDG_GIN'][self.Index, 0],)        
-            self.Start_height='%.2f' % (ds.variables['PALT_RVS'][self.Index, 0]*3.28084/1000.,)
-               
     def set_index(self, ds):
-        if self.fmt == 'decades':
+        if self.format == 'decades':
             start_time=datetime.datetime.strptime(self.Start_time, '%Y-%m-%d %H:%M:%S').strftime('%H%M%S')
             if self.Stop_time:
                 stop_time=datetime.datetime.strptime(self.Stop_time, '%Y-%m-%d %H:%M:%S').strftime('%H%M%S')
@@ -235,7 +222,7 @@ class Event(object):
                 td=datetime.datetime.strptime(self.Stop_time, '%Y-%m-%d %H:%M:%S')-faampy.core.utils.get_base_time(ds)
                 if td.total_seconds() > 86400:
                     stop_time='%02d' % (int(stop_time[0:2])+24)+stop_time[2:]
-        elif self.fmt == 'horace':
+        elif self.format == 'horace':
             start_time=self.Start_time
             if self.Stop_time:
                 stop_time=self.Stop_time
@@ -271,8 +258,10 @@ class Event(object):
     def as_txt(self):
         fmt="%-6s  %-6s   %-19s %-17s %3s %s"
         vals=[]
+        #vals.append(datetime.datetime.strptime(self.Start_time, '%Y-%m-%d %H:%M:%S').strftime('%H%M%S'))
         vals.append(self.Start_time_48)
         if self.Stop_time:
+            #vals.append(datetime.datetime.strptime(self.Stop_time, '%Y-%m-%d %H:%M:%S').strftime('%H%M%S'))
             vals.append(self.Stop_time_48)
         else:
             vals.append('')
@@ -300,25 +289,18 @@ class Event(object):
 
 
 class FlightSummary(object):
-    """
-    
-    from FlightSummary import FlightSummary
-    fs = FlightSummary(fltsummfile)
+    """from FlightSummary import *
+    fs=FlightSummary(fltsummfile)
 
     """
     
     def __init__(self, fltsumm_file):
-        """
-        :param fltsumm_file: Flight Summary file that will be red in
-        """
-        self.fmt=None
+        self.format=None
         self.fid=None
         self.date=None
         self.basetime=None
         self.filename=fltsumm_file
         self.revision=None
-        self.Location=''
-        self.Project=''
         self.Entries=[]
 
         if not os.path.exists(fltsumm_file):
@@ -333,9 +315,6 @@ class FlightSummary(object):
 
 
     def __read__(self):
-        """
-        Reading in the flight summary file
-        """
         f=open(self.filename, 'r')
         self.txt=f.readlines()
         f.close()
@@ -359,12 +338,13 @@ class FlightSummary(object):
             for row in rows:
                 tbl.append([])
                 for td in row.cssselect("td"):
+                    #tbl[-1].append(unicode(td.text_content()))
                     tbl[-1].append(remove_non_ascii(td.text_content()))
                         
             for line in tbl:
                 if not line:
                     continue
-                #print(line)
+                print(line)
                 e=Event()
                 if self.basetime:
                     e.basetime=self.basetime                
@@ -383,8 +363,8 @@ class FlightSummary(object):
                     e.Comment=line[12]
                 else:
                     e.Comment=''
-                e.fmt='decades'
-                e.fmt='horace'
+                e.format='decades'
+                e.format='horace'
                 self.Entries.append(e)
             self.Entries.sort(key= lambda x: x.Start_time)
             return
@@ -392,10 +372,6 @@ class FlightSummary(object):
         for line in self.txt:
             if not line.strip():
                 continue
-            elif line.startswith('Project'):
-                self.Project=''.join(line.split(':', 1)[1:]).strip()
-            elif line.startswith('Location'):
-                self.Location=''.join(line.split(':', 1)[1:]).strip()
             elif line[0:6].isdigit():
                 e=Event()
                 e.Start_time=line[0:6]
@@ -405,14 +381,15 @@ class FlightSummary(object):
                 tmp=line[37:52].strip()
                 tmp=re.sub('kft', '', tmp).strip()
                 heights=re.findall('[+-]?\d+.\d+', tmp)
-                e.Start_height=heights[0]
+                e.Start_height=heights[0]                
                 if len(heights) > 1:
                     e.Stop_height=heights[1]
                 e.Hdg=line[55:58].strip()
                 e.Comment=line[59:].strip()
-                e.fmt='horace'
+                e.format='horace'
                 self.Entries.append(e)
             elif len(line.split(',')) > 2:                
+                print(line)
                 line=line.split(',')
                 #skip header line
                 if ('Event' in line[0]):
@@ -430,16 +407,11 @@ class FlightSummary(object):
                     e.Comment=line[11]
                 else:
                     e.Comment=''
-                e.fmt='decades'
+                e.format='decades'
                 self.Entries.append(e)
         self.Entries.sort(key= lambda x: x.Start_time)
 
     def as_kml(self, ofile=None, fid='', date=''):
-        """
-        Flight summary in kml format, visible in google-earth
-        :param str fid: Flight id
-        :param str date: flight date
-        """
         kml=''
         header = """<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -478,22 +450,18 @@ class FlightSummary(object):
         return result
 
     def as_txt(self, ofile=None, fid='', date=''):
-        """
-        Format Flight Summary as text file - Horace style
-        
-        :param str fid: Flight id
-        :param str date: flight date
+        """Format Flight Summary as text file
         """
         result="""                     FLIGHT SUMMARY
 Flight No %s
 Date: %s
-Project: %s
-Location: %s
+Project:
+Location:
 
 Start   End
 Time    Time     Event               Height (s)        Hdg Comments
 ----    ----     -----               ----------        --- --------
-""" % (fid, date, self.Project, self.Location)
+""" % (fid, date)
         for e in self.Entries:
             result+=e.as_txt().strip()+'\n'
         if ofile:
@@ -504,8 +472,8 @@ Time    Time     Event               Height (s)        Hdg Comments
 
 
     def as_html(self, ofile=None):
-        """
-        Format Flight Summary as html table        
+        """format Flight Summary as html table
+        
         """
         html='<table border=1>\n'
         row=['Name', 'Start Time', 'Start Height<br>(kft)',  'Stop Time', 'Stop Height<br>(kft)', 'Comment']
@@ -533,6 +501,7 @@ def process(fltsummfile, ncfile, outpath):
     basetime=faampy.core.utils.get_base_time(ds)
     fid=faampy.core.utils.get_fid(ds)
     fs=FlightSummary(fltsummfile)
+    #for i in range(len(fs.Entries)):
     for ent in fs.Entries:
         try:
             ent.fix_time(ds)
@@ -547,8 +516,7 @@ def process(fltsummfile, ncfile, outpath):
     ds.close()
     return fs
 
-
-def main():
+if __name__ == '__main__':
     import argparse
     from argparse import RawTextHelpFormatter
     parser=argparse.ArgumentParser(description=__doc__,
@@ -562,6 +530,3 @@ def main():
     process(args.fltsummfile, args.ncfile, args.outpath)
     sys.stdout.write('Done ...\n')
 
-
-if __name__ == '__main__':
-    main()
