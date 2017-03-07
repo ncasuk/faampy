@@ -1,10 +1,11 @@
 """
 
 Module to create quicklooks from a netCDF using the flight summary
-and a configuration file, which defines the plot layout (quicklook.cfg)
+and a configuration file, that defines the plot layout (quicklook.cfg)
 
 
-The config file should look like this:
+The config file should look like this::
+
 [['BTHEIM_U']]
 [['TSC_BLUU', 'TSC_GRNU', 'TSC_REDU'], ['BSC_BLUU', 'BSC_GRNU', 'BSC_REDU']]
 [['PSAP_LIN'], ['PSAP_LOG'], ['PSAP_FLO', 'PSAP_TRA']]
@@ -12,7 +13,6 @@ The config file should look like this:
 [['NV_TWC_C', 'NV_LWC_C']]
 [['WVSS2R_VMR', 'WVSS2F_VMR']]
 [['PTCH_GIN',], ['TAS', 'TAS_RVSM']]
-
 
 """
 
@@ -36,8 +36,9 @@ from faampy.plotting.map import Map
 
 import seaborn
 
-
 import ast
+
+
 
 def process(fs, ds, outpath, flag=None, no_overwrite=False, config_file=None):
 
@@ -109,7 +110,7 @@ def process(fs, ds, outpath, flag=None, no_overwrite=False, config_file=None):
         try:
             outfile=os.path.join(outpath,  '%s_e%.2i_%s_to_%s_%s.png' %  (fid,  cnt,  e.Start_time,  e.Stop_time,  'map'))
             if os.path.exists(outfile) and no_overwrite == True:
-                stop
+                sys.exit(1)
             m=Map()
             m.setup(ds, [x1, x2])
             m.plot()
@@ -210,9 +211,9 @@ def process(fs, ds, outpath, flag=None, no_overwrite=False, config_file=None):
                     sys.stdout.write('Created ... %s\n' % outfile)
                     fig.savefig(outfile)
                     plt.close(fig)
-                #except:
-                #    outfile=os.path.join(outpath, '%s_e%.2i_%s_to_%s_%s.png' % (fid, cnt, e.Start_time, e.Stop_time, 'skewt'))
-                #    sys.stdout.write('Could not create ... %s\n' % outfile)
+                except:
+                    outfile=os.path.join(outpath, '%s_e%.2i_%s_to_%s_%s.png' % (fid, cnt, e.Start_time, e.Stop_time, 'skewt'))
+                    sys.stdout.write('Could not create ... %s\n' % outfile)
 
 
 def _argparser():
@@ -221,8 +222,8 @@ def _argparser():
     sys.argv.insert(0, 'faampy quicklooks')
     parser = argparse.ArgumentParser(prog = 'faampy quicklooks', description=__doc__,
                                      formatter_class=RawTextHelpFormatter)
-    parser.add_argument('ncfile', action="store", type=str, help='core_faam netCDF')
-    parser.add_argument('fltsummfile', action="store", type=str, help='FAAM Flight Summary file')
+    parser.add_argument('ncfile', action="store", type=str, help='FAAM core netCDF')
+    parser.add_argument('fltsumm', action="store", type=str, help='FAAM Flight Summary file')
     parser.add_argument('outpath', action="store", type=str, help='outpath where all the quicklook figures will be saved')
     parser.add_argument('--config_file', action="store", type=str, help='config file that defines the plots that are produced')
     return parser

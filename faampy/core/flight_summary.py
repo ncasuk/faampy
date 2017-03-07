@@ -516,17 +516,26 @@ def process(fltsummfile, ncfile, outpath):
     ds.close()
     return fs
 
-if __name__ == '__main__':
+
+def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
-    parser=argparse.ArgumentParser(description=__doc__,
-                                   epilog="Report bugs to <axll@faam.ac.uk>.",
+    sys.argv.insert(0, 'faampy flight_summary')
+    parser=argparse.ArgumentParser(prog='faampy flight_summary',
+                                   description=__doc__,
                                    formatter_class=RawTextHelpFormatter)
     parser.add_argument('fltsummfile', action="store", type=str, help='Flight Summary file')
     parser.add_argument('ncfile', action="store", type=str, help='core_faam netCDF')
     parser.add_argument('outpath', action="store", type=str, help='outpath where the newly formatted flight summaries will be saved')
-    args=parser.parse_args()
+    return parser
 
+
+def main():
+    parser = _argparser()
+    args = parser.parse_args()
     process(args.fltsummfile, args.ncfile, args.outpath)
     sys.stdout.write('Done ...\n')
 
+
+if __name__ == '__main__':
+    main()

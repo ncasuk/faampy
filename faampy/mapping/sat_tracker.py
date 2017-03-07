@@ -1,22 +1,24 @@
 #! /usr/bin/env python
 """
-
-Satellite information can be found at:
+More satellite track information can be found at:
   
   http://www.n2yo.com/
 
-Popular satellites:
+Popular platforms:
     
-======== ======  ====== 
-Platform Sensor  ID
-======== ======  ====== 
-Terra    MODIS   25994
-LANDSAT8         39084
-CALIPSO          29108
-======== ======  ====== 
+=========== ======  ====== 
+Platform    Sensor  ID
+=========== ======  ====== 
+CALIPSO             29108
+ISS         CATS    25544
+TERRA       MODIS   25994
+LANDSAT8            39084
+SENTINEL-2A         40697
+SENTINEL-3A         41335
+=========== ======  ====== 
 
 Example::
-    
+
   faampy sat_tracker track --show_map "-38 35 -20 43" 39084 13-02-2017 17-02-2017 60
 
 """
@@ -365,6 +367,7 @@ def main():
             plt.savefig(imgfilename)
             sys.stdout.write('Map saved as: \n  %s\n\n' % (imgfilename,))
             plt.clf()
+
 
 if __name__ == '__main__':
     main()
