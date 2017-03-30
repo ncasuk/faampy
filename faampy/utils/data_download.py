@@ -16,17 +16,17 @@ def dlfile(url, local_zipfile):
     # Open the url
     try:
         f = urllib2.urlopen(url)
-        print "downloading " + url
+        sys.stdout.write("downloading %s" % url)
 
         # Open our local file for writing
         with open(local_zipfile, "wb") as local_file:
             local_file.write(f.read())
 
     # handle errors
-    except urllib2.HTTPError, e:
-        print "HTTP Error:", e.code, url
-    except urllib2.URLError, e:
-        print "URL Error:", e.reason, url
+    except (urllib2.HTTPError, e):
+        print("HTTP Error:", e.code, url)
+    except (urllib2.URLError, e):
+        print("URL Error:", e.reason, url)
     return
 
 

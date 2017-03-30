@@ -46,7 +46,7 @@ def command_line():
     args = parser.parse_args(sys.argv[1:2])
     # check if subcommand is available. If not leave
     if args.command not in zip(*MODULES)[0]:
-        print 'Unrecognized command\n'
+        sys.stdout.write('Unrecognized command\n')
         parser.print_help()
         sys.exit(1)
     else:

@@ -57,7 +57,9 @@ def read_nimrod(pathed_file, quite=True):
 
     file_id=open(pathed_file,"rb")
     record_length,=struct.unpack(">l", file_id.read(4))
-    if record_length != 512: raise "Unexpected record length", record_length
+    if record_length != 512:
+        sys.stdout.write("Unexpected record length: %i" % record_length)
+        sys.exit(1)
 
     gen_ints=array.array("h")
     gen_reals=array.array("f")
@@ -101,7 +103,8 @@ def read_nimrod(pathed_file, quite=True):
 
     record_length,=struct.unpack(">l", file_id.read(4))
     if record_length != array_size*2:
-        raise "Unexpected record length", record_length
+        sys.stdout.write("Unexpected record length: %i" % record_length)
+        sys.exit(1)
 
     data=array.array("h")
     try:

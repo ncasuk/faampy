@@ -128,7 +128,7 @@ def process(path):
             exif_data = get_exif_data(img)
             img.close()
             Lat, Long, Alt, DT = get_lat_lon(exif_data)
-            print '%s: Lat: %s, Long: %s, Alt: %s' % (fullpath, Lat, Long, Alt)
+            sys.stdout.write('%s: Lat: %s, Long: %s, Alt: %s\n' % (fullpath, Lat, Long, Alt))
             if Lat:
                 x, y = Lat, Long
                 point = kml.newpoint(name=filename, coords=[(y,x)])
