@@ -25,11 +25,11 @@ class Timeseries(object):
     """Timeseries plotting class to create matplotlib figures from the FAAM
     core netcdf data files. This is especially useful for creating quick
     overview plots for qa purposes.
-    
+
     Several parameters can be plotted in one axes or axes are stacked vertically.
-    
+
     """
-    
+
     def __init__(self, *args, **kwargs):
         """
 
@@ -38,7 +38,7 @@ class Timeseries(object):
         self.fig = None
         self.x_data = []
         self.y_data = []
-        self.label = []        
+        self.label = []
 
 
     def __get_mask__(self, parname):
@@ -49,8 +49,8 @@ class Timeseries(object):
         mask = np.zeros(self.ds.variables[parname].shape).astype(bool)
         if not parname+'_FLAG' in self.ds.variables.keys():
             return mask
-        
-        flag_data = self.ds.variables[parname+'_FLAG'][:]        
+
+        flag_data = self.ds.variables[parname+'_FLAG'][:]
         for f in self.flag:
             mask[flag_data == f] = False
         mask[self.ds.variables[parname][:] == -9999] = True
@@ -67,7 +67,7 @@ class Timeseries(object):
         #check that all the pars exist in netcdf file
         is_var = lambda var: var.upper() in [i.upper() for i in self.ds.variables.keys()]
         pars = []
-        for l in self.vars:            
+        for l in self.vars:
             pars.append([item for item in l if is_var(item)])
             diff = set(l).difference(pars[-1])
             if diff:
@@ -78,7 +78,7 @@ class Timeseries(object):
         else:
             self.NO_DATA = False
         self.vars = pars
-        
+
         try:
             self.index = faampy.core.utils.data_filter(self.ds, args[0])
         except:
@@ -88,13 +88,13 @@ class Timeseries(object):
             self.flag = args[1]
         except:
             self.flag = [0,1,2,3]
-                        
+
         #for i in range(len(self.vars)):
-        #    self.subplt.append(self.fig.add_subplot(len(self.vars), 1, i+1))    
+        #    self.subplt.append(self.fig.add_subplot(len(self.vars), 1, i+1))
         self.fig, self.axs=plt.subplots(nrows=len(self.vars), sharex=True)
         if len(self.vars) == 1:
-	    self.axs=np.array([self.axs,])
-                    
+            self.axs=np.array([self.axs,])
+
         for i in range(len(self.vars)):
             self.x_data.append([])
             self.y_data.append([])
@@ -118,10 +118,10 @@ class Timeseries(object):
                     #y = self.__set_mask__(y, vars[i][j])
                 #self.y_data[i].append(np.ravel(ds.variables[vars[i][j]][self.index,:]))
                 self.y_data[i].append(y)
-                            
+
     def plot(self):
         for i in range(len(self.vars)):
-            for j in range(len(self.vars[i])):                
+            for j in range(len(self.vars[i])):
                 #ax = self.subplt[i]
                 ax=self.axs[i]
                 #TODO: weird behaviour; there shouldn't be a need to sort the data
@@ -148,32 +148,32 @@ class Timeseries(object):
         x_range=ax.get_xlim()[1]-ax.get_xlim()[0]
         _xlim=(ax.get_xlim()[0]-(x_range/100.)*3,
                ax.get_xlim()[1]+(x_range/100.)*3)
-	ax.set_xlim(_xlim)
+        ax.set_xlim(_xlim)
         for ax in self.axs:
             ax.grid(b='on')
             #TODO
             try:
                 plt.setp(ax.get_xticklabels(), visible=False)
             except:
-                pass         
+                pass
             ax.xaxis.set_major_formatter(xformat)
-            ax.xaxis.set_major_locator(minloc)            
+            ax.xaxis.set_major_locator(minloc)
             if ax.get_xticklabels().__len__() > 6:
-                ax.xaxis.set_major_locator(MaxNLocator(6))                
+                ax.xaxis.set_major_locator(MaxNLocator(6))
             ax.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
             #http://stackoverflow.com/questions/4700614/how-to-put-the-legend-out-of-the-plot
             #box = ax.get_position()
             #ax.set_position([box.x0, box.y0, box.width * 0.90, box.height])
             #ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-            #ax.legend()                                          
+            #ax.legend()
             leg=ax.legend()
             leg.get_frame().set_alpha(0.5)
-        plt.setp(ax.get_xticklabels(), visible=True)        
+        plt.setp(ax.get_xticklabels(), visible=True)
         ax.set_xlabel('utc')
-    
+
     def create_filename(self):
         pass
-    
+
     def get_figure(self):
         return(self.fig)
 

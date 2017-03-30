@@ -81,7 +81,7 @@ def read_nimrod(pathed_file, quite=True):
 
     record_length,=struct.unpack(">l", file_id.read(4))
     if record_length != 512:
-        raise "Unexpected record length", record_length
+        raise ("Unexpected record length", record_length)
 
     chars=characters.tostring()
 
@@ -92,10 +92,11 @@ def read_nimrod(pathed_file, quite=True):
         sys.stdout.write("Data source is %s\n" % chars[8:32])
         sys.stdout.write("Parameter is %s\n" % chars[32:55])
         for i in range(gen_ints[22]):
-            print i+108, spec_ints[i]
+            print (i+108, spec_ints[i])
         for i in gen_reals:
             print(i)
-        for i in spec_reals: print(i)
+        for i in spec_reals:
+            print(i)
     #Read data
     cols=gen_ints[15]
     rows=gen_ints[16]
@@ -103,14 +104,14 @@ def read_nimrod(pathed_file, quite=True):
 
     record_length,=struct.unpack(">l", file_id.read(4))
     if record_length != array_size*2:
-        sys.stdout.write("Unexpected record length: %i" % record_length)
-        sys.exit(1)
+        raise ("Unexpected record length", record_length)
 
     data=array.array("h")
     try:
         data.read(file_id, array_size)
         record_length,=struct.unpack(">l", file_id.read(4))
-        if record_length != array_size*2: raise "Unexpected record length", record_length
+        if record_length != array_size*2:
+            raise ("Unexpected record length", record_length)
         data.byteswap()
     except:
         sys.stdout.write("Read failed\n")

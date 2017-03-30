@@ -1,21 +1,21 @@
 #! /usr/bin/env python
 """
 More satellite track information can be found at:
-  
+
   http://www.n2yo.com/
 
 Popular platforms:
-    
-=========== ======  ====== 
+
+=========== ======  ======
 Platform    Sensor  ID
-=========== ======  ====== 
+=========== ======  ======
 CALIPSO             29108
 ISS         CATS    25544
 TERRA       MODIS   25994
 LANDSAT8            39084
 SENTINEL-2A         40697
 SENTINEL-3A         41335
-=========== ======  ====== 
+=========== ======  ======
 
 Example::
 
@@ -42,9 +42,9 @@ from mpl_toolkits.basemap import Basemap
 def __parse_time__(date_string):
     fmt='%d-%m-%YT%H:%M:%S'
     time_datetime = None
-    try:      
-        time_datetime = datetime.datetime.strptime(date_string.strip(), fmt)        
-    except:        
+    try:
+        time_datetime = datetime.datetime.strptime(date_string.strip(), fmt)
+    except:
         time_datetime = datetime.datetime.strptime(date_string.strip()+'T00:00:00', fmt)
     finally:
         pass
@@ -60,23 +60,23 @@ def mkdir_p(path):
             pass
         else: raise
 
-      
+
 class TLE(dict):
- 
+
     def __init__(self, no_internet=False):
         self.urls = ['http://www.celestrak.com/NORAD/elements/science.txt',
                      'http://www.celestrak.com/NORAD/elements/resource.txt',
                      'http://www.celestrak.com/NORAD/elements/weather.txt',
-                     'http://www.celestrak.com/NORAD/elements/stations.txt']    
-        
+                     'http://www.celestrak.com/NORAD/elements/stations.txt']
+
         self.tle_dir=os.path.join(os.getenv('HOME'), '.faampy', 'tle')
         #create hidden tle directory in $HOME if it does not exist
         if not os.path.exists(self.tle_dir):
             mkdir_p(self.tle_dir)
-        self.read_tle(no_internet)            
-                               
+        self.read_tle(no_internet)
+
     def __read_tle_from_file__(self):
-        """reads the TLE information from locally stored files in $HOME/.tle"""       
+        """reads the TLE information from locally stored files in $HOME/.tle"""
         self.tle_txt = ''
         #get latest directory
         d=os.listdir(self.tle_dir)[-1]
@@ -102,7 +102,7 @@ class TLE(dict):
             out.write(c)
             out.close()
         self.tle_txt+='\r\n'.join(content)
-            
+
     def read_tle(self, no_internet):
         """reads the tle information either from a url or a text file
            first of all the script tries to get the most recent info from an url.
@@ -119,23 +119,23 @@ class TLE(dict):
                 self.__parse_tle__()
             except:
                 pass
-                    
+
     def __parse_tle__( self ):
         """parse and feed everything in a dictionary"""
         #split tle at linebreaks
-        tle_txt = self.tle_txt.split('\r\n')    
-        #loop over tle_txt and put everything in a dictionary 
+        tle_txt = self.tle_txt.split('\r\n')
+        #loop over tle_txt and put everything in a dictionary
         for i in range(len(tle_txt)):
             if tle_txt[i].startswith('1'):
                 key=tle_txt[i].split()[1].strip('U')
                 #every tle entry is three lines long
                 val=tle_txt[i-1:i+2]
                 self[key]=val
-       
+
     def get(self, sat_id):
-        """get the tle for a specific satellite"""     
+        """get the tle for a specific satellite"""
         sat_tle=self[sat_id]
-        result=ephem.readtle(sat_tle[0], sat_tle[1], sat_tle[2])    
+        result=ephem.readtle(sat_tle[0], sat_tle[1], sat_tle[2])
         return result
 
     def __str__(self):
@@ -143,12 +143,12 @@ class TLE(dict):
         table=[(self[k][0], k) for k in self.keys()]
         table.sort()
         for i in table:
-	    output+='%s %s\n' % i
-	return output
+            output+='%s %s\n' % i
+        return output
 
 
 class Map(object):
-  
+
     def __init__(self, llcrnrlon=-180,llcrnrlat=-80,urcrnrlon=180,urcrnrlat=80):
         lat_0=(llcrnrlat+urcrnrlat)/2.
         lon_0=(llcrnrlon+urcrnrlon)/2.
@@ -159,7 +159,7 @@ class Map(object):
             if float(lat_range)/float(lat_interval) >= 5.0: break
         for lon_interval in [30,15,10,5,3,2,1]:
             if float(lon_range)/float(lon_interval) >= 5.0: break
-        
+
         self.m.drawmeridians(range(-180, 180, lon_interval), labels=[1,0,0,1], fontsize=12)
         self.m.drawparallels(range( -90,  90, lat_interval), labels=[1,1,0,1], fontsize=12)
         self.m.drawcoastlines()
@@ -181,7 +181,7 @@ class Map(object):
                 _lons.append(lons[i])
                 _lats.append(np.nan)
                 _lats.append(lats[i])
-            elif ((lons[i] < 0) and (lons[i-1] > 0) and (np.abs(lons[i] > 120))):                
+            elif ((lons[i] < 0) and (lons[i-1] > 0) and (np.abs(lons[i] > 120))):
                 _label.append(None)
                 _label.append(label[i])
                 _lons.append(np.nan)
@@ -197,7 +197,7 @@ class Map(object):
         lats = _lats[:]
 
         x, y=self.m(lons, lats)
-        x = np.array(x)        
+        x = np.array(x)
         ix = np.where(~np.isfinite(x))[0]
         x = list(x)
         if len(ix) > 0:
@@ -211,7 +211,7 @@ class Map(object):
         self.m.plot(x, y, 'o', color='orange')
         for i in range(len(label)):
             if label[i]:
-                plt.annotate(label[i], xy=(x[i], y[i]), fontsize=8)        
+                plt.annotate(label[i], xy=(x[i], y[i]), fontsize=8)
         plt.annotate('Created: %sZ' % (datetime.datetime.utcnow().strftime('%d-%m-%Y %H:%M:%S')), xy=(0.02, 0.02), xycoords='figure fraction', fontsize=8)
 
 
@@ -230,13 +230,13 @@ class SatTrack(object):
         tab.set_deco(tab.HEADER | tab.VLINES | tab.BORDER)
         tab.set_cols_align(['r','r','r'])
         tab.set_cols_width([19, 7, 6])
-        tab.set_precision(2)    
-        tab.add_rows(self.trkpts)    
+        tab.set_precision(2)
+        tab.add_rows(self.trkpts)
         tab.header(['time (utc)',  'lon', 'lat'])
         return tab
 
     def get_tles(self):
-        self.tle_dict=TLE()        
+        self.tle_dict=TLE()
 
     def calc(self):
         #tle=tles[satellite_name]
@@ -245,15 +245,15 @@ class SatTrack(object):
         end_time=self.end_time
         timestep=self.timestep
 
-        self.sat=ephem.readtle(self.tle_dict[sat_id][0], 
+        self.sat=ephem.readtle(self.tle_dict[sat_id][0],
                                self.tle_dict[sat_id][1],
-                               self.tle_dict[sat_id][2]) 
+                               self.tle_dict[sat_id][2])
 
- 
+
         start_time_datetime=__parse_time__(start_time)
         end_time_datetime=__parse_time__(end_time)
         timestamp=start_time_datetime
-               
+
         while True:
             if timestamp > end_time_datetime:
                 break
@@ -262,7 +262,7 @@ class SatTrack(object):
             self.trkpts.append([timestamp.strftime('%d-%m-%YT%H:%M:%S'),
                                 math.degrees(self.sat.sublong),
                                 math.degrees(self.sat.sublat)])
-            timestamp+=datetime.timedelta(seconds=timestep)        
+            timestamp+=datetime.timedelta(seconds=timestep)
 
     def __str__(self):
         output=''
@@ -302,7 +302,7 @@ def _argparser():
     parser_track.add_argument('timestep',
                         action='store',
                         type=int,
-                        help="Timestep in seconds")    
+                        help="Timestep in seconds")
     parser_track.add_argument('-w', '--write_to_file', action="store_true", required=False, default=False,
                         help='If flag is set the output is stored to a file in the $HOME directory. Default: False')
     parser_track.add_argument('-m', '--show_map', nargs='?', required=False, const='-180 -80 180 80',
@@ -316,41 +316,41 @@ def main():
     FINISHED=False
     #print(args)
     tle_dict=TLE()
-    
+
     try:
         if args.sat_name:
             if args.sat_name == 'all':
-	         print(tle_dict)
+                print(tle_dict)
 	    else:
 	        for k in tle_dict.keys():
-	            if args.sat_name.lower() in tle_dict[k][0].lower():		  
-		        print('%s %s\n' % (tle_dict[k][0], k))        
+	            if args.sat_name.lower() in tle_dict[k][0].lower():
+		        print('%s %s\n' % (tle_dict[k][0], k))
         FINISHED=True
     except:
         pass
-    
+
     # TODO: there must be a better way to get out
     if FINISHED:
         sys.exit()
-           
+
     for s in args.sat_id:
         s = SatTrack(s, args.start_time, args.end_time, args.timestep)
         s.tle_dict = tle_dict
         s.calc()
         print(s)
-    
+
         sat_name = s.sat.name
         sat_name = re.sub(' ', '_', s.sat.name)
         sat_name = re.sub('\(', '', s.sat.name)
         sat_name = re.sub('\)', '', s.sat.name)
-    
+
         if args.write_to_file == True:
             ofname = os.path.join(os.environ['HOME'], '%s_%s.txt' % (sat_name.lower(), __parse_time__(args.start_time).strftime('%Y%m%d_%H%M%S')))
             outfile = open(ofname, 'w')
             outfile.write(s.__str__())
             outfile.close()
-        if args.show_map:            
-            llcrnrlon, llcrnrlat, urcrnrlon, urcrnrlat = args.show_map.split()  
+        if args.show_map:
+            llcrnrlon, llcrnrlat, urcrnrlon, urcrnrlat = args.show_map.split()
             m = Map(llcrnrlon=float(llcrnrlon),
                     llcrnrlat=float(llcrnrlat),
                     urcrnrlon=float(urcrnrlon),
