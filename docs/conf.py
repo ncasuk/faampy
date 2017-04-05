@@ -24,8 +24,8 @@ sys.path.insert(0, os.path.abspath('..'))
 
 
 MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'matplotlib.pyplot', 'numpy.ma', 'matplotlib.ticker',
-                'matplotlib.dates', 'matplotlib.cbook', 
-                'matplotlib.rcParams', 'mpl_toolkits.basemap', 'pandas', 'iris', 'netCDF4',
+                'matplotlib.dates', 'matplotlib.cbook', 'PIL',
+                'matplotlib.rcParams', 'mpl_toolkits.basemap', 'mapnik', 'pandas', 'iris', 'netCDF4',
                 'osgeo', 'haversine', 'pyspatialite', 'pyspatialite.dbapi2',
                 'osgeo.ogr', 'exifread', 'gdal', 'simplekml', 'rdp', 'seaborn']
 

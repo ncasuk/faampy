@@ -18,6 +18,7 @@ Installation
 
 The installation of the module is done in the usual way::
 
+    git clone https://github.com/ncasuk/faampy.git
     python setup.py build
     sudo python setup.py install
 
