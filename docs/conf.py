@@ -24,10 +24,10 @@ sys.path.insert(0, os.path.abspath('..'))
 
 
 MOCK_MODULES = ['numpy', 'scipy', 'matplotlib', 'matplotlib.pyplot', 'numpy.ma', 'matplotlib.ticker',
-                'matplotlib.dates', 'matplotlib.cbook', 'PIL', 'ephem', 'Basemap', 'json', 'urllib2', 'math',
-                'matplotlib.rcParams', 'mpl_toolkits', 'mpl_toolkits.basemap', 'mapnik', 'pandas', 'iris', 'netCDF4',
-                'osgeo', 'haversine', 'pyspatialite', 'pyspatialite.dbapi2',
-                'osgeo.ogr', 'gdal', 'simplekml', 'rdp', 'seaborn']
+                'matplotlib.image', 'matplotlib.dates', 'matplotlib.cbook', 'PIL', 'PIL.Image', 'PIL.ExfiTags', 'ephem',
+                'mpl_toolkits.basemap.pyproj', 'Basemap', 'json', 'urllib2', 'math', 'mpl_toolkits', 'mpl_toolkits.basemap', 'mapnik',
+                'pandas', 'iris', 'netCDF4', 'osgeo', 'haversine', 'pyspatialite', 'pyspatialite.dbapi2',
+                'osgeo.ogr', 'gdal', 'simplekml', 'rdp', 'seaborn', '_geoslib', 'proj']
 
 
 #for mod_name in MOCK_MODULES:
