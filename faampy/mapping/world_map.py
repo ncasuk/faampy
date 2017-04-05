@@ -44,7 +44,7 @@ PLOT_AIRPORTS=True
 
 RELOAD_FLIGHT_TRACKS=False
 
-#BoundaryBox
+# BoundaryBox
 LLCRNRLON=-180.0
 LLCRNRLAT=-90
 URCRNRLON=180.0
@@ -62,16 +62,19 @@ din_dict = {'a0': [(46.8, 33.1), int(12.0*1.41**4)],
             'a4': [(11.7, 8.27), int(12.0*1.41**0)]}
 
 
-mpl.rc('text.usetex', True)
-mpl.rc('figure.figsize', din_dict[str.lower(PAPER_SIZE)][0])
-mpl.rc('font.size', din_dict[str.lower(PAPER_SIZE)][1])
+#mpl.rc({'text.usetex': True})
+#mpl.rc({'figure.figsize': din_dict[str.lower(PAPER_SIZE)][0]})
+#mpl.rc({'font.size': din_dict[str.lower(PAPER_SIZE)][1]})
 
 
 #http://gis.stackexchange.com/questions/99672/mapnik-rendering-with-osm-carto-style#
 
 
 def create_background_img(imgx, imgy, outfile):
-    import mapnik
+    try:
+        import mapnik
+    except:
+        return
     robin=mapnik.Projection('+proj=robin +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs ')
     #  Change this to the bounding box you want
     longlat = mapnik.Projection('+init=epsg:4326')
@@ -120,7 +123,7 @@ def create_background_img(imgx, imgy, outfile):
     #mapnik.render_to_file(m, "image.svg")
 
 
-def get_ax_size():
+def get_ax_size(DPI):
     ax=plt.gca()
     fig=plt.gcf()
     bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
@@ -131,7 +134,7 @@ def get_ax_size():
 
 
 def plot_airports(m):
-    airports_file = os.path.join(faampy.__path__[0], '..', 'files', 'other', 'airports.txt')
+    airports_file = os.path.join(faampy.FAAMPY_DATA_PATH, 'other', 'airports.txt')
     data=np.genfromtxt(airports_file, delimiter=',', dtype=None, names='id,lats,lons')
     x, y=m(data['lons'], data['lats'])
     # the zorder setting makes sure that the airport locations are plotted on top of the flight tracks
@@ -143,7 +146,7 @@ def plot_flight_tracks(m, x, y):
 
 
 def get_flight_tracks(m):
-    db = FAAM_Spatial_DB(os.path.join(os.environ['HOME'], 'db', 'faam_spatial_db.sqlite'))
+    db = FAAM_Spatial_DB(os.path.join(faampy.FAAMPY_DATA_PATH, 'db', 'faam_spatial_db.sqlite'))
     sql = """SELECT fid from flight_tracks;"""
     cur = db.conn.cursor()
     cur.execute(sql)
@@ -182,34 +185,52 @@ def get_flight_tracks(m):
 def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
-    sys.argv.insert(0, 'faampy world_map')
+    #sys.argv.insert(0, 'faampy world_map')
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('--din', action="store", type=str, help='Paper size', default='a4')
     parser.add_argument('-o', '--outpath', action="store", type=str, required=False,
                         default=os.environ['HOME'], help='Directory where the images will be stored. Default: $HOME.')
-    parser.add_argument('--dpi', action="store_true", required=False, default='300',
+    parser.add_argument('--dpi', action="store", type=int, required=False, default=300,
                         help='resolution dot per inch')
     parser.add_argument('--map_background', action="store_true", required=False, default=True,
                         help='whether background map is added or not')
     return parser
 
 
+def get_image_filename(width, height):
+    # find the most suitable image
+    img_filenames = []    
+    _tmp = os.listdir(BACKGROUND_IMAGE_PATH)
+    for t in _tmp:
+        if t.startswith('world_osm_'):
+            img_filenames.append(t)
+    img_widths = [float(i.split('_')[-1][:-4].split('x')[0]) for i in img_filenames]
+    img_heights = [float(i.split('_')[-1][:-4].split('x')[1]) for i in img_filenames]
+    ratio = [abs(((w*h)/(width*height))-1.) for w, h in zip(img_widths, img_heights)]    
+    return img_filenames[ratio.index(min(ratio))]
+
+    
 def main():
     parser = _argparser()
     args = parser.parse_args()
-        
+    #print(args)    
+    
+    mpl.rcParams['text.usetex'] = True
+    #mpl.rc({'figure.figsize': din_dict[str.lower(args.din)][0]})
+    mpl.rcParams['figure.figsize'] = din_dict[str.lower(args.din)][0]
+    #mpl.rc({'font.size': din_dict[str.lower(args.din)][1]})
+    mpl.rcParams['font.size'] = din_dict[str.lower(args.din)][1]
     m = Basemap(projection='robin', lon_0=0, resolution='c')
     
-    m.drawcoastlines(linewidth=0,zorder=0)
+    m.drawcoastlines(linewidth=0, zorder=0)
     plt.tight_layout()
     
     #Dodgy way to get the correct size for the mapnik osm image
-    plt.savefig(os.path.join(tempfile.mkdtemp()+'.svg'), dpi=args.dpi)
-    width, height=get_ax_size()
-    
+    plt.savefig(os.path.join(tempfile.mktemp(suffix='.svg')), dpi=args.dpi)
+    width, height=get_ax_size(args.dpi)
     #Determine size for the OSM background image in Robinson projection
-    sys.stdout.write('Size: %i x %i\n' % get_ax_size())
+    sys.stdout.write('Size: %i x %i\n' % (width, height))
     
     #Fix empty areas for the OSM background image
     ocean_color=tuple([rgb/255. for rgb in (180,209,206)])
@@ -226,12 +247,15 @@ def main():
     
     if args.map_background:        
         # TODO
-        BACKGROUND_IMAGE_FILENAME=os.path.join(BACKGROUND_IMAGE_PATH, 'world_osm_54030_%ix%i.png' % (width, height))
+        #BACKGROUND_IMAGE_FILENAME=os.path.join(BACKGROUND_IMAGE_PATH, 'world_osm_54030_%ix%i.png' % (width, height))
+        BACKGROUND_IMAGE_FILENAME = os.path.join(BACKGROUND_IMAGE_PATH, get_image_filename(width, height))
         print(BACKGROUND_IMAGE_FILENAME)
         if (not os.path.exists(BACKGROUND_IMAGE_FILENAME) or BACKGROUND_IMAGE_OVERWRITE):
             create_background_img(width, height, BACKGROUND_IMAGE_FILENAME)
         img=Image.open(BACKGROUND_IMAGE_FILENAME)
-        m.imshow(img, origin='upper')
+        _filter = Image.ANTIALIAS
+        rimg = img.resize((width, height), _filter)
+        m.imshow(rimg, origin='upper')
         #m.drawcoastlines() #uncomment this for testing purposes, to see if image fits
     else:
         m.drawcoastlines()
