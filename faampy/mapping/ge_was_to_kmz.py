@@ -180,9 +180,9 @@ def _argparser():
     sys.argv.insert(0, 'faampy ge_was_to_kmz')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('was_log_file', action="store", type=str,
-                        help='Input WAS log file or folder which contains log files.')
+                        help='Input WAS log file or folder which contains log files')
     parser.add_argument('ncfile', action="store", type=str,
-                       help='input netCDF-file or path to netcdf files.')
+                       help='input netCDF-file or path to netcdf files')
     parser.add_argument('outpath', action="store", type=str,
                         help='outpath for kmz file')
     return parser
@@ -190,7 +190,7 @@ def _argparser():
 
 def main():
     parser = _argparser()
-    args = parser.parse_args()    
+    args = parser.parse_args()
     if os.path.isdir(args.was_log_file):
         tmp = os.listdir(args.was_log_file)
         new_list = []

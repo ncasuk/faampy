@@ -133,24 +133,24 @@ class Profile(object):
         y_range=ax.get_ylim()[1]-ax.get_ylim()[0]
         _ylim=(ax.get_ylim()[0]-(y_range/100.)*3,
                ax.get_ylim()[1]+(y_range/100.)*3)
-    set_ylim(_ylim)
-    for ax in self.axs:
-        ax.grid(b='on')
-        plt.setp(ax.get_yticklabels(), visible=False)
-        #http://stackoverflow.com/questions/4700614/how-to-put-the-legend-out-of-the-plot
-        #box = ax.get_position()
-        #ax.set_position([box.x0, box.y0 + box.height * 0.2, box.width, box.height * 0.8])
-        #ax.set_position([box.x0, box.y0, box.width, box.height * 0.8])
-        #ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12))
-        leg=ax.legend()
-        leg.get_frame().set_alpha(0.5)
-        if ax.get_xticklabels().__len__() > 5:
-            ax.xaxis.set_major_locator(MaxNLocator(5))
-            ax.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
-            #set y-axis lower limit to zero
-            cur_ylim = ax.get_ylim()
-            if cur_ylim[0] < 0:
-                ax.set_ylim((0, cur_ylim[1]))
+        ax.set_ylim(_ylim)
+        for ax in self.axs:
+            ax.grid(b='on')
+            plt.setp(ax.get_yticklabels(), visible=False)
+            #http://stackoverflow.com/questions/4700614/how-to-put-the-legend-out-of-the-plot
+            #box = ax.get_position()
+            #ax.set_position([box.x0, box.y0 + box.height * 0.2, box.width, box.height * 0.8])
+            #ax.set_position([box.x0, box.y0, box.width, box.height * 0.8])
+            #ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.12))
+            leg=ax.legend()
+            leg.get_frame().set_alpha(0.5)
+            if ax.get_xticklabels().__len__() > 5:
+                ax.xaxis.set_major_locator(MaxNLocator(5))
+                ax.yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
+                #set y-axis lower limit to zero
+                cur_ylim = ax.get_ylim()
+                if cur_ylim[0] < 0:
+                    ax.set_ylim((0, cur_ylim[1]))
 
         plt.setp((self.axs[0].get_yticklabels()), visible=True)
         (self.axs[0]).set_ylabel('alt (m)')

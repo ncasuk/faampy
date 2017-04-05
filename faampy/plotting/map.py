@@ -24,9 +24,12 @@ class Map(object):
         
         step = 15
         self.ft = {}
-        self.ft['lon'] = ds.variables['LON_GIN'][:,0].ravel()[::step]
-        self.ft['lat'] = ds.variables['LAT_GIN'][:,0].ravel()[::step]
-        
+        if len(ds.variables['LON_GIN'][:].shape) == 2:
+            self.ft['lon'] = ds.variables['LON_GIN'][:,0].ravel()[::step]
+            self.ft['lat'] = ds.variables['LAT_GIN'][:,0].ravel()[::step]
+        else:
+            self.ft['lon'] = ds.variables['LON_GIN'][:].ravel()[::step]
+            self.ft['lat'] = ds.variables['LAT_GIN'][:].ravel()[::step]
         #self.ft.secs = [(x - self.ft.BaseTime).seconds for x in self.ft.time]
         self.ft['secs'] = ds.variables['Time'][:][::step]
 

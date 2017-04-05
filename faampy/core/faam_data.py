@@ -282,15 +282,16 @@ class FAAM_Dataset(object):
             # Fix and oddity where the variables was named altitude
             if var_name == 'altitude':
                 self.variables['ALT_GIN'] = self.ds.variables[var_name]
-            # Make sure that time variable is always called Time and not TIME or time
+            # Make sure that time variable is always
+            # called Time and not TIME or time
             elif var_name.lower() == 'time':
                 self.variables['Time'] = self.ds.variables[var_name]
             elif var_name.startswith('PARA'):
-                self.variables[translate[var_name]]=self.ds.variables[var_name]
+                self.variables[translate[var_name]] = self.ds.variables[var_name]
                 nan_ix = np.isnan(self.variables[translate[var_name]])
                 self.variables[translate[var_name]][:][nan_ix] = -9999.0
             else:
-                self.variables[var_name]=self.ds.variables[var_name]
+                self.variables[var_name] = self.ds.variables[var_name]
                 nan_ix = np.isnan(self.variables[var_name])
                 self.variables[var_name][:][nan_ix] = -9999.
             # make sure that there are no nan's in the data
@@ -513,23 +514,33 @@ class FAAM_Dataset(object):
         """
         self.ds.close()
 
-    def write(self, outfilename, v_name_list=[], as_1Hz=True):
+    def write(self, outfilename, v_name_list=[], as_1Hz=True, clobber=False):
         """
         Writing the dataset out as netCDF
 
         :param outfilename: path for the new netCDF
+        :type outfilename: str
         :param v_name_list: list of variables names that should be written. By
           default all variables are added to the netCDF
-        :param boolean as_1Hz: Writes only 1Hz data out. If the variable
+        :type v_name_list: list  
+        :param as_1Hz: Writes only 1Hz data out. If the variable
           is avaiable in higher frequency only the first value within the
           second is used rather than the average from the number of data
-          points.
+          points
+        :type as_1Hz: boolean
+        :param clobber: Overwrites the files if it exists  
+        :type clobber: boolean
         """
 
-        if os.path.exists(outfilename):
-            sys.stdout.write('File exists ... Leaving ...\n')
-            return
-        dsout = netCDF4.Dataset(outfilename, 'w')
+        if os.path.exists(outfilename) :
+            if not clobber:
+                sys.stdout.write('File exists ... Leaving ...\n')
+                return
+            else:
+                sys.stdout.write('File exists ... Will overwrite it ...\n')
+
+        # create the netCDF4 output dataset        
+        dsout = netCDF4.Dataset(outfilename, 'w', clobber=clobber)
 
         # Write the global attributes
         for k, v in self.ncattr.items():

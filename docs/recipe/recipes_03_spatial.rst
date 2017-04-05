@@ -1,7 +1,7 @@
 
 
-Recipes - Spatial
-=================
+Recipe - Spatial Analysis
+=========================
 
 FAAM core data are stored as netCDF and come with *Time* dimension. However, since the FAAM aircraft is a moving plaform location is obviously also an important dimension and spatial queries of the FAAM data can add useful functionality. To provide this feature the FAAM flight tracks are inserted as *linestring* into a database with spatial capabilities. Such a database allows queries like:
 
@@ -33,7 +33,7 @@ For the below examples python is our tool of choice, which has all the necessary
 Imports and DB connection
 -------------------------
 
-For the examples below to work we need to import some common modules.
+For the examples below to work we need to import some common modules and connect to the database.
 
 .. code-block:: python
 
@@ -63,7 +63,7 @@ Just get some basic information from the database.
 
 .. code-block:: python
 
-   print 'Some DB info'
+   print('Some DB info')
    
    # Count how many records are in the DB
    sql="""SELECT COUNT(*) FROM flight_tracks;"""
@@ -71,7 +71,7 @@ Just get some basic information from the database.
    cur.execute(sql)
    cnt = cur.fetchone()[0]
    
-   print 'Number of flights in the DB: %i' % (cnt,)
+   print('Number of flights in the DB: %i' % (cnt,))
 
    # Get all fids that are in the DB
    sql = """SELECT fid FROM flight_tracks ORDER BY fid;"""
@@ -82,8 +82,8 @@ Just get some basic information from the database.
    all_fids = set(['b%0.3i' % i for i in range(int(LATEST_FID[1:]))])
    missing_fids = sorted(all_fids.difference(fids))
    
-   print 'Number Missing flights: %i' % (len(missing_fids),) 
-   print 'Missing flights ids: %s' % (','.join(missing_fids),)
+   print('Number Missing flights: %i' % (len(missing_fids),))
+   print('Missing flights ids: %s' % (','.join(missing_fids),))
 
 
 Example: Find flights that go over the North Sea
@@ -117,8 +117,8 @@ can send to the spatialite DB
    cur.execute(sql)                             # execute
    fids = [i[0] for i in cur.fetchall()]        # flatten the result
    
-   print 'Number of flights that intersect the North Sea: %i' % (len(fids),)
-   print 'List flights that intersect the North Sea: %s\n' % (','.join(fids),)
+   print('Number of flights that intersect the North Sea: %i' % (len(fids),))
+   print('List flights that intersect the North Sea: %s\n' % (','.join(fids),))
       
 Now that we have all the fids that intersected the North Sea, we want
 to look at them using google-earth. Spatialite has the capability of
@@ -167,7 +167,7 @@ using the *GreatCircleLength* function.
    cur = db.conn.cursor()                       # connect
    cur.execute(sql)                             # execute
    length = cur.fetchone()[0]/1000.
-   print 'Flight %s was %.2f km long.' % (fid, length)
+   print('Flight %s was %.2f km long.' % (fid, length))
    
    
 Example: Get all flights when the ARA climbed above a certain altitude
@@ -184,7 +184,7 @@ the fid in the result list if that's the case
 .. code-block:: python
 
    MAX_ALT = 11000
-   print 'TASK: Finding flights exceeding %i m altitude' % (int(MAX_ALT,))
+   print('TASK: Finding flights exceeding %i m altitude' % (int(MAX_ALT,)))
    sql = """SELECT fid, AsGeoJSON(the_geom) from flight_tracks;"""
    cur = db.conn.cursor()                       # connect
    cur.execute(sql)                             # execute
@@ -199,8 +199,8 @@ the fid in the result list if that's the case
        fid_max_alt_list.append((fid, alt_max))
    
    fids = sorted([i[0] for i in fid_max_alt_list if i[1] > MAX_ALT])
-   print 'N fids with gps altitude > %i: %i' % (int(MAX_ALT), len(fids),)
-   print 'List of flight ids: %s\n' % (','.join(fids),)
+   print('N fids with gps altitude > %i: %i' % (int(MAX_ALT), len(fids),))
+   print('List of flight ids: %s\n' % (','.join(fids),))
 
 
 Example: Get all flights that took off from Cranfield
@@ -230,7 +230,7 @@ This is the code to get all the flights from the database.
         
 .. code-block:: python   
 
-   print 'TASK: Finding flights that took off in Cranfield in every year'
+   print('TASK: Finding flights that took off in Cranfield in every year')
    Cranfield_Coords = (52.072222, -0.616667)    # Cranfield Airport coordinates    
    # in m; the distance is rather large to cover flights
    # when the GIN didn't work straight away

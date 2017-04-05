@@ -29,11 +29,11 @@ def command_line():
                ('ge_photo_album',     'faampy.mapping.ge_photo_album'),
                ('ge_was_to_kmz',      'faampy.mapping.ge_was_to_kmz'),
                ('nc_to_gpx',          'faampy.mapping.nc_to_gpx'),
-               ('ncvar_to_kml',       'faampy.mapping.ncvar_to_kml'),
+               ('ge_ncvar_to_kml',    'faampy.mapping.ge_ncvar_to_kml'),
                ('world_map',          'faampy.mapping.world_map'),
-               ('sat_tracker',        'faampy.mapping.sat_tracker'),               
+               ('sat_tracker',        'faampy.mapping.sat_tracker'),
                ('flight_summary',     'faampy.core.flight_summary'),
-               ('plt_quicklooks',     'faampy.plotting.quicklooks'),]
+               ('plt_quicklooks',     'faampy.plotting.quicklooks')]
 
     parser = argparse.ArgumentParser(description="faampy",
                                      usage="""faampy <command> [<args>]

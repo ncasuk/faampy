@@ -6,16 +6,16 @@ More satellite track information can be found at:
 
 Popular platforms:
 
-=========== ======  ======
-Platform    Sensor  ID
-=========== ======  ======
-CALIPSO             29108
-ISS         CATS    25544
-TERRA       MODIS   25994
-LANDSAT8            39084
-SENTINEL-2A         40697
-SENTINEL-3A         41335
-=========== ======  ======
+  =========== ======  ======
+  Platform    Sensor  ID
+  =========== ======  ======
+  CALIPSO             29108
+  ISS         CATS    25544
+  TERRA       MODIS   25994
+  LANDSAT8            39084
+  SENTINEL-2A         40697
+  SENTINEL-3A         41335
+  =========== ======  ======
 
 Example::
 
@@ -284,8 +284,10 @@ obs.lon='-23.4839'
 
 def _argparser():
     import argparse
+    from argparse import RawTextHelpFormatter
     sys.argv.insert(0, 'faampy sat_tracker')
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=RawTextHelpFormatter)
     subparsers = parser.add_subparsers(
         title='subcommands', description='valid subcommands',
         help='additional help')
@@ -294,11 +296,11 @@ def _argparser():
                         help='shows list of available satellites and their IDs')
     parser_track=subparsers.add_parser('track')
     parser_track.add_argument('sat_id', nargs="*", action='store', type=str,
-                        help="Satellite ID(s)")
+                        help="Satellite ID(s). If more than one satellite track should be calculated the ids should be separated by commas ")
     parser_track.add_argument('start_time', action='store', type=str,
-                        help="date in the format dd-mm-YYYY or dd-mm-YYYYTHH:MM:SS")
+                        help="date in the format DD-MM-YYYY or dd-mm-YYYYTHH:MM:SS")
     parser_track.add_argument('end_time', action='store', type=str,
-                        help="date in the format dd-mm-YYYY or dd-mm-YYYYTHH:MM:SS")
+                        help="date in the format DD-MM-YYYY or dd-mm-YYYYTHH:MM:SS")
     parser_track.add_argument('timestep',
                         action='store',
                         type=int,
@@ -325,7 +327,7 @@ def main():
 	        for k in tle_dict.keys():
 	            if args.sat_name.lower() in tle_dict[k][0].lower():
 		        print('%s %s\n' % (tle_dict[k][0], k))
-        FINISHED=True
+        FINISHED = True
     except:
         pass
 
@@ -372,8 +374,9 @@ def main():
 if __name__ == '__main__':
     main()
 
-TESTING = False
 
+
+TESTING = False
 if TESTING:
     today = datetime.datetime.utcnow().strftime('%Y-%m-%d')
     tomorrow = (datetime.datetime.utcnow()+datetime.timedelta(days=1)).strftime('%Y-%m-%d')

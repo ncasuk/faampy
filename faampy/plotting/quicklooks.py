@@ -27,7 +27,9 @@ import matplotlib as mpl
 if __name__ == '__main__': mpl.use('Agg')
 import matplotlib.pyplot as plt
 
-from faampy.core.utils import get_fid, conv_time_to_secs, get_index_from_hhmmss, conv_secs_to_time, get_flight_duration
+from faampy.core.utils import get_fid, conv_time_to_secs, \
+                              get_index_from_hhmmss, \
+                              conv_secs_to_time, get_flight_duration
 from faampy.core.flight_summary import FlightSummary, Event
 from faampy.plotting.timeseries import Timeseries
 from faampy.plotting.profile import Profile
@@ -232,7 +234,7 @@ def _argparser():
 def main():
     parser = _argparser()
     args = parser.parse_args()
-    fs = FlightSummary(args.fltsummfile)
+    fs = FlightSummary(args.fltsumm)
     ds = netCDF4.Dataset(args.ncfile, 'r')
     process(fs, ds, args.outpath, config_file=args.config_file)
     sys.stdout.write('Done ...\n')

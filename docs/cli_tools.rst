@@ -2,6 +2,13 @@
 Command line tools
 ==================
 
+The faampy module provides a number of command line tools. All those commands are called via::
+
+   faampy SUBCOMMAND [OPTIONS] ARGUMENTS
+   
+A list of available subcommands is shown by just typing "faampy" on the command line.
+
+
 nimrod_to_nc
 ~~~~~~~~~~~~
 .. argparse:: 

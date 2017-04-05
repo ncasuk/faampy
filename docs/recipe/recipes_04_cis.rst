@@ -1,19 +1,19 @@
-========================
-Recipes - FAAM meets cis
-========================
+
+Recipe - FAAM meets cis
+=======================
 
 
 CIS Installation
-================
-Information about installing anaconda2 and cis:
+----------------
 
+Information about installing anaconda2 and cis:
   | anaconda2: https://www.continuum.io/downloads
   | cis:       http://cistools.net/get-started#installation
 
 Please note that the cis instructions say that you should install python 2.7 and **not** 3.x. If you are new to python you might be irritated why you wouldn't install the very latest version. In brief: The two versions are not fully compatible and many people decided to stick with 2.7. 
   
 FAAM netCDF preparation
-=======================
+-----------------------
 
 The FAAM core data do not work with the cis tool straight away. The netCDF need a little tweaking to make them fully CF compliant, so that cis interpretets the data correctly. The global attributes "Conventions" and "Coordinates" need to be added. A small bash script is provide (faam_edit.sh) that does the changes using nc utilities. The example netCDF has already been edited and works with cis.
 
@@ -21,7 +21,7 @@ The example data (core_faam_20161024_v004_r0_b991_1hz_editted.nc) are for flight
 
 
 Starting cis
-============
+------------
 
 The next thing to do is to start the cis environment that we installed earlier. Go to the bin directory of your conda installation::
     
@@ -43,13 +43,20 @@ Go to the directory where the edited faam core netcdf is stored to keep the file
 
 
 Working with cis and FAAM data
-==============================
+------------------------------
 
 Below are several one line examples that show the functionality of the cis tools. Most of the examples have been taken and adapted from the cis online documentation.
 
 .. note::
    All the commands below go on **one** line in your shell. The page is just too small to get it all printed on one line.
 
+.. note::
+   If you get an Error message similar to:
+     
+     ERROR - 'DimCoord' object has no attribute 'data' - check cis.log for details
+   
+   cis can not find the FAAM_NetCDF plugin and it is most likely that the CIS_PLUGIN_HOME variable was not defined correctly.
+   
 Get information about the netCDF::
 
     cis info TAT_ND_R:core_faam_20161024_v004_r0_b991_1hz_editted.nc
@@ -92,7 +99,6 @@ Plot the three lines in one figure::
       CO_AERO:b991_co_aero_1min_min.nc
 
 Reproducing an aggregation example from the documentation:
-
   http://cis.readthedocs.io/en/stable/aggregation.html#aircraft-track
 
 The results from the aggregation will be saved to a netCDF (option -o). The following line aggregates over 5 minutes and over altiude in 200 meter steps in the range of 0 to 1000m::
@@ -101,7 +107,7 @@ The results from the aggregation will be saved to a netCDF (option -o). The foll
       t=[2016-10-24T11:45,2016-10-24T14:45,PT5M],z=[0,1000,200] \
       -o b991_co_aero_alt_time.nc
 
-Plot a curtain using the netCDF just created::
+Plot a curtain using the netCDF that we just created::
   
     cis plot CO_AERO:b991_co_aero_alt_time.nc --xaxis time --yaxis altitude
 
@@ -114,14 +120,3 @@ Make a grid plot from the mean, where each grid cell is 0.2 in size. The results
 Now plot the grid on a map using the netcdf that we just created::
 
     cis plot CO_AERO:b991_co_aero_grid_mean.nc
-
-
-Issues
-======
-
-If you get an Error message looking like this:
-
-  ERROR - 'DimCoord' object has no attribute 'data' - check cis.log for details
-
-cis can not find the FAAM_NetCDF plugin and it is most likely that the CIS_PLUGIN_HOME variable was not defined correctly.
-
