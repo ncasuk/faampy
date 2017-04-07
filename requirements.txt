@@ -1,6 +1,7 @@
 #exifread
 #haversine
 #matplotlib
+#basemap
 #netCDF4
 #numpy
 #scipy
