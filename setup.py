@@ -2,12 +2,11 @@ import os
 
 from setuptools import setup, find_packages
 
-import faampy
 
-here = os.path.abspath(os.path.dirname(__file__))
+HERE = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file
-with open(os.path.join(here, 'README.rst')) as f:
+with open(os.path.join(HERE, 'README.rst')) as f:
     long_description = f.read()
 
 with open('requirements.txt') as f:
@@ -19,8 +18,20 @@ datafiles = [(d, [os.path.join(d, f) for f in files])
     for d, folders, files in os.walk(datadir)]
 
 
+def get_faampy_version():
+    version = None
+    initpath = os.path.join(HERE, 'faampy', '__init__.py')
+    with open(initpath) as fd:
+        for line in fd:
+            if line.startswith('__version__'):
+                _, version = line.split('=')
+                version = version.strip()[1:-1]  # Remove quotation characters
+                break
+    return version
+
+
 setup(name = "faampy",
-      version = faampy.__version__,
+      version = get_faampy_version(),
       description = "python module for dealing with FAAM data",
       author = "Axel Wellpott",
       author_email = "axel dot wellpott at faam dot ac dot uk",
