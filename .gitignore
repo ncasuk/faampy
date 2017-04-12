@@ -1,0 +1,7 @@
+*.*~
+*_flymake.py
+*.pyc
+_build
+_static
+_templates
+
