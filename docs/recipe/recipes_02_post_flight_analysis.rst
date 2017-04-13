@@ -105,7 +105,7 @@ Now reading in the FGGA data.
                 'TSC_REDU', 'BSC_BLUU', 'BSC_GRNU', 'BSC_REDU', 'IAS_RVSM']
     
     # write the netcdf out to you HOME directory
-    outfile = os.path.join(os.environ['HOME'], '%s_merged.nc' % (FID.lower()))
+    outfile = os.path.join(os.path.expanduser('~'), '%s_merged.nc' % (FID.lower()))
     ds.write(outfile,
              clobber=True,
              v_name_list=var_list)

@@ -130,7 +130,7 @@ def main():
                         required=False, default=0,
                         help='revision nmuber of the AIMMS netcdf.')
     parser.add_argument('-o', '--outpath', action="store", type=str, required=False,
-                        default=os.environ['HOME'],
+                        default=os.path.expanduser('~'),
                         help='Outpath for the netCDF Default: $HOME.')
     parser.add_argument('-k', '--keep-folder', action="store_true", required=False, default=False,
                         help='If option is set the temporary directory will *not* be deleted. Default: False')

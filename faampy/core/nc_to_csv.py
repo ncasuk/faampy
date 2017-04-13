@@ -17,6 +17,7 @@ import sys
 import zipfile
 
 
+# TODO: use the faampy.utils get_fid module
 def get_fid(ds):
     """
     Get the flight ID ([b,d]nnn) from netCDF4.Dataset.
@@ -161,7 +162,7 @@ if __name__ == '__main__':
     parser.add_argument('--outpath',
                         action='store',
                         type=str,
-                        default=os.environ['HOME'],
+                        default=os.path.expanduser('~'),
                         help="Outpath for the csv file.")
     parser.add_argument('--suffix',
                         action='store',

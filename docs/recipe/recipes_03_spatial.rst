@@ -145,7 +145,7 @@ formatting the geometries into kml format (askml).
        lines.insert(-4, flight_track[0])
        lines.insert(-4, '</Placemark>')
 
-   ofilename = os.path.join(os.environ['HOME'], 'fids_crossing_ns.kml')
+   ofilename = os.path.join(os.path.expanduser('~'), 'fids_crossing_ns.kml')
    print 'Writing North Sea Polygon and the flight track linestrings as kml'
    print 'kml written to: %s' % (ofilename,)
    ofile = open(ofilename, 'w')

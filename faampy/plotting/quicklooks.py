@@ -33,7 +33,6 @@ from faampy.core.utils import get_fid, conv_time_to_secs, \
 from faampy.core.flight_summary import FlightSummary, Event
 from timeseries import Timeseries
 from profile import Profile
-from scatter import Scatter
 from skewt import SkewT
 from map import Map
 
@@ -223,7 +222,7 @@ def process(fs, ds, outpath, flag=None, no_overwrite=False, config_file=None):
 def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
-    sys.argv.insert(0, 'faampy quicklooks')
+    sys.argv.insert(0, 'faampy plt_quicklooks')
     parser = argparse.ArgumentParser(prog = 'faampy quicklooks', description=__doc__,
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('ncfile', action="store", type=str, help='FAAM core netCDF')

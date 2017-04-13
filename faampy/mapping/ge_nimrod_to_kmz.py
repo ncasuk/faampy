@@ -319,7 +319,7 @@ def _argparser():
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('rain_radar_tar_file', action="store", type=str, help='MetOffice compressed rain radar file')
     parser.add_argument('-o', '--outpath', action="store", type=str, required=False,
-                        default=os.environ['HOME'],
+                        default=os.path.expanduser('~'),
                         help='Directory where the kmz file will be stored. Default: $HOME.')
     parser.add_argument('-k', '--keep-folder', action="store_true", required=False, default=False,
                         help='If option is set the temporary directory will *not* be deleted. Default: False')
@@ -328,7 +328,7 @@ def _argparser():
 
 def main():
     global _TEMP_FOLDER, _NUM_PROCESSES
-    _TEMP_FOLDER=tempfile.mkdtemp(dir=os.path.join(os.environ['HOME'], 'tmp'))
+    _TEMP_FOLDER=tempfile.mkdtemp(dir=os.path.join(os.path.expanduser('~'), 'tmp'))
     if not os.path.exists(os.path.join(_TEMP_FOLDER, 'files')):
         os.mkdir(os.path.join(_TEMP_FOLDER, 'files'))
     parser = _argparser()

@@ -1,10 +1,6 @@
-import os
 
-__version__ = '0.3'
-__author__ = 'axll[at]faam[dot]ac[dot]uk'
-
-DB_NAME = os.path.join(os.environ['HOME'], '.faampy', 'dbs', 'fltcons.sqlite')
-FIGURES_PATH = os.path.join(os.environ['HOME'], '.faampy', 'figures', 'fltcons')
+#DB_NAME = os.path.join(os.environ['HOME'], '.faampy', 'dbs', 'fltcons.sqlite')
+#FIGURES_PATH = os.path.join(os.environ['HOME'], '.faampy', 'figures', 'fltcons')
 
 # Setting for web service
 #FIGURES_PATH = '/home/htdocs.dacru/figures/fltcons/'

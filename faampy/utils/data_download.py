@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Script for downloading faampy data, which are updated regularly
+
 """
 
 import faampy
@@ -54,6 +55,7 @@ def main():
     local_zipfile = tempfile.mktemp(suffix='.zip')
     dlfile(FAAMPY_DATA_URL, local_zipfile)
 
+    # TODO: use unzip command via subprocess if it is available
     _zip = zipfile.ZipFile(local_zipfile)
     _zip.extractall(path=faampy.FAAMPY_DATA_PATH, pwd=passwd)
     return

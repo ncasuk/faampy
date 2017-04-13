@@ -190,7 +190,7 @@ def _argparser():
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('--din', action="store", type=str, help='Paper size', default='a4')
     parser.add_argument('-o', '--outpath', action="store", type=str, required=False,
-                        default=os.environ['HOME'], help='Directory where the images will be stored. Default: $HOME.')
+                        default=os.path.expanduser('~'), help='Directory where the images will be stored. Default: $HOME.')
     parser.add_argument('--dpi', action="store", type=int, required=False, default=300,
                         help='resolution dot per inch')
     parser.add_argument('--map_background', action="store_true", required=False, default=True,

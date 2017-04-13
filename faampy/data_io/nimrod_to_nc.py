@@ -305,7 +305,7 @@ def _argparser():
                         default=2,
                         help='Number of processes that can be used.')
     parser.add_argument('-o', '--outpath', action="store", type=str, required=False,
-                        default=os.environ['HOME'],
+                        default=os.path.expanduser('~'),
                         help='Directory where the netCDF file will be stored. Default: $HOME.')
     return parser    
 

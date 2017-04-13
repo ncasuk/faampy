@@ -5,11 +5,12 @@ Lidar curtain kmz creator for google-earth
 
 """
 
-import idlsave
+#import idlsave
 import math
+import numpy as np
 import os
-import scipy
 import subprocess
+import sys
 import tempfile
 
 import matplotlib.pyplot as plt
@@ -383,8 +384,8 @@ def extract_run_data(ldata, start_time=None, end_time=None, start_index=None, en
     if (start_time and end_time):
         s_secs = time2secs(start_time) 
         e_secs = time2secs(end_time)
-        s_ind = scipy.where(s_secs < ldata['lid_time'])[0][0]
-        e_ind = scipy.where(e_secs > ldata['lid_time'])[0][-1]
+        s_ind = np.where(s_secs < ldata['lid_time'])[0][0]
+        e_ind = np.where(e_secs > ldata['lid_time'])[0][-1]
     else:
         s_ind = start_index
         e_ind = end_index
@@ -428,8 +429,8 @@ def lidar_plot(data, filename):
     x = data['lid_time']    
     y = data['lid_height']
     z = data['lid_pr2'][0,:,:]    
-    mask1 = scipy.where(z > 1, 1, 0)
-    mask2 = scipy.where(z < 1200, 1, 0)    
+    mask1 = np.where(z > 1, 1, 0)
+    mask2 = np.where(z < 1200, 1, 0)    
     z = (z*mask1)*mask2
     
     levels = range(0, 1200, 1)
@@ -499,9 +500,9 @@ def process(fid, lidar_file, flight_summary_file, step=None, alt_scale_factor=No
     f.write(kml_doc)
     f.close()
     
-    kmz_filename = os.path.join(os.environ['HOME'], '%s_lidar_curtain.kmz' % (fid))
+    kmz_filename = os.path.join(os.path.expanduser('~'), '%s_lidar_curtain.kmz' % (fid))
     print('Writing kmz file to: %s' % (kmz_filename))
-    # TODO: try to remove subprocess dependency
+    # TODO: try to remove subprocess dependency; use zipfile module instead
     cmd3 = """cd %s && zip --quiet -r %s doc.kml files/ images/""" % (ROOT_TMP_PATH, kmz_filename)
         
     proc3 = subprocess.Popen(cmd3, shell=True)
@@ -510,8 +511,8 @@ def process(fid, lidar_file, flight_summary_file, step=None, alt_scale_factor=No
 
 def _argparser():
     import argparse
-    if not __name__ 
-    sys.argv.insert(0, 'faampy ge_lidar_curtain')
+    if not __name__ == '__main__':
+        sys.argv.insert(0, 'faampy ge_lidar_curtain')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('fid', action="store", type=str,
                         help='flight id like: b612.')    
@@ -523,9 +524,8 @@ def _argparser():
                         help='step size for lidar data plots. If for example step=5, \
                         then only every fifth lidar profile is used. Using this option can speed up the process.')
     parser.add_argument('-a', '--alt-scale-factor', action="store", type=int, default=5, required=False,
-                        help='overscales the altitude by this factor e.g. with \
+                        help='multiplies the altitude by this factor e.g. with \
                         the default alt-scale-factor of 5: 10000m becomes 50000m in google-earth.')    
-    args = parser.parse_args()   
     return parser
 
 

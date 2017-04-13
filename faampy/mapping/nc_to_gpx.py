@@ -100,7 +100,7 @@ def _argparser():
                         action="store",
                         nargs='?',
                         type=str,
-                        default=os.environ['HOME'],
+                        default=os.path.expanduser('~'),
                         help='file name of output file')
     return parser
   

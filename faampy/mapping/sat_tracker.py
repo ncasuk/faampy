@@ -68,7 +68,7 @@ class TLE(dict):
                      'http://www.celestrak.com/NORAD/elements/weather.txt',
                      'http://www.celestrak.com/NORAD/elements/stations.txt']
 
-        self.tle_dir=os.path.join(os.getenv('HOME'), '.faampy', 'tle')
+        self.tle_dir=os.path.join(os.path.expanduser('~'), '.faampy', 'tle')
         #create hidden tle directory in $HOME if it does not exist
         if not os.path.exists(self.tle_dir):
             mkdir_p(self.tle_dir)
@@ -346,7 +346,7 @@ def main():
         sat_name = re.sub('\)', '', s.sat.name)
 
         if args.write_to_file == True:
-            ofname = os.path.join(os.environ['HOME'], '%s_%s.txt' % (sat_name.lower(), __parse_time__(args.start_time).strftime('%Y%m%d_%H%M%S')))
+            ofname = os.path.join(os.path.expanduser('~'), '%s_%s.txt' % (sat_name.lower(), __parse_time__(args.start_time).strftime('%Y%m%d_%H%M%S')))
             outfile = open(ofname, 'w')
             outfile.write(s.__str__())
             outfile.close()
@@ -358,13 +358,13 @@ def main():
                     urcrnrlat=float(urcrnrlat))
             m.oplot_sattrack(s.trkpts)
             title = '%s\n%s to %s' % (sat_name,
-				      __parse_time__(args.start_time).strftime('%Y-%m-%dT%H:%M:%S'),
-				      __parse_time__(args.end_time).strftime('%Y-%m-%dT%H:%M:%S'))
+                                       __parse_time__(args.start_time).strftime('%Y-%m-%dT%H:%M:%S'),
+                                       __parse_time__(args.end_time).strftime('%Y-%m-%dT%H:%M:%S'))
             plt.title(title)
-            imgfilename = os.path.join(os.environ['HOME'],
-                                     'sat_track_%s_%s_to_%s' % (sat_name.replace(' ', '_'),
-                                                                __parse_time__(args.start_time).strftime('%Y%m%dT%H%M%S'),
-                                                                __parse_time__(args.end_time).strftime('%Y%m%dT%H%M%S')))
+            imgfilename = os.path.join(os.path.expanduser('~'),
+                                       'sat_track_%s_%s_to_%s' % (sat_name.replace(' ', '_'),
+                                                                  __parse_time__(args.start_time).strftime('%Y%m%dT%H%M%S'),
+                                                                  __parse_time__(args.end_time).strftime('%Y%m%dT%H%M%S')))
             plt.savefig(imgfilename)
             sys.stdout.write('Map saved as: \n  %s\n\n' % (imgfilename,))
             plt.clf()

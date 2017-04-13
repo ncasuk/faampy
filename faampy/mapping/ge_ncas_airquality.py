@@ -114,7 +114,7 @@ def _argparser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-o', '--outpath',
                         action="store",
-                        default=os.environ['HOME'],
+                        default=os.path.expanduser('~'),
                         type=str,
                         help='outpath')
     parser.add_argument('-l', '--limit',
