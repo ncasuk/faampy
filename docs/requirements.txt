@@ -1,0 +1,20 @@
+# basemap  ;basemap is currently not available via pip; will need to find a workaround or switch to cartopy completely
+# cartopy  ;breaks currently the readthedocs build process; will need to get this fixed at a later stage
+# ephem
+# exifread
+# fiona    ;install currently breaks readthedocs build process
+# gdal
+# georasters
+# haversine
+# matplotlib
+# netCDF4
+# numpy
+# pandas
+# pillow
+# pyspatialite
+requests
+# scipy
+setuptools-git
+simplekml
+xarray
+sphinx-argparse

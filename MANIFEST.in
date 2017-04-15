@@ -1,0 +1,4 @@
+include *.rst
+include COPYING
+include requirements.txt
+include scripts/*
