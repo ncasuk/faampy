@@ -193,7 +193,7 @@ def warp(nimrod_dataset):
     src_ds = gtiff_drv.Create(
         'test_epsg3413.tif',
         cols, rows, 1,
-        gdal.GDT_Byte)
+        gdal.GDT_Int16)
     src_ds.SetGeoTransform(src_geotran)
     src_ds.SetProjection(src_srs.ExportToWkt())
     src_ds.GetRasterBand(1).WriteArray(raster)
