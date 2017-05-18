@@ -33,7 +33,7 @@ dst = os.path.join(TMP_DIR, 'cgi-bin', 'cgi-fltcons-summary.py')
 
 shutil.copy(src, dst)
 
-os.chmod(dst, 0777)
+os.chmod(dst, 0O0777)
 
 os.chdir(TMP_DIR)
 

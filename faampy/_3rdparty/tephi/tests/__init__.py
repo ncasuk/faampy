@@ -105,7 +105,7 @@ def main():
             lines.insert(9, 'Tephi-specific options:')
             lines.insert(10, '  -d                   Display matplotlib figures (uses tkagg)')
             lines.insert(11, '  -sf                  Save matplotlib figures to subfolder "image_results"')
-            print '\n'.join(lines)
+            print('\n'.join(lines))
     else:
         unittest.main()
 
