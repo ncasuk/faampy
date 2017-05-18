@@ -14,7 +14,7 @@ import os
 import sys
 
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 __status__ = 'a'
 
 
@@ -69,7 +69,7 @@ SRTM_DATA_PATH = os.path.join(FAAMPY_DATA_PATH, 'srtm')
 
 
 def getlist(option, sep=',', chars='[,]'):
-    """Return a list from a ConfigParser option. By default, 
+    """Return a list from a ConfigParser option. By default,
        split on a comma and strip whitespaces."""
     return [ chunk.strip(chars).strip() for chunk in option.split(sep) ]
 
@@ -80,7 +80,7 @@ if os.path.exists(config_file):
     DATA_SEARCH_PATH_LIST = getlist(config.get('path', 'data'))
 else:
     DATA_SEARCH_PATH_LIST = []
-    
+
 
 FAAMPY_FILES = ['icons/camera_icon_32x32.png',
                 'icons/dot_blue_32x32.png',
