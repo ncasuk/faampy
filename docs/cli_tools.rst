@@ -79,4 +79,11 @@ plt_quicklooks
    :func: _argparser
    :prog: faampy plt_quicklooks
    :nodefault:
-  
+
+qa_report
+~~~~~~~~~
+.. argparse::
+   :module: faampy.qa_plotting.report
+   :func: _argparser
+   :prog: faampy qa_report
+   :nodefault:

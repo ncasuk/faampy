@@ -1,7 +1,7 @@
 #!/usr/bin/python
 '''
 FlightSummary module for processing the Flight Managers flight summary.
-The class parses the original text file and extract all entries. The module 
+The class parses the original text file and extract all entries. The module
 works with both the "old" (Horace) format and the "new" (DECADES) one.
 
 All event entries are in a list.
@@ -14,7 +14,7 @@ In [2]: import netCDF4
 
 In [3]: import faampy.fltsumm.FlightSummary as flsum
 
-In [4]: fltsummfile='/home/axel/Dropbox/cast2014/fltsums/edited/flight-sum_faam_20140124_r0_b825.csv' 
+In [4]: fltsummfile='/home/axel/Dropbox/cast2014/fltsums/edited/flight-sum_faam_20140124_r0_b825.csv'
 In [5]: ncfile='/home/axel/Dropbox/cast2014/b825-jan-24/core_processed/core_faam_20140124_v004_r2_b825.nc'
 
 In [6]: outpath='/home/axel/'
@@ -28,37 +28,37 @@ In [9]: #Print a summary of the flight summary to stdout
 In [10]: print(fs)
 Name:       taxy
 Start Time: 2014-01-24 22:54:50
-End Time:   
-Comment:    
+End Time:
+Comment:
 
 ##############################
 Name:       Profile 1
 Start Time: 2014-01-24 23:01:33
 End Time:   2014-01-24 23:35:02
-Comment:    
+Comment:
 
 ##############################
 Name:       T/O
 Start Time: 2014-01-24 23:01:33
-End Time:   
+End Time:
 Comment:    Guam
 
 ##############################
 Name:       Run 1
 Start Time: 2014-01-24 23:10:13
 End Time:   2014-01-24 23:28:36
-Comment:    
+Comment:
 
 ##############################
 Name:       Run 2
 Start Time: 2014-01-24 23:35:10
 End Time:   2014-01-24 23:56:42
-Comment:    
+Comment:
 
 ##############################
 Name:       !
 Start Time: 2014-01-24 23:42:41
-End Time:   
+End Time:
 Comment:    slight climb
 
 ...
@@ -66,9 +66,9 @@ Comment:    slight climb
 In [11]: print('Number of FS Entries: %i' % len(fs.Entries))
 Number of FS Entries: 9
 
-In [12]: 
+In [12]:
 
-In [12]: #get the 4th event from the 
+In [12]: #get the 4th event from the
 
 In [13]: e04=fs.Entries[3]
 
@@ -76,7 +76,7 @@ In [14]: print(e04)
 Name:       Run 1
 Start Time: 2014-01-24 23:10:13
 End Time:   2014-01-24 23:28:36
-Comment:    
+Comment:
 
 In [15]: #get the indeces that correspond to the netCDF
 
@@ -98,7 +98,7 @@ In [22]: #create html and kml files
 
 In [23]: fs=flsum.process(fltsummfile, ncfile, outpath)
 
-In [24]: 
+In [24]:
 
 '''
 
@@ -143,7 +143,7 @@ def __two_point_event_as_kml__(self):
     </MultiGeometry>
 </Placemark>
 """
-    
+
     pt1_coord_string='%f,%f,%f\n' % (self.Coords[0][0],
                                      self.Coords[0][1],
                                      self.Coords[0][2])
@@ -293,7 +293,7 @@ class FlightSummary(object):
     fs=FlightSummary(fltsummfile)
 
     """
-    
+
     def __init__(self, fltsumm_file):
         self.format=None
         self.fid=None
@@ -320,17 +320,17 @@ class FlightSummary(object):
         f.close()
 
     def parse(self):
-        
+
         if '<!DOCTYPE html PUBLIC' in ''.join(self.txt):
             def remove_non_ascii(s): return "".join(i for i in s if ord(i)<128)
             txt=''.join(self.txt)
-            
+
             txt=re.sub('<td colspan="5" class="ghost">&nbsp;</td>', '<td>&nbsp;</td>'*5, txt)
-            
+
             ix_s=re.search('<table summary="Flight Summary Events" id="summary">', txt).start(0)
             ix_e=re.search('</table>', txt).end(0)
             s=txt[ix_s:ix_e]
-        
+
             html=lxml.html.fromstring(s)
 
             tbl = []
@@ -340,18 +340,18 @@ class FlightSummary(object):
                 for td in row.cssselect("td"):
                     #tbl[-1].append(unicode(td.text_content()))
                     tbl[-1].append(remove_non_ascii(td.text_content()))
-                        
+
             for line in tbl:
                 if not line:
                     continue
                 print(line)
                 e=Event()
                 if self.basetime:
-                    e.basetime=self.basetime                
+                    e.basetime=self.basetime
                 e.Start_time=re.sub(':', '', line[1])
                 e.Stop_time=re.sub(':', '', line[6])
                 e.Name=line[0]
-                
+
                 tmp=re.sub('kft', '', line[3]).strip()
                 tmp=re.findall('[+-]?\d+.\d+', tmp)
                 if tmp: e.Start_height=tmp[0]
@@ -381,14 +381,14 @@ class FlightSummary(object):
                 tmp=line[37:52].strip()
                 tmp=re.sub('kft', '', tmp).strip()
                 heights=re.findall('[+-]?\d+.\d+', tmp)
-                e.Start_height=heights[0]                
+                e.Start_height=heights[0]
                 if len(heights) > 1:
                     e.Stop_height=heights[1]
                 e.Hdg=line[55:58].strip()
                 e.Comment=line[59:].strip()
                 e.format='horace'
                 self.Entries.append(e)
-            elif len(line.split(',')) > 2:                
+            elif len(line.split(',')) > 2:
                 print(line)
                 line=line.split(',')
                 #skip header line
@@ -473,7 +473,7 @@ Time    Time     Event               Height (s)        Hdg Comments
 
     def as_html(self, ofile=None):
         """format Flight Summary as html table
-        
+
         """
         html='<table border=1>\n'
         row=['Name', 'Start Time', 'Start Height<br>(kft)',  'Stop Time', 'Stop Height<br>(kft)', 'Comment']
@@ -496,7 +496,7 @@ Time    Time     Event               Height (s)        Hdg Comments
         return html
 
 
-def process(fltsummfile, ncfile, outpath):
+def process(fltsummfile, ncfile, *outpath):
     ds=netCDF4.Dataset(ncfile, 'r')
     basetime=faampy.core.utils.get_base_time(ds)
     fid=faampy.core.utils.get_fid(ds)
@@ -510,9 +510,11 @@ def process(fltsummfile, ncfile, outpath):
         except:
             pass
     basename='flight-sum_faam_%s_r0_%s' % (basetime.strftime('%Y%m%d'), fid)
-    fs.as_kml(ofile=os.path.join(outpath, basename+'.kml'), fid=fid, date=basetime.strftime('%d/%m/%Y'))
-    fs.as_html(ofile=os.path.join(outpath, basename+'.html'))
-    fs.as_txt(ofile=os.path.join(outpath, basename+'.txt'), fid=fid, date=basetime.strftime('%d/%m/%Y'))
+    if outpath in outpath:
+        outpath = outpath[0]
+        fs.as_kml(ofile=os.path.join(outpath, basename+'.kml'), fid=fid, date=basetime.strftime('%d/%m/%Y'))
+        fs.as_html(ofile=os.path.join(outpath, basename+'.html'))
+        fs.as_txt(ofile=os.path.join(outpath, basename+'.txt'), fid=fid, date=basetime.strftime('%d/%m/%Y'))
     ds.close()
     return fs
 

@@ -14,9 +14,7 @@ import time
 
 import faampy
 import faampy.fltcons
-
-from faampy.fltcons.Parser import Parser
-
+from faampy.fltcons.parser import Parser
 from faampy.utils import *
 
 

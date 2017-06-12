@@ -6,7 +6,6 @@ Created on 14 Dec 2010
 
 import os
 import sys
-sys.path.insert(0, '/home/axel/git-repos/faampy')
 
 from faampy.fltcons.parser import Parser
 from faampy.fltcons.db import DB
@@ -25,14 +24,14 @@ def update(inpath=None, clean=False, root_path=None, verbose=False):
 
     parser = Parser()
 
-    for f in fl:                
+    for f in fl:
         if verbose:
             sys.stdout.write('%s\n' % f)
-        #try:
-        d = parser.parse(os.path.join(f.path, f.filename))
-        #except:
-        #    sys.stdout.write('Problem parsing %s ...\n' % f.filename)
-        #    continue
+        try:
+            d = parser.parse(os.path.join(f.path, f.filename))
+        except:
+            sys.stdout.write('Problem parsing %s ...\n' % f.filename)
+            continue
 
         if d:
             par, fid, rev, rdate, line, fname = [], [], [], [], [], []

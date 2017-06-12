@@ -5,11 +5,14 @@ Lidar curtain kmz creator for google-earth
 
 """
 
-#import idlsave
+import datetime
 import math
+import netCDF4
 import numpy as np
 import os
-import subprocess
+import pandas as pd
+import re
+import shutil
 import sys
 import tempfile
 
@@ -42,7 +45,7 @@ def recalculate_coordinate(val, _as=None):
     You can give only one of them (e.g. only minutes as a floating point number) and it will be duly
     recalculated into degrees, minutes and seconds.
     Return value can be specified as 'deg', 'min' or 'sec'; default return value is a proper coordinate tuple.
-    
+
     :param tuple val: coordinate as tuple (degree, minutes, seconds)
     """
     deg, min, sec = val
@@ -64,7 +67,7 @@ def recalculate_coordinate(val, _as=None):
         if _as == 'min': return sec / 60
         if _as == 'deg': return sec / 3600
     return deg, min, sec
-            
+
 
 def points2distance(start, end):
     """
@@ -73,8 +76,8 @@ def points2distance(start, end):
         Implementation inspired by JavaScript implementation from http://www.movable-type.co.uk/scripts/latlong.html
         Accepts coordinates as tuples (deg, min, sec), but coordinates can be given in any form - e.g.
         can specify only minutes:
-        (0, 3133.9333, 0) 
-        is interpreted as 
+        (0, 3133.9333, 0)
+        is interpreted as
         (52.0, 13.0, 55.998000000008687)
         which, not accidentally, is the lattitude of Warsaw, Poland.
     """
@@ -294,43 +297,68 @@ input_set="0" />
 </COLLADA>
 """
 
-#<!-- 1: -Width,Left,Bottom. 
-#3: Width,Right,Bottom. 
-#6:Width,Top,Left 
-#8/11: Height. 
+#<!-- 1: -Width,Left,Bottom.
+#3: Width,Right,Bottom.
+#6:Width,Top,Left
+#8/11: Height.
 #9:Width,Top,Left -->
 DAE_VALUES_TEMPLATE = """0.0 0 0
-%.1f 0 0 
+%.1f 0 0
 0.0 0 %.1f
 %.1f 0 %.1f
-""" 
+"""
+
+
+def get_data(lidar_datafile):
+    """
+    Getting lidar data from netcdf and store those in a dictionary. Signals
+    are filtered using thresholds derived by percentile.
+
+    """
+    ids = netCDF4.Dataset(lidar_datafile)
+
+    l_ds = {}
+    l_ds['Time'] = netCDF4.num2date(ids.variables['Time'][:], ids.variables['Time'].units)
+    l_ds['Longitude'] = ids.variables['Longitude'][:]
+    l_ds['Latitude'] = ids.variables['Latitude'][:]
+    l_ds['Altitude'] = ids.variables['Altitude'][:]
+    l_ds['rangeCorrected_0'] = ids.variables['rangeCorrected_0'][:]
+    l_ds['rangeCorrected_1'] = ids.variables['rangeCorrected_1'][:]
+
+    for var in ['rangeCorrected_0', 'rangeCorrected_1']:
+        _perc_05 = np.percentile(l_ds[var], 2)
+        _perc_95 = np.percentile(l_ds[var], 98)
+        l_ds[var][l_ds[var] < _perc_05] = np.nan
+        l_ds[var][l_ds[var] > _perc_95] = np.nan
+    return l_ds
 
 
 def convert_bearing(hdg):
     """Heading value conversion."""
     #hdg is strange:
-    #0 = East, 45 = SE, 90 = South, 180 = West    
+    #0 = East, 45 = SE, 90 = South, 180 = West
     result = hdg - 90.0
     if result < 0:
         result = result + 360.0
     return result
 
+
 def get_run_bearing(ldata_run):
     """inspired by
     http://stackoverflow.com/questions/4913349/haversine-formula-in-python-bearing-and-distance-between-two-gps-points
-    
+
     """
-    lon1 = ldata_run['lid_longitude'][0]
-    lon2 = ldata_run['lid_longitude'][-1]
-    lat1 = ldata_run['lid_latitude'][0]
-    lat2 = ldata_run['lid_latitude'][-1]    
+    lon1 = float(ldata_run['Longitude'][:][0])
+    lon2 = float(ldata_run['Longitude'][:][-1])
+    lat1 = float(ldata_run['Latitude'][:][0])
+    lat2 = float(ldata_run['Latitude'][:][-1])
     lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
 
     dlon = lon2 - lon1
     dlat = lat2 - lat1
     a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-    Base = 6371 * c    
+    Base = 6371 * c
     dLon = lon2 - lon1
     y = math.sin(dLon) * math.cos(lat2)
     x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dLon)
@@ -342,7 +370,8 @@ def get_run_bearing(ldata_run):
 
 # TODO: Use the faampy flight summary module instead
 def parse_flightsummary(flight_summary_file):
-    """Get runs and its start and end time 
+    """
+    Get runs and its start and end time
     from flight summary.
 
     """
@@ -351,6 +380,9 @@ def parse_flightsummary(flight_summary_file):
     lines = f.readlines()
     f.close()
     for line in lines:
+        if line.lower().startswith('date:'):
+            basetime = datetime.datetime.strptime(line.split(':')[1].strip(),
+                                                  '%d/%m/%Y')
         if 'run' in str.lower(line[17:28]):
             try:
                 name = str.strip(line[17:28])
@@ -358,45 +390,51 @@ def parse_flightsummary(flight_summary_file):
                 etime = line[8:14]
                 #if run is shorter than 5min we don't bother
                 if time2secs(etime)-time2secs(stime) > 300:
-                    result.append((name,stime,etime))
+                    result.append((name,
+                                   basetime+datetime.timedelta(seconds=time2secs(stime)),
+                                   basetime+datetime.timedelta(seconds=time2secs(etime))))
             except:
                 pass
     return result
-    
+
 
 # TODO: replace the local routine with the faampy.util one
 def time2secs(time_string):
-    """converts time string of the format HHMMSS into
+    """
+    converts time string of the format HHMMSS into seconds past midnight
 
-    seconds past midnight.
-    
+    :param time string: HHMMSS
+
     """
     time_string = str.strip(time_string)
-    result = float(time_string[0:2]) * 3600. + \
-             float(time_string[2:4]) * 60 + \
+    result = float(time_string[0:2])*3600.+ \
+             float(time_string[2:4])*60+ \
              float(time_string[4:6])
     return result
 
 
-def extract_run_data(ldata, start_time=None, end_time=None, start_index=None, end_index=None):
-    """extract the data for a run
-    start_time and end_time in the form HHMMSS"""
+def extract_run_data(ldata, var, start_time=None, end_time=None, start_index=None, end_index=None):
+    """
+    Extracts data
+    :param start_time: datetime.datetime object
+    :param end_time: datetime.datetime object
+    :param start_index:
+    :param end_index
+    """
     if (start_time and end_time):
-        s_secs = time2secs(start_time) 
-        e_secs = time2secs(end_time)
-        s_ind = np.where(s_secs < ldata['lid_time'])[0][0]
-        e_ind = np.where(e_secs > ldata['lid_time'])[0][-1]
+        lidar_time = ldata['Time']
+        s_ind = np.where(lidar_time > pd.Timestamp(start_time))[0][0]
+        e_ind = np.where(lidar_time < pd.Timestamp(end_time))[0][-1]
     else:
         s_ind = start_index
         e_ind = end_index
     run_data = {}
-    run_data['lid_time'] = ldata['lid_time'][s_ind:e_ind]
-    run_data['lid_longitude'] = ldata['lid_longitude'][s_ind:e_ind]
-    run_data['lid_latitude'] = ldata['lid_latitude'][s_ind:e_ind]
-    run_data['lid_altitude'] = ldata['lid_altitude'][s_ind:e_ind]
-    run_data['lid_reldep'] = ldata['lid_reldep'][:,s_ind:e_ind]
-    run_data['lid_height'] = ldata['lid_height']
-    run_data['lid_pr2'] = ldata['lid_pr2'][:,:,s_ind:e_ind]
+    run_data['Time'] = ldata['Time'][s_ind:e_ind]
+    run_data['Longitude'] = ldata['Longitude'][s_ind:e_ind]
+    run_data['Latitude'] = ldata['Latitude'][s_ind:e_ind]
+    run_data['Altitude'] = ldata['Altitude']
+    run_data['rangeCorrected_0'] = np.array(ldata['rangeCorrected_0'][:,s_ind:e_ind])
+    run_data['rangeCorrected_1'] = np.array(ldata['rangeCorrected_1'][:,s_ind:e_ind])
     return run_data
 
 
@@ -404,11 +442,11 @@ def get_run_length(ldata_run):
     """
     :return float run_length: run length in meters
     """
-    lon1 = ldata_run['lid_longitude'][0]
-    lon2 = ldata_run['lid_longitude'][-1]
-    lat1 = ldata_run['lid_latitude'][0]
-    lat2 = ldata_run['lid_latitude'][-1] 
-    run_length = points2distance(((lon1, 0, 0), (lat1, 0, 0)), ((lon2, 0, 0), (lat2, 0, 0)))    
+    lon1 = float(ldata_run['Longitude'][:][0])
+    lon2 = float(ldata_run['Longitude'][:][-1])
+    lat1 = float(ldata_run['Latitude'][:][0])
+    lat2 = float(ldata_run['Latitude'][:][-1])
+    run_length = points2distance(((lon1, 0, 0), (lat1, 0, 0)), ((lon2, 0, 0), (lat2, 0, 0)))
     return run_length * 1000. #convert to meters
 
 
@@ -416,48 +454,46 @@ def get_run_start_coordinates(ldata_run):
     """
     :return tuple coords: start coordinates (lon, lat) of Lidar run
     """
-    lon = ldata_run['lid_longitude'][0]
-    lat = ldata_run['lid_latitude'][0]
+    lon = ldata_run['Longitude'][0]
+    lat = ldata_run['Latitude'][0]
     return (lon, lat)
 
 
-def lidar_plot(data, filename):
-    """Plot lidar profile
-    
+def lidar_plot(ds, var, step, img_filename):
     """
-    colormap = plt.get_cmap('jet', 1200)
-    x = data['lid_time']    
-    y = data['lid_height']
-    z = data['lid_pr2'][0,:,:]    
-    mask1 = np.where(z > 1, 1, 0)
-    mask2 = np.where(z < 1200, 1, 0)    
-    z = (z*mask1)*mask2
-    
-    levels = range(0, 1200, 1)
-    plt.contourf(x, y, z, levels, colormap=colormap)
+    Plot lidar profile as heatmap.
+
+    """
+    colormap = plt.get_cmap('jet')
+
+    x = ds['Time'][::step]
+    y = ds['Altitude'][:]
+    z = ds[var][:,::step]
+    plt.contourf(x, y, z, colormap=colormap)
     plt.xlim(x.min(), x.max())
     plt.ylim(0, 10000)
     figure = plt.figure(1, (10, 8), 80)
-    #remove any margins
+    # remove any margins
     plt.subplots_adjust(left=0.0, right=1.0, bottom=0.0, top=1.0)
-    figure.savefig(filename)
-    plt.clf()
+    figure.savefig(img_filename)
+    plt.close()
 
 
-def process(fid, lidar_file, flight_summary_file, step=None, alt_scale_factor=None):
-    if not step:
-        step = 1
-    if not alt_scale_factor:
-        alt_scale_factor = 5
-        
+def process(lidar_file, flight_summary_file, step=10, alt_scale_factor=5, outpath=None):
+
+    fid = re.findall('_[BbCc]\d{3}_', lidar_file)[0][1:-1].lower()
+
+    # set up temporary directory structure where all the data for the kmz
+    # will be stored
     ROOT_TMP_PATH = tempfile.mktemp()
     os.mkdir(ROOT_TMP_PATH)
-    #create temporary folders for the images and the kml files
+    # create temporary folders for the images and dae files
     os.mkdir(os.path.join(ROOT_TMP_PATH, 'files'))
     os.mkdir(os.path.join(ROOT_TMP_PATH, 'images'))
-    ldata = idlsave.read(lidar_file)
-  
-    kml_doc = ''
+
+    ds = get_data(lidar_file)
+
+    kml_doc = ''   # empty kml document
     img_cnt = 0
     kml_doc += KML_HEADER_TEMPLATE
     kml_doc += KML_FOLDER_EXPANDABLE_START_TEMPLATE % (fid + ' Lidar ')
@@ -465,48 +501,52 @@ def process(fid, lidar_file, flight_summary_file, step=None, alt_scale_factor=No
 
     fltsumm = parse_flightsummary(flight_summary_file)
 
-    for event_cnt in range(len(fltsumm)):    
-        run_data = extract_run_data(ldata, start_time=fltsumm[event_cnt][1], end_time=fltsumm[event_cnt][2])
-        
-        #if there are no data we leave here
-        if not run_data['lid_time'].any() or min(run_data['lid_time']) == max(run_data['lid_time']):
-            continue
-         
-        kml_doc += KML_FOLDER_START_TEMPLATE % (fltsumm[event_cnt][0])
-        for i in range(0, len(run_data['lid_time']), step):                
-            data =  extract_run_data(run_data, start_index=i, end_index=i+step+1)   
-            img_name = os.path.join(ROOT_TMP_PATH, 'images', 'lidar_%.4i.png' % img_cnt)
-            lidar_plot(data, img_name)
-            slon, slat = get_run_start_coordinates(data)
-            run_bearing = get_run_bearing(data)
-            run_bearing = convert_bearing(run_bearing)
-         
-            kml_doc += KML_PLACEMARK_TEMPLATE % (img_name, slon, slat, run_bearing, 'curtain_%.4i.dae' % img_cnt, img_name, img_name)
-            
-            run_length = get_run_length(data)
-            run_altitude = 10000.0 * alt_scale_factor
-            dae_values = DAE_VALUES_TEMPLATE % (run_length, run_altitude, run_length, run_altitude)
-         
-            f = open(os.path.join(ROOT_TMP_PATH, 'files', 'curtain_%.4i.dae' % img_cnt), 'w')
-            f.write( DAE_TEMPLATE % (os.path.basename(img_name), dae_values))
-            f.close()
-            img_cnt += 1            
-        kml_doc += KML_FOLDER_END_TEMPLATE
+    for var in ['rangeCorrected_0', 'rangeCorrected_1']:
+        kml_doc += KML_FOLDER_START_TEMPLATE % (var)
+        for event_cnt in range(len(fltsumm)):
+            run_data = extract_run_data(ds,
+                                        var,
+                                        start_time=fltsumm[event_cnt][1],
+                                        end_time=fltsumm[event_cnt][2])
+
+
+            kml_doc += KML_FOLDER_START_TEMPLATE % (fltsumm[event_cnt][0])
+            max_length = 300
+            # Individual sections should not be longer than 300 seconds. So we
+            # split them up if they are
+            for i in range(0, len(run_data['Time']), max_length):
+                data =  extract_run_data(run_data, var, start_index=i, end_index=i+max_length)
+                img_name = os.path.join(ROOT_TMP_PATH, 'images', 'lidar_%.4i.png' % img_cnt)
+                lidar_plot(data, var, step, img_name)
+                slon, slat = get_run_start_coordinates(data)
+                run_bearing = get_run_bearing(data)
+                run_bearing = convert_bearing(run_bearing)
+                kml_doc += KML_PLACEMARK_TEMPLATE % (img_name, slon, slat, run_bearing, 'curtain_%.4i.dae' % img_cnt,
+                                                     img_name, img_name)
+                run_length = get_run_length(data)
+                run_altitude = 10000.0 * alt_scale_factor
+                # print(slon, slat, run_bearing, run_length, run_altitude)
+                dae_values = DAE_VALUES_TEMPLATE % (run_length, run_altitude, run_length, run_altitude)
+
+                f = open(os.path.join(ROOT_TMP_PATH, 'files', 'curtain_%.4i.dae' % img_cnt), 'w')
+                f.write(DAE_TEMPLATE % (os.path.basename(img_name), dae_values))
+                f.close()
+                img_cnt += 1
+            kml_doc += KML_FOLDER_END_TEMPLATE
+        kml_doc  += KML_FOLDER_END_TEMPLATE
 
     kml_doc += KML_FOLDER_END_TEMPLATE
-    kml_doc += KML_FOOTER_TEMPLATE 
-          
+    kml_doc += KML_FOOTER_TEMPLATE
+
     f = open(os.path.join(ROOT_TMP_PATH, 'doc.kml'), 'w')
     f.write(kml_doc)
     f.close()
-    
-    kmz_filename = os.path.join(os.path.expanduser('~'), '%s_lidar_curtain.kmz' % (fid))
-    print('Writing kmz file to: %s' % (kmz_filename))
-    # TODO: try to remove subprocess dependency; use zipfile module instead
-    cmd3 = """cd %s && zip --quiet -r %s doc.kml files/ images/""" % (ROOT_TMP_PATH, kmz_filename)
-        
-    proc3 = subprocess.Popen(cmd3, shell=True)
-    proc3.wait()
+    # print(ROOT_TMP_PATH)
+    kmz_filename = os.path.join(outpath, '%s_lidar_curtain.kmz' % (fid))
+    sys.stdout.write('File written to: %s' % (kmz_filename))
+    shutil.make_archive(kmz_filename, 'zip', ROOT_TMP_PATH)
+    shutil.move(kmz_filename+'.zip', kmz_filename)
+
 
 
 def _argparser():
@@ -514,30 +554,49 @@ def _argparser():
     if not __name__ == '__main__':
         sys.argv.insert(0, 'faampy ge_lidar_curtain')
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('fid', action="store", type=str,
-                        help='flight id like: b612.')    
     parser.add_argument('lidar_file', action="store", type=str,
-                        help='idl sav-file that contains the lidar data.')
+                        help='metoffice lidar level 1 file.')
     parser.add_argument('flight_summary', action="store", type=str,
-                        help='common flight-summary file as stored at the BADC.')    
-    parser.add_argument('-s', '--step', action="store", type=int, default=1, required=False,
+                        help='common flight-summary file as stored at the BADC.')
+    parser.add_argument('-s', '--step', action="store", type=int, default=2, required=False,
                         help='step size for lidar data plots. If for example step=5, \
                         then only every fifth lidar profile is used. Using this option can speed up the process.')
     parser.add_argument('-a', '--alt-scale-factor', action="store", type=int, default=5, required=False,
                         help='multiplies the altitude by this factor e.g. with \
-                        the default alt-scale-factor of 5: 10000m becomes 50000m in google-earth.')    
+                        the default alt-scale-factor of 5: 10000m becomes 50000m in google-earth.')
+    parser.add_argument('-o', '--outpath', action="store", type=str,
+                        default=os.path.expanduser('~'), required=False,
+                        help='outpath for kmz file')
     return parser
 
 
 def main():
     parser = _argparser()
-    args = parser.parse_args()    
-    process(args.fid,
-            args.lidar_file,
+    args = parser.parse_args()
+    print(args)
+    process(args.lidar_file,
             args.flight_summary,
             step=args.step,
-            alt_scale_factor=args.alt_scale_factor)
+            alt_scale_factor=args.alt_scale_factor,
+            outpath=args.outpath)
 
 
 if __name__ == '__main__':
     main()
+
+
+
+
+#ROOT_DATA_PATH = '/home/axel/Dropbox/raw_lidar_netcdf/'
+#import os
+#flight_summary_file = os.path.join(ROOT_DATA_PATH, 'flight-sum_faam_20150812_r0_b923.txt')
+#lidar_datafile = os.path.join(ROOT_DATA_PATH, 'metoffice-lidar_faam_20150812_r0_B923_level1.nc')
+
+#ds = get_data(lidar_datafile)
+
+
+#process(lidar_datafile,
+#        flight_summary_file,
+#        step=2,
+#        alt_scale_factor=5)
+

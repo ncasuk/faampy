@@ -28,17 +28,17 @@ def dlfile(url, local_zipfile):
             local_file.write(f.read())
 
     # handle errors
-    except (urllib2.HTTPError, e):
-        print("HTTP Error:", e.code, url)
-    except (urllib2.URLError, e):
-        print("URL Error:", e.reason, url)
+    except urllib2.HTTPError, e:
+        sys.stdout.write("HTTP Error: %i %s\n" % (e.code, url))
+    except urllib2.URLError, e:
+        sys.stdout.write("URL Error: %i %s\n" % (e.reason, url))
     return
 
 
 def _argparser():
     import argparse
     from argparse import RawTextHelpFormatter
-    if not __name__ == '__main__':    
+    if not __name__ == '__main__':
         sys.argv.insert(0, 'faampy data_download')
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=RawTextHelpFormatter)
@@ -71,7 +71,7 @@ def main():
         dl_file_list = dl_file_list = [FAAMPY_DATA_URL,]
     else:
         dl_file_list = [FAAMPY_EXAMPLE_DATA_URL, FAAMPY_DATA_URL]
-    
+
     passwd = args.password
     if not os.path.exists(faampy.FAAMPY_DATA_PATH):
             os.makedirs(faampy.FAAMPY_DATA_PATH)
@@ -80,23 +80,23 @@ def main():
         if not os.path.exists(faampy.FAAMPY_EXAMPLE_DATA_PATH):
             os.makedirs(faampy.FAAMPY_EXAMPLE_DATA_PATH)
             sys.stdout.write('Created %s ...\n' % faampy.FAAMPY_EXAMPLE_DATA_PATH)
-    
-    for dl_file in dl_file_list:    
+
+    for dl_file in dl_file_list:
         local_zipfile = tempfile.mktemp(suffix='.zip')
         dlfile(dl_file, local_zipfile)
 
-        opath = FAAMPY_EXAMPLE_DATA_PATH
+        opath = faampy.FAAMPY_EXAMPLE_DATA_PATH
         if dl_file == FAAMPY_DATA_URL:
             opath = os.path.join(opath, '..')
-            
+
         # If the unzip command is available we use subprocess, because it is much
         # faster than usein gthe zipfile python module
         if cmd_exists('unzip'):
-            cmd = 'unzip -P %s -o %s -d %s' % (passwd, local_zipfile, faampy.FAAMPY_EXAMPLE_DATA_PATH)
+            cmd = 'unzip -P %s -o %s -d %s' % (passwd, local_zipfile, opath)
             subprocess.call(cmd, shell=True)
         else:
             _zip = zipfile.ZipFile(local_zipfile)
-            _zip.extractall(path=faampy.FAAMPY_EXAMPLE_DATA_PATH, pwd=passwd)
+            _zip.extractall(path=opath, pwd=passwd)
     return
 
 

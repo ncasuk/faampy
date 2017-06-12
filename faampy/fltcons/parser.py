@@ -47,13 +47,15 @@ class Parser(object):
             line = tmplines.pop()
             try:
                 rev_date = datetime.datetime.strptime(line.split('-')[1].strip(), '%d %b %Y')
+                rev_date = rev_date.strftime('%Y-%m-%d')
             except:
                 pass
             try:
                 rev_date = datetime.datetime.strptime(line.split('-')[1].strip(), '%d %B %Y')
+                rev_date = rev_date.strftime('%Y-%m-%d')
             except:
                 pass
-        rev_date = rev_date.strftime('%Y-%m-%d')
+
         if not rev_date:
             rev_date = '2099-01-01'
 
