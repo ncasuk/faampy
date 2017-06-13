@@ -267,7 +267,7 @@ class GraphicsTest(TephiTest):
 
             if _DISPLAY_FIGURES:
                 if resultant_checksum != checksum:
-                    print 'Test would have failed (new checksum: %s ; old checksum: %s)' % (resultant_checksum, checksum)
+                    print('Test would have failed (new checksum: %s ; old checksum: %s)' % (resultant_checksum, checksum))
                 plt.show()
             else:
                 self.assertEqual(resultant_checksum, checksum, 'Image checksums not equal for %s' % unique_id)

@@ -18,7 +18,6 @@ __version__ = '0.1.4'
 __status__ = 'a'
 
 
-
 # list of subcommands and assosciated python script
 # this has to be maintained manually and has to be
 # checked/updated with every release
@@ -30,6 +29,7 @@ MODULES = [('data_download',      'faampy.utils.data_download'),
            ('ge_was_to_kmz',      'faampy.mapping.ge_was_to_kmz'),
            ('nc_to_gpx',          'faampy.mapping.nc_to_gpx'),
            ('ge_ncvar_to_kml',    'faampy.mapping.ge_ncvar_to_kml'),
+           ('qa_report',          'faampy.qa_plotting.report'),
            ('world_map',          'faampy.mapping.world_map'),
            ('sat_tracker',        'faampy.mapping.sat_tracker'),
            ('flight_summary',     'faampy.core.flight_summary'),

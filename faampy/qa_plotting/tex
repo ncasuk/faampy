@@ -1,0 +1,120 @@
+\section*{General information}
+The grey vertical lines in the time series plots indicate take-off and landing for the flight. 
+
+\section*{Temperature}
+Temperature are deiced and non-deiced. 
+
+\subsection*{IAT_DI vs IAT_ND figure}
+This shows Indicated Air Temperature from both the deiced and non-deiced probes. It should show a straight upward sloping line of y=x (with gradient 1). If the gradient is higher or lower than 1, then it implies the two 
+probes aren't reading the same temperature i.e. one of both of the probes is out of calibration. If an offset is apparent then check other temperature figures for potential probe damage during the flight. In certain situations, such as icing, it is to be expected that they won't read the same temperature. This should be a short-lived
+effect that will rectify itself within the flight (shown as a slight deviation from the x=y line). 
+
+\subsection*{Delta IAT figure}
+This shows the temperature difference between the two probes (IAT_DI minus the IAT_ND) during the flight (as a percentage). When the aircraft is on the ground (potentially during a double flight) the deiced probe reads
+a higher temperature (because the housing is darker). This will be shown as a peak in the positive. 
+
+\subsection*{Power spectrum figure}
+This shows the amount of power that is associated with each different frequency in the temperature timeseries. If the data is good this plot should have two overlapping lines of gradient -5/3 (a downwards slope).
+If spikes are present, it suggests some kind of interference (the temperature probes are picking up noise from external sources not real atmospheric variability). If this occurs please contact the primary instrument scientist
+(as of 2015 - Hannah Price).  
+
+\subsection*{Heater figure}
+This shows when the deiced heater is switched on i.e. during icing conditions. Plot shows 1 when the heater is on, 0 when the heater is off. 
+
+\subsection*{LWC figure}
+This shows liquid water content from the Johnson Williams probe. This indicates the presence of liquid or mixed-phase clouds. 
+
+\subsection*{IAT/TAT figures}
+These show time series of IAT and TAT. The third line on each plot shows the temperature difference between the two probes and is related to right-hand axis. 
+
+\section*{Nevzorov}
+Water content measurements are total and liquid. Measured from vcol, icol, iref, vref which are different voltages and currents flowing in the two different circuits that make up the nevzorov probe; these are needed to
+calculate the derived LWC and TWC. 
+
+\section*{Broadband radiometers}
+The upper plot shows the sun position with respect to the aircraft heading (0: Sun on the nose; 90: sun is starboard side; 180: sun on the tail; 270: sun on board side).
+This shows time series 
+
+Normally expect the red dome to show approximately half the signal of the clear dome. 
+
+
+
+\section*{BUCK}
+Altitude figure:
+GIN = GPS Inertial Navigation System
+
+\subsection*{BUCK mixing ratio timeseries figure}
+The BUCK is a chilled mirror hygrometer which measures the temperature at which liquid water or ice condenses from the gas phase. This dew/frost point temperature is then used to calculate a volume mixing ratio. 
+The uncertainty in this measured temperature increases between 0 and -40 degrees celsius because it is not possible to know if you've got liquid water or ice (so you don't know if it is a frost or dew point). 
+
+\subsection*{Dewpoint timeseries figure}
+This shows the General Eastern (GE) instrument and the BUCK because they are both chilled mirror hygrometers so should measure the same. If minor excursions (less than 5 minutes) are present (due to instrument stabilisation) 
+then please ignore. Likewise, small short-term differences between the BUCK and GE.
+
+
+\section*{Nephelometer}
+Neph temperature and pressure figure:
+These values are related directly to the instrument, they are not the atmospheric temperature/pressure. 
+
+Back/total scatter figures:
+This shows the amount of different colours of light that is scattered by aerosol particles. 
+
+\section*{CPC3781}
+CPC flows figure:
+
+CPC temperatures figure:
+
+CPC figure:
+
+
+\section*{PSAP}
+PSAP-lin flag figure:
+
+\subsection*{PSAP flow figure}
+The flow data will be shown as zero if the flight manager has turned it off due to cloud. As this a manual process, the PSAP data can sometimes be unreliable if the flight manager has been unable to 
+turn the instrument off before entering cloud. 
+
+
+PSAP-lin and PSAP-log figure:
+
+
+\section*{Cabin pressure/temperature}
+Cabin temperature is measured at the core console. 
+
+\section*{Carbon monoxide}
+
+explain...
+
+\section*{Static pressure}
+PS_RVSM = static pressure from the aircraft RVSM system
+P9_STAT = Static pressure from the S9 fuselage ports 
+
+There is expected to be a reasonably constent offset in the static pressure measurements due to the location of the P9_static and the fact that is has never been properly characterised as a true static port.
+
+\section*{Humidity}
+Humidity time series figure:
+WVSS2-F = water vapour measurement from Flush inlet
+WVSS2-R = water vapour measurement from Rosemount inlet
+
+\section*{Total water content probe}
+Dewpoint temperature figure:
+The TWC should match with WVSS2R except when in cloud. 
+
+The TWC probe is reference to the GE instrument, so if the GE isn't run then the TWC will either not appear or will look inaccurate. 
+
+\section*{Turbulence}
+Pressure figure:
+If there is a significant change in one of the pressure measurements then this could indicate a bias introduced by icing. 
+
+The figures show the difference between the data using the turbulence probe in the nose and the wind data derived from the difference between airspeed and groundspeed vectors (known as the _NOTURB wind)
+
+
+\section*{Parameter Flags}
+Flag defintions
+
+The flags have different meanings for different instruments. Flag 3 indicates bad data that shouldn't be used, if a significant proportion of the data is flagged then it should be investigated. 
+
+\section*{TCP Data File Summary}
+Checking data and end time. Completeness can be greater than 100 if the same data line is sent several times per second. If completeness less than 100 it could indicate missing data or simply an instrument that reports
+less frequently than once per second. 
+
