@@ -33,8 +33,7 @@ Reading the data from the NOx instrument into a pandas.Dataframe.
 .. code-block:: python
 
     # define the input data file
-    nox_file = os.path.join(faampy.FAAMPY_DATA_PATH,
-                            'example_data', 
+    nox_file = os.path.join(faampy.FAAMPY_EXAMPLE_DATA_PATH,
                             'b991',
                             'chem_data',
                             'NOx_161024_090507')
@@ -56,8 +55,7 @@ Now reading in the FGGA data.
 .. code-block:: python
 
     from faampy.data_io.chem import read_fgga
-    fgga_file = os.path.join(faampy.FAAMPY_DATA_PATH,
-                             'example_data', 
+    fgga_file = os.path.join(faampy.FAAMPY_EXAMPLE_DATA_PATH,
                              'b991',
                              'chem_data',
                              'FGGA_20161024_092223_B991.txt')
@@ -75,8 +73,7 @@ Now reading in the FGGA data.
     # Reading in the FAAM core data file using the FAAM_Dataset object from the
     # faampy module
     
-    core_file = os.path.join(faampy.FAAMPY_DATA_PATH,
-                             'example-data',
+    core_file = os.path.join(faampy.FAAMPY_EXAMPLE_DATA_PATH,
                              'b991',
                              'core',
                              'core_faam_20161024_v004_r0_b991.nc')

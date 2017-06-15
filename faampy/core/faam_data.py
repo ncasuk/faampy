@@ -1,5 +1,21 @@
 # -*- coding: utf-8 -*-
 
+"""
+The FAAM_Dataset class handles the core_faam*nc files and smoothes out the
+reading process of the data and ensures that older files are read in the same
+way as newer ones. The class copies the behaviour of netCDF4.Dataset class.
+
+A nifty method of the class is the merge method, which allows you to merge data
+from other data sources. The data type that can be merged is a numpy.recarray.
+The index for the procedure is the timestamp, of the FAAM_Dataset.
+Care is taken off gaps in the recarray.
+
+A convenient option is exporting the Dataset into a pandas DataFrame, which
+then gives you all the amazing features of pandas. Due to the fact that pandas
+can not deal with multidimensional arrays, only the first measurement within a
+row is used for the DataFrame.
+"""
+
 import itertools
 import netCDF4
 import numpy as np
@@ -12,7 +28,7 @@ import sys
 
 from faampy._3rdparty import rdp             #  Ramer-Douglas-Peucker algorithm (RDP)
 
-DEBUG = True
+DEBUG = False
 
 
 NETCDF_VARIABLE_IDS = """515,Time
@@ -141,7 +157,7 @@ def flatten(l):
 
 class Translator(dict):
     """
-    Dictionary for translating old variable names like 'PARA0515' to more 
+    Dictionary for translating old variable names like 'PARA0515' to more
     meaningful names as they have been in us more recently. This nomination was
     used for early FAAM flights and was inherited from MRF days.
 
@@ -185,7 +201,7 @@ class Coords(list):
         """
         Return kml formatted string
         :return : kml string
-        
+
         """
         if simplified:
             xyz = self.simplified()
@@ -261,7 +277,7 @@ class FAAM_Dataset(object):
     """
     Dataset class which has much in common with the netCDF4.Dataset. The class
     has methods that helps to perform common tasks like merging and can copy
-    
+
 
     """
 
@@ -509,25 +525,25 @@ class FAAM_Dataset(object):
 
     def close(self):
         """
-        Closing the Dataset
+        Closing dataset
         """
         self.ds.close()
 
     def write(self, outfilename, v_name_list=[], as_1Hz=True, clobber=False):
         """
-        Writing the dataset out as netCDF
+        Writing dataset out as NetCDF
 
-        :param outfilename: path for the new netCDF
+        :param outfilename: path for the new NetCDF
         :type outfilename: str
         :param v_name_list: list of variables names that should be written. By
-          default all variables are added to the netCDF
-        :type v_name_list: list  
+          default all variables are added to the NetCDF
+        :type v_name_list: list
         :param as_1Hz: Writes only 1Hz data out. If the variable
           is avaiable in higher frequency only the first value within the
           second is used rather than the average from the number of data
           points
         :type as_1Hz: boolean
-        :param clobber: Overwrites the files if it exists  
+        :param clobber: Overwrites the files if it exists
         :type clobber: boolean
         """
 
@@ -538,7 +554,7 @@ class FAAM_Dataset(object):
             else:
                 sys.stdout.write('File exists ... Will overwrite it ...\n')
 
-        # create the netCDF4 output dataset        
+        # create the netCDF4 output dataset
         dsout = netCDF4.Dataset(outfilename, 'w', clobber=clobber)
 
         # Write the global attributes
@@ -552,8 +568,13 @@ class FAAM_Dataset(object):
         # Now the dimensions
         for dname, the_dim in self.ds.dimensions.iteritems():
             dsout.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
-            outVar = dsout.createVariable(dname, int, ('Time',), fill_value=-9999.)
-            outvar[:] = self.variables[dname][:]
+            try:
+                dim_var=self.variables[dname][:]
+                outVar = dsout.createVariable(dname, int, ('Time',), fill_value=-9999.)
+                outVar[:] = dim_var
+            except KeyError:
+                pass # No variable for this dimension
+
             if dname in v_name_list:
                 v_name_list.remove(dname)
         # Writing the variables

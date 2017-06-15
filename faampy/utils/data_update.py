@@ -50,7 +50,6 @@ def update_spatial_db(inpath, overwrite=False):
     for f in core_file_list:
         try:
             # check if the fid exists in the db, otherwise just move on
-            #if not sdb.check_exists(f.fid):
             ds = FAAM_Dataset(os.path.join(f.path, f.filename))
             dt = datetime.datetime.strptime(f.date, '%Y%m%d')
             sdb.insert_flight_track(f.fid, dt, ds.coords.as_wkt(simplified=True, as_type='LINESTRINGZ'), overwrite=overwrite)

@@ -22,13 +22,13 @@ __status__ = 'a'
 # this has to be maintained manually and has to be
 # checked/updated with every release
 MODULES = [('data_download',      'faampy.utils.data_download'),
-           ('nimrod_to_nc',       'faampy.data_io.nimrod_to_nc'),
            ('ge_ncas_airquality', 'faampy.mapping.ge_ncas_airquality'),
            ('ge_nimrod_to_kmz',   'faampy.mapping.ge_nimrod_to_kmz'),
            ('ge_photo_album',     'faampy.mapping.ge_photo_album'),
            ('ge_was_to_kmz',      'faampy.mapping.ge_was_to_kmz'),
-           ('nc_to_gpx',          'faampy.mapping.nc_to_gpx'),
            ('ge_ncvar_to_kml',    'faampy.mapping.ge_ncvar_to_kml'),
+           ('nc_to_gpx',          'faampy.mapping.nc_to_gpx'),
+           ('nimrod_to_nc',       'faampy.data_io.nimrod_to_nc'),
            ('qa_report',          'faampy.qa_plotting.report'),
            ('world_map',          'faampy.mapping.world_map'),
            ('sat_tracker',        'faampy.mapping.sat_tracker'),
