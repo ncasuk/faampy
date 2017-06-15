@@ -11,14 +11,38 @@ Information about installing anaconda2 and cis:
   | anaconda2: https://www.continuum.io/downloads
   | cis:       http://cistools.net/get-started#installation
 
-Please note that the cis instructions say that you should install python 2.7 and **not** 3.x. If you are new to python you might be irritated why you would not install the very latest version of some software. In brief: The two versions are not fully compatible and many people decided to stick with 2.7. 
+Please note that the cis instructions say that you should install python 2.7 and **not** 3.x. If you are new to python you might be irritated why you would not install the very latest version of some software. In brief: The two versions are not fully compatible and many people decided to stick with 2.7 for the time being, because the benefits are just too small to move on.
+
   
 FAAM netCDF preparation
 -----------------------
 
-The FAAM core data do not work with the cis tool straight away. The netCDF need a little tweaking to make them fully CF compliant, so that cis interpretets the data correctly. The global attributes "Conventions" and "Coordinates" need to be added. A small bash script is provide (faam_edit.sh) that does the changes using nc utilities. The example netCDF has already been edited and works with cis.
+The FAAM core data do not work with the cis tool straight away. The netCDF data product need a little tweaking to make them fully CF compliant, so that cis interprets the data correctly. The global attributes "Conventions" and "Coordinates" need to be added. A small bash snippet can do the changes using nc utilities. The example netCDF has already been edited and works with cis.
 
-The example data (core_faam_20161024_v004_r0_b991_1hz_editted.nc) are for flight b991 (24-10-2016), when the aircraft was flying downwind of Manchester and Liverpool measuring the emissions from the two cities ahead of the *Into the Blue* event.
+.. code-block:: bash
+
+    #!/bin/bash
+    
+    ofile=`echo $1 | sed s/.nc/_editted.nc/`
+    
+    ncatted \
+     -a 'Version,global,c,c,1.5' \
+     -a 'conventions,global,m,c,NCAR-RAF/nimbus' \
+     -a 'Coordinates,global,c,c,LON_GIN LAT_GIN ALT_GIN Time' \
+     -a '_FillValue,LAT_GIN,m,f,0' \
+     -a '_FillValue,LON_GIN,m,f,0' \
+     -a '_FillValue,ALT_GIN,m,f,0' \
+     -o $ofile $1 
+    ncwa -a sps01 -O $ofile $ofile
+    ncrename -d data_point,Time -O $ofile
+    
+Save the above code as faam_edit.sh and make it executable::
+
+    chmod u+x faam_edit.sh
+    ./faam_edit.sh core_faam_20161024_v004_r0_b991_1hz.nc 
+
+
+The example data (core_faam_20161024_v004_r0_b991_1hz_editted.nc) are for flight b991 (24-10-2016), when the aircraft was flying downwind of Manchester and Liverpool measuring emissions from the two cities ahead of the *Into the Blue* event.
 
 
 Starting cis
@@ -32,15 +56,8 @@ and activate the environment::
     
     source activate cis_env
 
-From now on the shell should have the string '(cis_env)' in front indicating that we are working in the cis envrionment.
+From now on the shell should have the string '(cis_env)' in front indicating that we are working in the cis environment.
 
-In a next step we need to tell cis where to look for the FAAM_NetCDF plugin which is needed to read in the FAAM core data. The envronment variable CIS_PLUGIN_HOME has to be set to the directory that contains the FAAM_NetCDF.py file. For me the command looks like this::
-    
-     export CIS_PLUGIN_HOME=/home/axel/cis_plugin_development
-     
-Go to the directory where the edited faam core netcdf is stored to keep the file path short in the cis commands::
-
-   cd ~/cis_plugin_development/data
 
 
 Working with cis and FAAM data
@@ -51,17 +68,16 @@ Below are several one line examples that show the functionality of the cis tools
 .. note::
    All the commands below go on **one** line in your shell. The page is just too small to get it all printed on one line.
 
-.. note::
-   If you get an Error message similar to:
-     
-     ERROR - 'DimCoord' object has no attribute 'data' - check cis.log for details
-   
-   cis can not find the FAAM_NetCDF plugin and it is most likely that the CIS_PLUGIN_HOME variable was not defined correctly.
    
 Get information about the netCDF::
 
     cis info TAT_ND_R:core_faam_20161024_v004_r0_b991_1hz_editted.nc
+    
+and the true air temperature form the non-deiced sensor::
 
+    cis info TAT_ND_R:core_faam_20161024_v004_r0_b991_1hz_editted.nc
+
+    
 Create scatter plot to compare the deiced (TAT_DI_R) and non-deiced (TAT_ND_R) temperature measurements on the ARA::
     
     cis plot TAT_ND_R:core_faam_20161024_v004_r0_b991_1hz_editted.nc \
@@ -76,13 +92,13 @@ And print some statistics about the TAT_DI_R variable::
       TAT_DI_R:core_faam_20161024_v004_r0_b991_1hz_editted.nc
     
 
-Make a coloured line plot, showing the CO concentration on a map::
+Make a coloured line plot, showing the CO concentration (variable name is CO_AERO) on a map::
 
   cis plot CO_AERO:core_faam_20161024_v004_r0_b991_1hz_editted.nc \
     --xaxis longitude --yaxis latitude --xmin -5 --xmax -2 --ymin 52.2 --ymax 55
 
 
-Calculate mean,min,max for 1min time intervals for the CO_AERO data for the time interval 11:45 to 14:45. The results are written to a netCDF::
+Calculate mean, min, max for 1min time intervals for the CO_AERO data for the time interval 11:45 to 14:45. The results are written out to a new NetCDF::
 
     cis aggregate CO_AERO:core_faam_20161024_v004_r0_b991_1hz_editted.nc:kernel=mean \
       t=[2016-10-24T11:45,2016-10-24T14:45,PT1M] -o b991_co_aero_1min_mean.nc

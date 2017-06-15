@@ -2,7 +2,7 @@
 Synopsis
 ========
 
-This module helps with the processing and analysis of data from the `FAAM <http://www.faam.ac.uk/>`_ aircraft.
+This module helps with the processing and analysis of data from the `FAAM <http://www.faam.ac.uk/>`_ aircraft. The documentation including recipes is available online at `readthedocs.org <http://faampy.readthedocs.io/en/latest/>`_.
 
 
 ==========
@@ -19,15 +19,24 @@ Installation
 The installation of the module is done in the usual way::
 
     git clone https://github.com/ncasuk/faampy.git
+    cd faampy
     python setup.py build
     sudo python setup.py install
 
+In case you do not have superuser rights on the computer you can use the "--user" option with the install command::
+    
+    git clone https://github.com/ncasuk/faampy.git
+    cd faampy
+    python setup.py build
+    python setup.py install --user
 
+    
 ============
 Contributors
 ============
 
 * Axel Wellpott (FAAM)
+* Dave Tiddeman (MetOffice)
 
  
 ======= 

@@ -1,15 +1,14 @@
 
-
 Recipe - Post Flight Analysis
 =============================
 
-This is an example for what the post flight analysis for typical chemistry FAAM flight could look like.
+This is an example for what the post flight analysis for a typical FAAM chemistry flight could look like.
 
-The data we are using are from the "Into the Blue" flight b991 on the 24th October 2016. This flight took us up and down the west coast between Morecambe and Wales and "plumes" were sampled, that originated from the Manchester/Liverpool area.
+The data we are using are from the "Into the Blue" flight b991 on the 24th October 2016. This flight took us up and down the west coast between Morecambe and Wales. On that stretch some "plumes" were sampled, that originated from the Manchester/Liverpool area.
 
 .. image:: ./img/b991_flight_track.png
 
-.. warning:: All the provided chemistry data are preliminary and uncalibrated. Therefore the data are not suitable for scientific analysis.
+.. warning:: All the provided chemistry data in the example dataset are preliminary and uncalibrated. Therefore the data are not suitable for scientific publication.
 
 
 FAAM Dataset
@@ -35,6 +34,7 @@ Reading the data from the NOx instrument into a pandas.Dataframe.
 
     # define the input data file
     nox_file = os.path.join(faampy.FAAMPY_DATA_PATH,
+                            'example_data', 
                             'b991',
                             'chem_data',
                             'NOx_161024_090507')
@@ -55,27 +55,16 @@ Now reading in the FGGA data.
 
 .. code-block:: python
 
+    from faampy.data_io.chem import read_fgga
     fgga_file = os.path.join(faampy.FAAMPY_DATA_PATH,
+                             'example_data', 
                              'b991',
                              'chem_data',
                              'FGGA_20161024_092223_B991.txt')
     
-    fgga_dateparse = lambda x: pd.datetime.utcfromtimestamp(int(x))
-    fgga_names = ['identifier', 'packet_length', 'timestamp', 'ptp_sync',
-                  'MFM', 'flight_num', 'CPU_Load', 'USB_disk_space', 'ch4', 'co2',
-                  'h2o', 'press_torr', 'temp_c', 'fit_flag', 'rda_usec',
-                  'rdb_usec', 'ch4_ppb', 'co2_ppm', 'MFC_1_absolute_pressure',
-                  'MFC_1_temperature', 'MFC_1volumetic_flow', 'MFC_1mass_flow',
-                  'MFC_1set_point', 'V1', 'V2', 'V3', 'V4', 'restart_FGGA',
-                  'FGGA_Pump', 'CAL_MFC_1Set_Value']
-    df_fgga = pd.read_csv(fgga_file,
-                          names=fgga_names,
-                          delimiter=',',
-                          parse_dates=[2],
-                          date_parser=fgga_dateparse,
-                          skiprows=100)     # To be sure to skip the header
+    df_fgga = read_fgga(fgga_file)
     
-    # Using the Valve states for flagging out calibration periods
+    # Using the valve states for flagging out calibration periods
     df_fgga.loc[df_fgga['V1'] != 0, 'ch4_ppb'] = np.nan
     df_fgga.loc[df_fgga['V2'] != 0, 'co2_ppm'] = np.nan
     df_fgga.loc[df_fgga['V2'] != 0, 'ch4_ppb'] = np.nan
@@ -87,6 +76,7 @@ Now reading in the FGGA data.
     # faampy module
     
     core_file = os.path.join(faampy.FAAMPY_DATA_PATH,
+                             'example-data',
                              'b991',
                              'core',
                              'core_faam_20161024_v004_r0_b991.nc')
@@ -94,6 +84,9 @@ Now reading in the FGGA data.
     
     
     # merge chemistry data with the core data set
+    # The delay keyword is used to set off the chemistry measurements. Due to fact 
+    # that the air has to travel through tubings in the cabine those instruments
+    # are slower than e.g compared to the temperature measurements
     ds.merge(df_nox.to_records(convert_datetime64=False), index='timestamp', delay=3)
     ds.merge(df_fgga.to_records(convert_datetime64=False), index='timestamp', delay=4)
     
@@ -116,7 +109,7 @@ Google-Earth overlays
 
 The commands in this section are run from the konsole. To keep the filenames short we move into the directory where the data for b991 are located::
 
-    cd ~/faampy_data/b991
+    cd ~/faampy_data/example_data/b991
 
 
 We create a gpx (`GPS Exchange Format <https://en.wikipedia.org/wiki/GPS_Exchange_Format>`_) file::
@@ -129,17 +122,17 @@ We use the gpx data file to geotag a few photographs that were taking during the
     gpscorrelate --gps b991_20161024.gpx --photooffset -3600 photos/*jpg
 
 
-Now that the photos are geotagged it is possible to creaet a photo album::
+Now that the photos are geotagged it is possible to create a photo album::
 
     faampy ge_photo_album ./photos ./ge_photo_album_20161024_b991.kmz
 
 
-WAS bottle overlay::
+WAS (Whole Air Sample) bottle overlay::
 
     faampy ge_was_to_kmz ./chem_data/B991.WAS ./core/core_faam_20161024_v004_r0_b991_1hz.nc .
 
 
-Make profiles for some of the chemicals in the created merged file::
+Make profiles for some of the variables in the created merged file::
 
     cd ~/faampy_data/b991
     faampy ge_ncvar_to_kml --offset -100 --scale_factor 500 \
@@ -153,15 +146,17 @@ Make profiles for some of the chemicals in the created merged file::
 
     faampy ge_ncvar_to_kml --scale_factor 0.4 \
       --fltsumm ./core/flight-sum_faam_20161024_r0_b991.txt nox_conc b991_merged.nc .
-    
 
 
 Quicklook Figures
 -----------------
 
-faampy provides a command line tool to create quicklook figures from using the information from the flight summary. According to the event name (e.g. Profile, Run, ...) either a time series or a profile plot is created. Maps are created for every event and skewt plots for every profile. Again, to keep filenames on the command line brief we move into the b991 directory::
+faampy provides a command line tool to create quicklook figures from using the information from the flight summary. According to the event name (e.g. Profile, Run, ...) either a time series or a profile plot is produced. Maps are created for every event and tephigrams for every profile. Once more, to keep filenames on the command line brief we move into the b991 directory::
 
-    cd ~/faampy_data/b991
+    cd ~/faampy_data/example_data/b991
+    
+Make the output directory for the quicklook figure files::    
+    
     mkdir quicklooks
 
 Create a quicklooks configuration file (quicklooks.cfg) which defines the figure layout and which variables should be plotted::
@@ -175,10 +170,10 @@ Add the following text to the quicklooks.cfg file using a text editor::
     [['ch4_ppb'], ['co2_ppm']]
     [['no_conc'], ['no2_conc'], ['nox_conc']]
 
-Every line defines one figure and the number of suplots. For example the first line ([['TSC_BLUU', 'TSC_GRNU' , 'TSC_REDU'], ['BSC_BLUU', 'BSC_GRNU', 'BSC_REDU']]) will create two subplots. In the first the total scatter values from the Nephelometer will be plotted and in the second subplot the backscatter values will be plotted.
-    
+Every line defines one figure and the number of subplots. For example the first line ([['TSC_BLUU', 'TSC_GRNU' , 'TSC_REDU'], ['BSC_BLUU', 'BSC_GRNU', 'BSC_REDU']]) will create two subplots. In the 1st of these the total scatter values from the Nephelometer will be plotted and in the 2nd subplot the backscatter values will be plotted.
+
 We will use the merged data file, which we produced in the previous section. This file contains the NOx and FGGA data. The command for creating the quicklooks is::
-    
+
     faampy plt_quicklooks --config_file quicklooks.cfg b991_merged.nc \
       ./core/flight-sum_faam_20161024_r0_b991.txt ./quicklooks/
 
