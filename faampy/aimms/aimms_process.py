@@ -23,7 +23,7 @@ import sys
 import tempfile
 
 from file_info import *
-from file_list import *
+from file_list import File_List
 
 # AIMMS_ROOT_PATH = '/mnt/faamarchive/Data/cloudphysics'
 # CORE_ROOT_PATH = '/mnt/faamarchive/badcMirror/'
@@ -122,8 +122,6 @@ def main():
     from argparse import RawTextHelpFormatter
 
     parser = argparse.ArgumentParser(description=__doc__,
-                                     version=__version__,
-                                     epilog="Report bugs to %s." % __email__,
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('fid', action="store", type=str, help='Flight Number')
     parser.add_argument('-r', '--revision', action="store", type=int,
