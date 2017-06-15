@@ -552,8 +552,12 @@ class FAAM_Dataset(object):
         # Now the dimensions
         for dname, the_dim in self.ds.dimensions.iteritems():
             dsout.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
-            outVar = dsout.createVariable(dname, int, ('Time',), fill_value=-9999.)
-            outvar[:] = self.variables[dname][:]
+            try:
+                dim_var=self.variables[dname][:]
+                outVar = dsout.createVariable(dname, int, ('Time',), fill_value=-9999.)
+                outVar[:] = dim_var
+            except KeyError:
+                pass # No variable for this dimension
             if dname in v_name_list:
                 v_name_list.remove(dname)
         # Writing the variables
