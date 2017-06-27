@@ -99,7 +99,7 @@ def get_run_kml(run_data, ds, var, offset, scale_factor, time_lag):
             alt_flag=alt_flag[s_index+time_lag:e_index+time_lag, 0]
         else:
             alt_flag=alt_flag[s_index+time_lag:e_index+time_lag]
-        alt_flag=list(alt_flag)
+        #alt_flag=list(alt_flag)
 
         alt[alt_flag != 0]=0
 
@@ -124,13 +124,42 @@ def get_run_kml(run_data, ds, var, offset, scale_factor, time_lag):
     return result
 
 
-def process(ncfile, ncvar, time_lag, offset, scale_factor, outpath, _RUNS):
+def process(ncfile, ncvar, time_lag, offset, scale_factor, outpath, *fltsumm):
     ds = netCDF4.Dataset(ncfile, 'r')
     fid = get_fid(ds)
     try:
         datestring = os.path.basename(ncfile).split('_')[2]+'_'
     except:
         datestring = ''
+
+    if fltsumm:
+        from faampy.core.flight_summary import FlightSummary
+        fs = FlightSummary(fltsumm)
+        _RUNS = []
+        for e in fs.Entries:
+            if re.findall('run|leg|box', e.Name.lower()):
+                _RUNS.append((e.Name, e.Start_time, e.Stop_time))
+    else:
+        ds = netCDF4.Dataset(ncfile, 'r')
+        if 'IAS_RVSM' in ds.variables.keys():
+            if len(ds.variables['IAS_RVSM'][:].shape) == 2:
+                ias = ds.variables['IAS_RVSM'][:, 0].ravel()
+            else:
+                ias = ds.variables['IAS_RVSM'][:].ravel()
+            if not isinstance(ias, np.ndarray):
+                ias = ias.data
+                # filter for indicated airspeed greater 60
+            ix = np.where(ias > 60)
+            ix_min, ix_max = np.min(ix), np.max(ix)
+        else:
+            ix_min = 60
+            v = ds.variables[ds.variables.keys()[0]][:]
+            ix_max = v.shape[0]-60
+
+        _RUNS = [('Full flight',
+                 conv_secs_to_time(ds.variables['Time'][ix_min], no_colons=True),
+                 conv_secs_to_time(ds.variables['Time'][ix_max], no_colons=True)),]
+
     #kml_filename=os.path.join(out_path, fid + '-' + os.path.basename(ncfile).split('_')[2] + '_' + ncvar.lower() + '.kml')
     kml_filename = os.path.join(outpath, fid+'-'+datestring+ncvar.lower()+'.kml')
     kml = open(kml_filename, 'w')
@@ -170,41 +199,13 @@ def main():
     parser = _argparser()
     args = parser.parse_args()
 
-    if args.fltsumm:
-        from faampy.core.flight_summary import FlightSummary
-        fs = FlightSummary(args.fltsumm)
-        _RUNS = []
-        for e in fs.Entries:
-            if re.findall('run|leg|box', e.Name.lower()):
-                _RUNS.append((e.Name, e.Start_time, e.Stop_time))
-    else:
-        ds = netCDF4.Dataset(args.faam_core_netcdf, 'r')
-        if 'IAS_RVSM' in ds.variables.keys():
-            if len(ds.variables['IAS_RVSM'][:].shape) == 2:
-                ias = ds.variables['IAS_RVSM'][:, 0].ravel()
-            else:
-                ias = ds.variables['IAS_RVSM'][:].ravel()
-            if not isinstance(ias, np.ndarray):
-                ias = ias.data
-                # filter for indicated airspeed greater 60
-            ix = np.where(ias > 60)
-            ix_min, ix_max = np.min(ix), np.max(ix)
-        else:
-            ix_min = 60
-            v = ds.variables[ds.variables.keys()[0]][:]
-            ix_max = v.shape[0]-60
-
-        _RUNS = [('Full flight',
-                 conv_secs_to_time(ds.variables['Time'][ix_min], no_colons=True),
-                 conv_secs_to_time(ds.variables['Time'][ix_max], no_colons=True)),]
-        ds.close()
     process(args.faam_core_netcdf,
             args.ncvar,
             args.time_lag,
             args.offset,
             args.scale_factor,
             args.outpath,
-            _RUNS)
+            args.fltsumm)
 
 
 if __name__ == '__main__':
