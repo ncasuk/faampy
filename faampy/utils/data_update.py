@@ -59,6 +59,7 @@ def update_spatial_db(inpath, overwrite=False):
                                                                          fltsumm_file.filename),
                                                             os.path.join(f.path, f.filename))
         except:
+            pass
 
         for ent in fs.Entries:
             # Only consider two-point events
