@@ -53,7 +53,7 @@ def img_to_gtiff(img_filename, tif_filename):
     """
     tif_tmp_filename = tempfile.mkstemp(suffix='.tif')[1]
 
-    # TODO: use the python module instead of the command lines
+    # TODO: use the python module instead of the command line
     cmd1 = """gdal_translate -of GTiff %s "%s" "%s" """ % (gcps, img_filename, tif_tmp_filename)
     cmd2 = """gdalwarp -t_srs EPSG:4326 -order -tps -co COMPRESS=NONE  "%s" "%s" """ % (tif_tmp_filename, tif_filename)
 
@@ -64,26 +64,37 @@ def img_to_gtiff(img_filename, tif_filename):
     return
 
 
-def parse_ncas_airquality():
+def parse_ncas_airquality(date):
     image_lists = {v: [] for v in VARIABLES}
-    lines = response.text.split('\n')
-    for line in lines:
-        if line.strip().startswith('images'):
-            line = line.replace('\\/', '/')
-            line = line.replace('"', '')
-            line.encode('ascii')
-            images = line[line.find("[")+1:line.find("]")]
-            if 'O3_' in line:
-                image_lists['O3'] = images.split(',')
-            elif 'NOx_' in line:
-                image_lists['NOx'] = images.split(',')
-            elif 'PM25_' in line:
-                image_lists['PM25'] = images.split(',')
+    if date == 'now':
+        lines = response.text.split('\n')            
+        
+        for line in lines:
+            if line.strip().startswith('images'):
+                line = line.replace('\\/', '/')
+                line = line.replace('"', '')
+                line.encode('ascii')
+                images = line[line.find("[")+1:line.find("]")]
+                if 'O3_' in line:
+                    image_lists['O3'] = [ROOT_URL+img for img in images.split(',')]
+                elif 'NOx_' in line:
+                    image_lists['NOx'] = [ROOT_URL+img for img in images.split(',')]
+                elif 'PM25_' in line:
+                    image_lists['PM25'] = [ROOT_URL+img for img in images.split(',')]                
+    else:
+        url_template = "https://sci.ncas.ac.uk/airquality/files/resource/%s/d02/%s/%s_%s_%0.2i.png"
+        for v in VARIABLES:
+            for i in range(24):
+                url = url_template % (date, v, v, date, i)
+                image_lists[v].append(url)
     return image_lists
 
 
-def process(outpath, limit=None):
-    image_lists=parse_ncas_airquality()
+def process(outpath, date, limit=None):
+    if date == 'now':
+        image_lists=parse_ncas_airquality('now')
+    else:
+        image_lists=parse_ncas_airquality(date)
     if not limit:
         limit = len(image_lists[image_lists.keys()[0]])
     kml = simplekml.Kml()
@@ -91,7 +102,7 @@ def process(outpath, limit=None):
         folder = kml.newfolder(name=var)
         folder.open = 1
         for img in image_lists[var][0:limit]:
-            image_filename = get_image(ROOT_URL+img.encode('ascii'))
+            image_filename = get_image(img.encode('ascii'))
             img_to_gtiff(image_filename, image_filename[:-3]+'tif')
             image_filename = image_filename[:-3]+'tif'
             timestamp = datetime.datetime.strptime(img.split('/')[-1][-17:-4].encode(), '%Y-%m-%d_%H')
@@ -116,6 +127,11 @@ def _argparser():
                         default=os.path.expanduser('~'),
                         type=str,
                         help='outpath')
+    parser.add_argument('-d', '--date', 
+                        action="store",
+                        type=str,
+                        required=False,
+                        help='date in the format: %Y-%m-%d')
     parser.add_argument('-l', '--limit',
                         action="store",
                         type=int,
