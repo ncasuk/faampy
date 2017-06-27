@@ -111,10 +111,17 @@ def calc_clearsky_irradiance(data, step=30):
     # pvlib needs a pandas DatetimeINdex
     times = pd.DatetimeIndex(times)
 
-    idata = zip(data['LAT_GIN'][::step, 0].filled(),
-                data['LON_GIN'][::step, 0].filled(),
-                data['ALT_GIN'][::step, 0].filled(),
-                data['PS_RVSM'][::step, 0].filled()*100.,  # convert to Pascal
+    # TODO: See if we should read in masked arrays
+    #idata = zip(data['LAT_GIN'][::step, 0].filled(),
+    #            data['LON_GIN'][::step, 0].filled(),
+    #            data['ALT_GIN'][::step, 0].filled(),
+    #            data['PS_RVSM'][::step, 0].filled()*100.,  # convert to Pascal
+    #            times[::step])
+
+    idata = zip(data['LAT_GIN'][::step, 0],
+                data['LON_GIN'][::step, 0],
+                data['ALT_GIN'][::step, 0],
+                data['PS_RVSM'][::step, 0]*100.,  # convert to Pascal
                 times[::step])
 
     n = len(idata)

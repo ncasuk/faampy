@@ -572,6 +572,7 @@ class FAAM_Dataset(object):
                 dim_var=self.variables[dname][:]
                 outVar = dsout.createVariable(dname, int, ('Time',), fill_value=-9999.)
                 outVar[:] = dim_var
+                outVar.units = self.variables['Time'].units
             except KeyError:
                 pass # No variable for this dimension
 

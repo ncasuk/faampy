@@ -37,7 +37,7 @@ For the examples below to work we need to import some common modules and connect
 .. literalinclude:: ./../../examples/faampy_spatial_examples.py
    :language: python
    :start-after: Start General
-   :end-before: End General	      
+   :end-before: End General
 
 
 Example 1: Get some db info
