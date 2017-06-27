@@ -42,37 +42,40 @@ except ImportError:
     sys.stdout.write('seaborn not available ...\n')
 
 
+def get_cats():
+    _CATS = [[['BTHEIM_U']],
+             [['TSC_BLUU', 'TSC_GRNU', 'TSC_REDU'], ['BSC_BLUU', 'BSC_GRNU', 'BSC_REDU']],
+             [['PSAP_LIN'], ['PSAP_LOG'], ['PSAP_FLO', 'PSAP_TRA']],
+             [['NEPH_PR'], ['NEPH_T']],
+             [['NV_TWC_C', 'NV_LWC_C']],
+             [['WVSS2R_VMR', 'WVSS2F_VMR']],
+             [['PTCH_GIN',], ['TAS', 'TAS_RVSM']]]
+    return _CATS
 
 
 
-def process(fs, ds, outpath, flag=None, no_overwrite=False, config_file=None):
+def process(fltsumm_file, core_file, outpath, flag=None, no_overwrite=False, config_file=None):
 
+    fs = FlightSummary(fltsumm_file)
+    ds = netCDF4.Dataset(core_file, 'r')
+    
     if not flag:
         flag = [0]
-    if not config_file:
-        _CATS = [[['BTHEIM_U']],
-                 [['TSC_BLUU', 'TSC_GRNU', 'TSC_REDU'], ['BSC_BLUU', 'BSC_GRNU', 'BSC_REDU']],
-                 [['PSAP_LIN'], ['PSAP_LOG'], ['PSAP_FLO', 'PSAP_TRA']],
-                 [['NEPH_PR'], ['NEPH_T']],
-                 [['NV_TWC_C', 'NV_LWC_C']],
-                 [['WVSS2R_VMR', 'WVSS2F_VMR']],
-                 [['PTCH_GIN',], ['TAS', 'TAS_RVSM']]]
-
-        #config_file=os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), 'quicklooks.cfg')
-    else:
-        f=open(config_file, 'r')
-        lines=f.readlines()
+        _CATS = get_cats()
+    if config_file:
+        f = open(config_file, 'r')
+        lines = f.readlines()
         f.close()
-        _CATS=[ast.literal_eval('({0})'.format(line)) for line in lines]
-        _CATS=filter(bool, _CATS) # remove empty lines
+        _CATS = [ast.literal_eval('({0})'.format(line)) for line in lines]
+        _CATS = filter(bool, _CATS) # remove empty lines
 
-    plot_type='timeseries'
-    Start_time=fs.Entries[[x.Name.lower() for x in fs.Entries].index('t/o')].Start_time
+    plot_type = 'timeseries'
+    Start_time = fs.Entries[[x.Name.lower() for x in fs.Entries].index('t/o')].Start_time
     fs.Entries.reverse()
     try:
-        Stop_time=fs.Entries[[x.Name.lower() for x in fs.Entries].index('land')].Start_time
+        Stop_time = fs.Entries[[x.Name.lower() for x in fs.Entries].index('land')].Start_time
     except:
-        Stop_time=''
+        Stop_time = ''
     fs.Entries.reverse()
     if not Stop_time:
         duration = get_flight_duration(ds)
@@ -217,7 +220,8 @@ def process(fs, ds, outpath, flag=None, no_overwrite=False, config_file=None):
                 except:
                     outfile=os.path.join(outpath, '%s_e%.2i_%s_to_%s_%s.png' % (fid, cnt, e.Start_time, e.Stop_time, 'skewt'))
                     sys.stdout.write('Could not create ... %s\n' % outfile)
-
+    ds.close()            
+    return
 
 def _argparser():
     import argparse
@@ -225,8 +229,8 @@ def _argparser():
     sys.argv.insert(0, 'faampy plt_quicklooks')
     parser = argparse.ArgumentParser(prog = 'faampy quicklooks', description=__doc__,
                                      formatter_class=RawTextHelpFormatter)
-    parser.add_argument('ncfile', action="store", type=str, help='FAAM core netCDF')
-    parser.add_argument('fltsumm', action="store", type=str, help='FAAM Flight Summary file')
+    parser.add_argument('core_file', action="store", type=str, help='FAAM core netCDF')
+    parser.add_argument('fltsumm_file', action="store", type=str, help='FAAM Flight Summary file')
     parser.add_argument('outpath', action="store", type=str, help='outpath where all the quicklook figures will be saved')
     parser.add_argument('--config_file', action="store", type=str, help='config file that defines the plots that are produced')
     return parser
@@ -235,11 +239,8 @@ def _argparser():
 def main():
     parser = _argparser()
     args = parser.parse_args()
-    fs = FlightSummary(args.fltsumm)
-    ds = netCDF4.Dataset(args.ncfile, 'r')
-    process(fs, ds, args.outpath, config_file=args.config_file)
-    sys.stdout.write('Done ...\n')
-    ds.close()
+    process(args.fltsumm_file, args.core_file, args.outpath, config_file=args.config_file)
+    sys.stdout.write('Done ...\n')   
 
 
 if __name__ == '__main__':
