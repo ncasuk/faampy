@@ -128,7 +128,7 @@ quicklooks_outpath = os.path.join(os.path.expanduser('~'), 'b991_quicklooks')
 # Check if directory exists; if not create it
 if not os.path.exists(quicklooks_outpath):
     os.makedirs(quicklooks_outpath)
-    print('Directory created: %s ...' (quicklooks_outpath))
+    print('Directory created: %s ...' % (quicklooks_outpath))
 
 b991_qlooks = q.Quicklooks(fltsumm_file,
                            core_file2,
