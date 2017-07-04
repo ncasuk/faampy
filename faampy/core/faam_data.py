@@ -416,6 +416,8 @@ class FAAM_Dataset(object):
 
         if not varnames:
             other_var_names = list(recarray.dtype.names)
+        else:
+            other_var_names = list(varnames)
 
         if not index:
             # This needs testing
@@ -430,7 +432,6 @@ class FAAM_Dataset(object):
             # if we made it that far we don't have a proper index name
             sys.stdout.write('No index for merging found ... Leaving ...\n')
             return
-
         else:
             other_index = recarray[index]
             # Need to make sure that the datatype is datetime64[s] otherwise
@@ -448,6 +449,7 @@ class FAAM_Dataset(object):
         ind = np.digitize(other_index, bins)-1
         ind_mask = np.select([ind < 0, ind >= len(bins)-1], [0, 0], default=1)
 
+        print(other_var_names)
         for other_var_name in other_var_names:
             # Make sure that the data are numbers and not string or object type
             if recarray[other_var_name].dtype in [np.dtype(np.object), np.dtype(np.str)]:
