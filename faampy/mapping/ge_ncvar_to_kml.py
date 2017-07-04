@@ -134,7 +134,7 @@ def process(ncfile, ncvar, time_lag, offset, scale_factor, outpath, *fltsumm):
 
     if fltsumm:
         from faampy.core.flight_summary import FlightSummary
-        fs = FlightSummary(fltsumm)
+        fs = FlightSummary(fltsumm[0])
         _RUNS = []
         for e in fs.Entries:
             if re.findall('run|leg|box', e.Name.lower()):
