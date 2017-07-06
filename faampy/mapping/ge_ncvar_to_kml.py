@@ -120,17 +120,26 @@ def get_run_kml(run_data, ds, var, offset, scale_factor, time_lag):
     alt = alt2
     linestring_txt = ['%.5f,%.5f,%.5f' % (lon[i], lat[i], alt[i]) for i in range(len(lon))]
     linestring_txt = '\n'.join(linestring_txt)
-    result = KML_PLACEMARK_TEMPLATE % (run_data[0], gin_alt[0], lon[0], lat[0], alt[0], linestring_txt)
+    try:
+        result = KML_PLACEMARK_TEMPLATE % (run_data[0], gin_alt[0], lon[0], lat[0], alt[0], linestring_txt)
+    except:
+        result = None
     return result
 
 
 def process(ncfile, ncvar, time_lag, offset, scale_factor, outpath, *fltsumm):
     ds = netCDF4.Dataset(ncfile, 'r')
     fid = get_fid(ds)
-    try:
-        datestring = os.path.basename(ncfile).split('_')[2]+'_'
-    except:
-        datestring = ''
+    
+    datestring = ''
+    
+    for v in os.path.basename(ncfile).split('_'):
+        try:
+            _date = datetime.datetime.strptime(v, '%Y%m%d')
+            datestring = _date.strftime('%Y%m%d')
+        except:
+            pass
+
 
     if fltsumm:
         from faampy.core.flight_summary import FlightSummary
@@ -161,12 +170,14 @@ def process(ncfile, ncvar, time_lag, offset, scale_factor, outpath, *fltsumm):
                  conv_secs_to_time(ds.variables['Time'][ix_max], no_colons=True)),]
 
     #kml_filename=os.path.join(out_path, fid + '-' + os.path.basename(ncfile).split('_')[2] + '_' + ncvar.lower() + '.kml')
-    kml_filename = os.path.join(outpath, fid+'-'+datestring+ncvar.lower()+'.kml')
+    kml_filename = os.path.join(outpath, fid+'-'+datestring+'_'+ncvar.lower()+'.kml')
     kml = open(kml_filename, 'w')
     kml.write(KML_HEADER % (fid + '-' +datetime.datetime(ds.DATE[2], ds.DATE[1], ds.DATE[0]).strftime('%d-%m-%Y') + '-' + ncvar))
 
     for run in _RUNS:
         run_kml = get_run_kml(run, ds, ncvar, offset, scale_factor, time_lag)
+        if not run_kml:
+            continue
         kml.write(run_kml)
     kml.write(KML_FOOTER)
     kml.close()
