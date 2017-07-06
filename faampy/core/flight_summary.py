@@ -510,7 +510,7 @@ def process(fltsummfile, ncfile, *outpath):
         except:
             pass
     basename='flight-sum_faam_%s_r0_%s' % (basetime.strftime('%Y%m%d'), fid)
-    if outpath in outpath:
+    if outpath:
         outpath = outpath[0]
         fs.as_kml(ofile=os.path.join(outpath, basename+'.kml'), fid=fid, date=basetime.strftime('%d/%m/%Y'))
         fs.as_html(ofile=os.path.join(outpath, basename+'.html'))
