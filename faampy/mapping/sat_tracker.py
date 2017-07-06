@@ -32,9 +32,13 @@ import os
 import re
 import sys
 import urllib2 as urllib
-
+import platform
+if platform.system().lower() == 'linux':
+    import matplotlib
+    matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
+
 #from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 from faampy._3rdparty import texttable
