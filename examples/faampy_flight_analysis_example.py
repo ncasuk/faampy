@@ -116,7 +116,7 @@ ge_ncvar_to_kml.process(core_file2, 'ch4_ppb', 0, -2115, 500, opath)
 #=== Step:Start:Quicklook Figures =============================================
 import faampy.plotting.quicklooks as q
 
-Plot_Config = [[['TSC_BLUU', 'TSC_GRNU' , 'TSC_REDU'],
+Plot_Config = [[['TSC_BLUU', 'TSC_GRNU', 'TSC_REDU'],
                 ['BSC_BLUU', 'BSC_GRNU', 'BSC_REDU']],
                [['CO_AERO'],],
                [['ch4_ppb'], ['co2_ppm']],
@@ -306,7 +306,7 @@ try:
 except:
     pass
 
-# Figure set up
+# Figure layout set up
 # 4 rows 1 column and all figures should share the x-axis
 gs = gridspec.GridSpec(4, 1)
 fig = plt.figure()
@@ -341,7 +341,7 @@ for i, _run in list(enumerate(_RUNS)):
     plt.grid()
 
     plt.sca(fig.get_axes()[1])
-    ax=plt.gca()
+    ax = plt.gca()
     plt.setp(ax.get_xticklabels(), visible=False) # remove the xtick labels
     plt.plot(df_extracted.LAT_GIN.values,
              df_extracted.ch4_ppb.values,
@@ -349,7 +349,7 @@ for i, _run in list(enumerate(_RUNS)):
     plt.ylabel(r"CH4 (ppb)")
 
     plt.sca(fig.get_axes()[2])
-    ax=plt.gca()
+    ax = plt.gca()
     plt.setp(ax.get_xticklabels(), visible=False)
     plt.plot(df_extracted.LAT_GIN.values,
              df_extracted.co2_ppm.values,
@@ -357,7 +357,7 @@ for i, _run in list(enumerate(_RUNS)):
     plt.ylabel(r"CO2 (ppm)")
 
     plt.sca(fig.get_axes()[3])
-    ax=plt.gca()
+    ax = plt.gca()
     plt.setp(ax.get_xticklabels(), visible=False)
     plt.plot(df_extracted.LAT_GIN.values,
              df_extracted.CO_AERO.values,
