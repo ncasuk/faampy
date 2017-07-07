@@ -55,12 +55,12 @@ Plot_Config = [[['BTHEIM_U']],
 class Quicklooks(object):
     def __init__(self, fltsumm_file, core_file, outpath, *plot_config_file):
         self.Plot_Config = Plot_Config
-        if plot_config_file:
-            f = open(plot_config_file, 'r')
+        if plot_config_file[0]:            
+            f = open(plot_config_file[0], 'r')
             lines = f.readlines()
             f.close()
             _pc = [ast.literal_eval('({0})'.format(line)) for line in lines]
-            _pc = filter(bool, _CATS) # remove empty lines
+            _pc = filter(bool, _pc) # remove empty lines
             self.Plot_Config = _pc
 
         self.Fltsumm_file = fltsumm_file
