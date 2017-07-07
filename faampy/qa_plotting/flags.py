@@ -6,7 +6,7 @@ Created on 10 May 2013
 
 import numpy as np
 import netCDF4
-import texttable
+import faampy._3rdparty.texttable as texttable
 
 
 def get_flag_data(ds):

@@ -37,8 +37,6 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import pytz
 
-
-import pvlib
 from general import *
 from utils import *
 from style import *
@@ -106,6 +104,15 @@ def plot_sun_position(ax, data):
 
 def calc_clearsky_irradiance(data, step=30):
     # see: http://pvlib-python.readthedocs.io/en/latest/index.html
+
+
+    try:
+        import pvlib
+        PVLIB_MODULE = True
+    except:
+        PVLIB_MODULE = False
+        print('module pvlib not available ...')
+        return data
 
     times = mpl.dates.num2date(data['mpl_timestamp'][:,0].ravel())
     # pvlib needs a pandas DatetimeINdex
@@ -256,7 +263,8 @@ def main(ds):
         fig.add_subplot(gs[1,:], sharex = fig.get_axes()[0])
         fig.add_subplot(gs[0,:], sharex = fig.get_axes()[0])
         plot_pyranometers_ts(fig.get_axes()[0], data)
-        plot_clearsky_irradiance(fig.get_axes()[0], data)
+        if 'clearsky_irradiance_ghi' in data.keys():
+            plot_clearsky_irradiance(fig.get_axes()[0], data)
         plot_pyrgeometers_ts(fig.get_axes()[1], data)
         plot_sun_position(fig.get_axes()[2], data)
         plot_altitude(fig.get_axes()[3], data)
@@ -268,7 +276,8 @@ def main(ds):
         fig.add_subplot(gs[1,:])
         fig.add_subplot(gs[0,:], sharex=fig.get_axes()[0])
         plot_pyranometers_ts(fig.get_axes()[0], data)
-        plot_clearsky_irradiance(fig.get_axes()[0], data)
+        if 'clearsky_irradiance_ghi' in data.keys():
+            plot_clearsky_irradiance(fig.get_axes()[0], data)
         plot_sun_position(fig.get_axes()[1], data)
         plot_altitude(fig.get_axes()[2], data)
 
@@ -287,41 +296,3 @@ def main(ds):
         add_landing(ax, data)
 
     return fig
-
-
-#plt.close('all')
-#ds = netCDF4.Dataset('./data/core_faam_20160303_v004_r0_b947.nc', 'r')
-#ds = netCDF4.Dataset('/home/axel/Dropbox/campaigns/spring2016/b955-may-06/core_faam_20160506_v004_r0_b955.nc', 'r')
-#ds = netCDF4.Dataset('/home/axel/Dropbox/campaigns/iced2015/b923-aug-12/core_faam_20150812_v004_r2_b923.nc', 'r')
-#ds = netCDF4.Dataset('/home/axel/Dropbox/campaigns/autumn2016/b978-sep-19/core_faam_20160919_v004_r0_b978.nc', 'r')
-#data = get_data(ds, VARIABLE_NAMES)
-#data = calc_sun_position(data)
-#data = calc_clearsky_irradiance(data)
-#main(ds)
-#fig = figure()
-#r = data['SW_DN_C']/data['RED_DN_C']
-#bins = np.arange(0, 360, 10)
-#ixs = np.digitize(data['sun_position'], bins)
-#r = data['SW_DN_C']/data['RED_DN_C']
-#hist = []
-#for
-
-
-#fig.add_subplot(111)
-#ax = gca()
-#plot_clearsky_irradiance(ax, data)
-#main(ds)
-#s=d
-#fig = main(ds)
-
-#import glob2
-#file_list=glob2.glob('/home/axel/MONSOON2016/*/core_faam_*b9??.nc', 'r')
-#file_list=glob2.glob('/home/axel/MONSOON2016/*/core_faam_*b968.nc', 'r')
-#file_list=sorted(file_list)
-#for f in file_list:
-#    print(f[0])
-#    ds=netCDF4.Dataset(f[0], 'r')
-#    fig = main(ds)
-#    fig.savefig('/home/axel/%s_qa-bbr.png' % (ds.FLIGHT))
-#    ds.close()
-#step=15
