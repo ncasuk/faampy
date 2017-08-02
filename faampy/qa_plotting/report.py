@@ -261,6 +261,7 @@ def process(decades_dataset=None, core_rawdlu_zip=None, ncfilename=None, outpath
                   cabin_pressure, co, ozone, so2, static_pressure, \
                   humidity, twc, turbulence]:
         if instr.__name__ == 'turbulence':
+            doc += create_figure(nc_dataset, instr)
             try:
                 doc += create_figure(nc_dataset, instr)
             except:
@@ -276,7 +277,7 @@ def process(decades_dataset=None, core_rawdlu_zip=None, ncfilename=None, outpath
             qa_figure_outpath = os.path.join(outpath, 'qa-figures')
         else:
             qa_figure_outpath = os.environ['HOME']
-        ofilename = os.path.join(qa_figure_outpath, 'qa-%s_%s_%s.png' % (instr.__name__, date.strftime('%Y%m%d'), fid))
+        ofilename = os.path.join(qa_figure_outpath, 'qa-%s_%s_%s.png' % (instr.__name__.split('.')[-1], date.strftime('%Y%m%d'), fid))
         plt.savefig(ofilename, dpi=120)
         sys.stdout.write('Figure created: %s\n ...\n' % ofilename)
 
@@ -302,8 +303,6 @@ def process(decades_dataset=None, core_rawdlu_zip=None, ncfilename=None, outpath
     shutil.move(os.path.join(tmppath, os.path.basename(texfile)[:-4]+'.pdf'),
                 os.path.join(outpath, pdf_filename))
     return os.path.join(outpath, pdf_filename)
-    #if ncfilename:
-    #    nc_dataset.close()
 
 
 def _argparser():
