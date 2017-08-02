@@ -44,19 +44,19 @@ from utils import *
 from style import axes_title_style, rcParams
 
 #parameter names used to create the humidity plots
-VARIABLE_NAMES=['ALT_GIN',           # Altitude from POS AV 510 GPS-aided Inertial Navigation unit
-                'WVSS2F_VMR',        # Water Vapour Measurement from Flush inlet WVSSII serial no. 4229 linearly interpolated to 1Hz
-                'WVSS2R_VMR',        # Water Vapour Measurement from Rosemount inlet WVSSII serial no. 0388 linearly interpolated to 1Hz'
-                'VMR_CR2',           # Water vapour volume mixing ratio measured by the Buck CR2
-                'TDEW_GE',           # Dew point from the General Eastern instrument
-                'PS_RVSM',           # Static pressure from the aircraft RVSM (air data) system
-                'TAT_ND_R',          # True air temperature from the Rosemount non-deiced temperature sensor
-                'WOW_IND',           # Weight on wheels indicator
-                'Time',              # Time of measurement (seconds since midnight on start date)
-                'LWC_JW_U',          # Liquid water from the Johnson Williams
-                'NV_LWC_C',          # Nevzorov liquid water calibrated
-                'NV_LWC_U',          # Nevzorov liquid water uncalibrated
-                'AERACK_buck_ppm']   # Raw data from the BUCK CR2
+VARIABLE_NAMES = ['ALT_GIN',           # Altitude from POS AV 510 GPS-aided Inertial Navigation unit
+                  'WVSS2F_VMR',        # Water Vapour Measurement from Flush inlet WVSSII serial no. 4229 linearly interpolated to 1Hz
+                  'WVSS2R_VMR',        # Water Vapour Measurement from Rosemount inlet WVSSII serial no. 0388 linearly interpolated to 1Hz'
+                  'VMR_CR2',           # Water vapour volume mixing ratio measured by the Buck CR2
+                  'TDEW_GE',           # Dew point from the General Eastern instrument
+                  'PS_RVSM',           # Static pressure from the aircraft RVSM (air data) system
+                  'TAT_ND_R',          # True air temperature from the Rosemount non-deiced temperature sensor
+                  'WOW_IND',           # Weight on wheels indicator
+                  'Time',              # Time of measurement (seconds since midnight on start date)
+                  'LWC_JW_U',          # Liquid water from the Johnson Williams
+                  'NV_LWC_C',          # Nevzorov liquid water calibrated
+                  'NV_LWC_U',          # Nevzorov liquid water uncalibrated
+                  'AERACK_buck_ppm']   # Raw data from the BUCK CR2
 
 
 def conv_ge(tdew_ge, ps_rvsm):
@@ -70,7 +70,7 @@ def conv_ge(tdew_ge, ps_rvsm):
     return vmr_ge
 
 
-def plot_humidity_scatter(ax,data):
+def plot_humidity_scatter(ax, data):
     """
     plot for scatter graph WVSS2_R vs other 3 parameters
 
@@ -79,7 +79,9 @@ def plot_humidity_scatter(ax,data):
     x = data['WVSS2R_VMR'][:,0]
     y1 = data['WVSS2F_VMR'][:,0]
     y2 = data['VMR_CR2'][:,0]
-
+    
+    
+    
     # use only inflight data using weight on wheels
     x[data['WOW_IND'].ravel() != 0] = np.nan
     y1[data['WOW_IND'].ravel() != 0] = np.nan
@@ -156,7 +158,7 @@ def plot_alt(ax,data):
     return ax
 
 
-def plot_humidity(ax,data):
+def plot_humidity(ax, data):
     """
     Plots timeseries of 4 instruments that measure humidity; WVSS2R, WVSS2F, VMR_CR2, TDEW_GE
 
@@ -171,7 +173,7 @@ def plot_humidity(ax,data):
                  data['VMR_CR2'][:].ravel(),
                  '-', label='VMR_CR2')
 
-    #converts dew point from GE to volume mixing ratio; so that it matches the other humidity measurements
+    # converts dew point from GE to volume mixing ratio; so that it matches the other humidity measurements
     tdew_ge = data['TDEW_GE'][:,0].ravel()
     ps_rvsm = data['PS_RVSM'][:,0].ravel()
     vmr_ge = conv_ge(tdew_ge, ps_rvsm)
@@ -222,6 +224,7 @@ def main(ds):
     set_suptitle(fig, ds, 'QA-Humidity')
 
     data = get_data(ds, VARIABLE_NAMES)
+    data['VMR_CR2'][data['VMR_CR2'] < 0] = np.nan  # remove unreasonable data
     tdew_ge=data['TDEW_GE'][:,0].ravel()
     ps_rvsm=data['PS_RVSM'][:,0].ravel()
 
@@ -230,10 +233,10 @@ def main(ds):
     vmr_ge = vmr_ge*1E6
 
     #call the plotting methods below
-    plot_humidity(fig.get_axes()[0],data)
-    plot_alt(fig.get_axes()[1],data)
-    plot_lwc(fig.get_axes()[2],data)
-    plot_humidity_scatter(fig.get_axes()[3],data)
+    plot_humidity(fig.get_axes()[0], data)
+    plot_alt(fig.get_axes()[1], data)
+    plot_lwc(fig.get_axes()[2], data)
+    plot_humidity_scatter(fig.get_axes()[3], data)
 
     # adds grey bar showing takeoff/landing and only plots the flight
     ax = fig.get_axes()[0]
