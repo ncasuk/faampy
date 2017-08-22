@@ -17,9 +17,15 @@ class TCPDataChecker(object):
         lines = [dlu_identifier+i for i in b.split(dlu_identifier)][1:]
         
         timestamp = [struct.unpack('>9s i I', line[0:17])[2] for line in lines]
+        ptp_sync = []
+        for line in lines:
+            if len(line) >= 17:
+                try:
+                    ptp_sync.append(int(struct.unpack('s', line[17])[0]))
+                except:
+                    ptp_sync.append(0)
+        
         packet_length = [len(line) for line in lines]
-        
-        
 
         n = len(timestamp)
         duration = (timestamp[-1] - timestamp[0]) + 1
@@ -38,6 +44,7 @@ class TCPDataChecker(object):
         self.summary['duration']=duration
         self.summary['n_data_packets']=n
         self.summary['n_unique_timestamps']=len(set(timestamp))
+        self.summary['n_ptp_synced']=np.sum(ptp_sync)
         self.summary['completeness']=(float(n)/float(duration) * 100.0)
         #self.summary['packet_size']=float(np.where(np.array(packet_length) != defined_packet_length)[0].size)/len(timestamp)*100.0
         self.summary['packet_size']=packet_length_occ
@@ -54,6 +61,8 @@ class TCPDataChecker(object):
         result+='   Duration          : %i secs\n' % self.summary['duration']
         result+='   Data packets      : %i\n' % self.summary['duration']
         result+='   Unique Timestamps : %i \n' % self.summary['n_unique_timestamps']
+        result+='   PTP synced        : %i (%.1f\%)' % (self.summary['n_ptp_synced'],
+                                                        (float(self.summary['n_ptp_synced']/self.summary['duration']))*100.)
         result+='   Completeness      : %.1f percent\n' % self.summary['completeness']
         result+='   Packet size       : %.1f percent\n' % self.summary['percentage_wrong_packet_size']
         return result
@@ -81,7 +90,7 @@ def tcp_file_checker(core_rawdlu_file):
         table.append([i[1] for i in s.items()])
     return table
     
-
+#table=tcp_file_checker('/home/axel/gdrive/ncas/core_processing/2017/c027-aug-03/core_faam_20170803_r0_c027_rawdlu.zip')
 
 #core_rawdlu_file='./data/core_faam_20160317_r0_b952_rawdlu.zip'
 #core_rawdlu_file='/home/axel/Dropbox/campaigns/spring2016/b955-may-06/core_faam_20160506_r0_b955_rawdlu.zip'

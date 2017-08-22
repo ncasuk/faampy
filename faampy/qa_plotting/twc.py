@@ -39,7 +39,6 @@ Layout (portrait):
 """
 
 
-import netCDF4 
 import numpy as np
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
@@ -287,6 +286,9 @@ def main(ds):
     set_suptitle(fig, ds, 'QA-Total Water Content Probe')
     
     data=get_data(ds, VARIABLE_NAMES)
+    for k in data.keys():
+        if not 'int' in str(data[k].dtype):
+            data[k][data[k] == -9999.] = np.nan
 
     #Call the plotting methods below:
     plot_dp_timeseries(ax_dp_ts, data)    

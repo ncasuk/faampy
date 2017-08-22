@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import sys
 
-from utils import *
+from utils import get_mpl_time
 
 try:
     from ppodd.core import *
@@ -112,12 +112,12 @@ def get_data(ds, var_names):
 
     if isinstance(ds, netCDF4.Dataset):
         #Read all necessary data from netCDF dataset and convert to 1Hz
-        result['mpl_timestamp']=get_mpl_time(ds, freq=32)
+        result['mpl_timestamp'] = get_mpl_time(ds, freq=32)
         for var in var_names:
             if var not in ds.variables.keys():
                 continue
             else:
-                result[var]=ds.variables[var][:]
+                result[var] = ds.variables[var][:]
     elif isinstance(ds, decades_dataset):
         #result['mpl_timestamp'] = get_mpl_time(ds, 32)
         for var in var_names:
@@ -285,4 +285,3 @@ def zoom_to_flight_duration(ax, data):
               data['mpl_timestamp'][wow_max, 0])
     ax.set_xlim(new_xlim)
     #adjust_ylim(ax)
-

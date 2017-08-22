@@ -120,7 +120,7 @@ def main(ds):
     set_suptitle(fig, ds, 'CPC3781')
     
     data=get_data(ds, VARIABLE_NAMES)
-    
+    data['CPC378_counts'][data['CPC_counts'] > 1000000] = np.nan
     #the CPC data are 10Hz; we need to resize and interpolate the mpl_timestamp for plotting
     data['mpl_timestamp'] = scipy.ndimage.interpolation.zoom(input=data['mpl_timestamp'], zoom=[1, (10./32.)], order=1)
     

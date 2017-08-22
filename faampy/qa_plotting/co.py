@@ -160,7 +160,10 @@ def plot_co_ts(ax, data):
                               ts[cal_status_ix]*0.0,
                               'o', markersize=8, color='black', label='Cal')
 
-    lines = line1+line2+line3+line4
+    if 'line4' in locals():
+        lines = line1+line2+line3+line4
+    else:
+        lines = line1+line2+line3
     labs = [l.get_label() for l in lines]
     ax_r.legend(lines,labs)
     return ax

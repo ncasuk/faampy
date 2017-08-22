@@ -141,7 +141,7 @@ def create_figure(ds, instr):
 
 def flag_table(ds):
     """
-    Creates flag table to be included in the report
+    Creates flag table to be included in the report.
 
     """
     flag_array = flags.get_flag_data(ds)
@@ -181,7 +181,7 @@ def flag_table(ds):
 
 def file_table(core_rawdlu_zip):
     """
-    Creates file table to be included in the report
+    Creates file table to be included in the report.
 
     """
     doc = ''
@@ -189,16 +189,16 @@ def file_table(core_rawdlu_zip):
     doc += '\n'
     doc += r"""\begin{longtable}{|l|l|r|r|r|r|r|}
     \hline
-    \textbf{File name} & \textbf{Data Start}  & \textbf{Dur} & \textbf{\#}        & \textbf{Unique}     & \textbf{Comple-} & \textbf{Packet} \\
-    \textbf{}          & \textbf{Data End}    & \textbf{}    & \textbf{packets}   & \textbf{Times}      & \textbf{teness}  & \textbf{Sizes} \\
+    \textbf{File name} & \textbf{Data Start}  & \textbf{Dur} & \textbf{\#}        & \textbf{Unique}     & \textbf{PTP}  & \textbf{Comple-} & \textbf{Packet} \\
+    \textbf{}          & \textbf{Data End}    & \textbf{}    & \textbf{packets}   & \textbf{Times}      & \textbf{sync} & \textbf{teness}  & \textbf{Sizes} \\
     \hline
     \hline
     \endfirsthead
     \multicolumn{7}{c}%
     {\textit{Continued from previous page}} \\
     \hline
-    \textbf{File name} & \textbf{Data Start}  & \textbf{Dur} & \textbf{\#}        & \textbf{Unique}     & \textbf{Comple-} & \textbf{Packet} \\
-    \textbf{}          & \textbf{Data End}    & \textbf{}    & \textbf{packets}   & \textbf{Times}      & \textbf{teness}  & \textbf{Sizes} \\
+    \textbf{File name} & \textbf{Data Start}  & \textbf{Dur} & \textbf{\#}        & \textbf{Unique}     & \textbf{PTP}  & \textbf{Comple-} & \textbf{Packet} \\
+    \textbf{}          & \textbf{Data End}    & \textbf{}    & \textbf{packets}   & \textbf{Times}      & \textbf{sync} & \textbf{teness}  & \textbf{Sizes} \\
     \hline
     \hline
     \endhead
@@ -211,7 +211,7 @@ def file_table(core_rawdlu_zip):
     table=tcp_file_checker(core_rawdlu_zip)
     for line in table:
         line[-1] = '\Tstrut'+r' \\ '.join(['%i: {%5.1f}' % (l[0], l[1]) for l in line[-1]])
-        l = r'%s & \shortstack{%s\Tstrut\\%s\Bstrut} & %i & %i & %i & %.1f & \shortstack{%s}\\' % tuple(line)
+        l = r'%s & \shortstack{%s\Tstrut\\%s\Bstrut} & %i & %i & %i & %i & %.1f & \shortstack{%s}\\' % tuple(line)
         l = l.replace('_', '\_')
         doc += l
         doc += '\n'
@@ -261,7 +261,6 @@ def process(decades_dataset=None, core_rawdlu_zip=None, ncfilename=None, outpath
                   cabin_pressure, co, ozone, so2, static_pressure, \
                   humidity, twc, turbulence]:
         if instr.__name__ == 'turbulence':
-            doc += create_figure(nc_dataset, instr)
             try:
                 doc += create_figure(nc_dataset, instr)
             except:

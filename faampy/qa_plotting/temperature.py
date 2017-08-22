@@ -45,9 +45,10 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-from general import freeze_color_cycle, QaQc_Figure, \
+from general import QaQc_Figure, \
                     set_suptitle, get_data, add_takeoff, add_landing, \
                     zoom_to_flight_duration, add_time_buffer
+from utils import freeze_color_cycle                    
 from utils import *
 from style import rcParams, axes_title_style
 
