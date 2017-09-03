@@ -187,14 +187,14 @@ def file_table(core_rawdlu_zip):
     doc = ''
     doc += r'\section*{TCP Data File Summary}'
     doc += '\n'
-    doc += r"""\begin{longtable}{|l|l|r|r|r|r|r|}
+    doc += r"""\begin{longtable}{|l|l|r|r|r|r|r|r|}
     \hline
     \textbf{File name} & \textbf{Data Start}  & \textbf{Dur} & \textbf{\#}        & \textbf{Unique}     & \textbf{PTP}  & \textbf{Comple-} & \textbf{Packet} \\
     \textbf{}          & \textbf{Data End}    & \textbf{}    & \textbf{packets}   & \textbf{Times}      & \textbf{sync} & \textbf{teness}  & \textbf{Sizes} \\
     \hline
     \hline
     \endfirsthead
-    \multicolumn{7}{c}%
+    \multicolumn{8}{c}%
     {\textit{Continued from previous page}} \\
     \hline
     \textbf{File name} & \textbf{Data Start}  & \textbf{Dur} & \textbf{\#}        & \textbf{Unique}     & \textbf{PTP}  & \textbf{Comple-} & \textbf{Packet} \\
@@ -260,7 +260,7 @@ def process(decades_dataset=None, core_rawdlu_zip=None, ncfilename=None, outpath
     for instr in [temperature, nevzorov, bbr, buck, nephelometer, cpc, psap, \
                   cabin_pressure, co, ozone, so2, static_pressure, \
                   humidity, twc, turbulence]:
-        if instr.__name__ == 'turbulence':
+        if instr.__name__.split('.')[-1] == 'turbulence':
             try:
                 doc += create_figure(nc_dataset, instr)
             except:
