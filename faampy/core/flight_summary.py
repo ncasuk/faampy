@@ -380,8 +380,8 @@ class FlightSummary(object):
                 e.Name = line[17:37].strip()
                 tmp=line[37:52].strip()
                 tmp=re.sub('kft', '', tmp).strip()
-                #heights=re.findall('[+-]?\d+.\d+', tmp)
-                heights=re.findall('[+-]?[\d+]?.\d+', tmp)
+                heights=re.findall('[+-]?\d+.\d+', tmp)
+                #heights=re.findall('[+-]?[\d+]?.\d+', tmp)
                 e.Start_height=heights[0]
                 if len(heights) > 1:
                     e.Stop_height=heights[1]
