@@ -45,7 +45,7 @@ from utils import get_fid
 from style import *
 from tcp_data_file import tcp_file_checker
 
-TEX_PREAMBLE=r"""\documentclass{article}
+TEX_PREAMBLE = r"""\documentclass{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
@@ -69,7 +69,7 @@ TEX_PREAMBLE=r"""\documentclass{article}
 \begin{document}
 """
 
-TEX_TITLEPAGE=r"""\begin{titlepage}
+TEX_TITLEPAGE = r"""\begin{titlepage}
     \centering
     \vspace*{3.0cm}
     {\color{blue} \Huge \textsf{\textbf{\textit{FAAM}}}\par}
@@ -84,7 +84,7 @@ TEX_TITLEPAGE=r"""\begin{titlepage}
 """
 
 
-TEX_FIGURE=r"""\begin{figure}[htbp]
+TEX_FIGURE = r"""\begin{figure}[htbp]
 \centering
 \includegraphics[angle=%i, width=1\textwidth]{%s}
 \end{figure}
@@ -119,8 +119,6 @@ def create_figure(ds, instr):
 
     """
     doc=''
-
-    #for instr in [temperature, nevzorov, bbr, buck, nephelometer, psap, cabin_pressure, co, humidity, twc, static_pressure, turbulence]:
 
     sys.stdout.write('Working on %s ...\n' % (instr.__name__,))
     fig = instr.main(ds)
@@ -231,13 +229,14 @@ def process(decades_dataset=None, core_rawdlu_zip=None, ncfilename=None, outpath
     if outpath:
         if not os.path.exists(outpath):
             sys.stdout.write('Output path does not exist ...\nLeaving ...\n')
+        else:
+            outpath = outpath
     else:
         outpath = os.path.expanduser('~')
 
     if ncfilename:
         if os.path.exists(ncfilename):
             nc_dataset = netCDF4.Dataset(ncfilename, 'r')
-
 
     if decades_dataset:
         fid = decades_dataset['FLIGHT'].data
@@ -257,28 +256,29 @@ def process(decades_dataset=None, core_rawdlu_zip=None, ncfilename=None, outpath
     doc = ''
     doc += create_preamble()
     doc += create_titlepage(fid, datestring)
-    for instr in [temperature, nevzorov, bbr, buck, nephelometer, cpc, psap, \
-                  cabin_pressure, co, ozone, so2, static_pressure, \
+    for instr in [temperature, nevzorov, bbr, buck, nephelometer, cpc, psap,
+                  cabin_pressure, co, ozone, so2, static_pressure,
                   humidity, twc, turbulence]:
+        figure_success = False
         if instr.__name__.split('.')[-1] == 'turbulence':
             try:
                 doc += create_figure(nc_dataset, instr)
+                figure_success = True
             except:
                 plt.close()
                 continue
         else:
             try:
                 doc += create_figure(ds, instr)
+                figure_success = True
             except:
-                plt.close()
                 continue
-        if os.path.exists(os.path.join(outpath, 'qa-figures')):
-            qa_figure_outpath = os.path.join(outpath, 'qa-figures')
-        else:
-            qa_figure_outpath = os.environ['HOME']
-        ofilename = os.path.join(qa_figure_outpath, 'qa-%s_%s_%s.png' % (instr.__name__.split('.')[-1], date.strftime('%Y%m%d'), fid))
-        plt.savefig(ofilename, dpi=120)
-        sys.stdout.write('Figure created: %s\n ...\n' % ofilename)
+
+        if figure_success:
+            qa_figure_outpath = outpath
+            ofilename = os.path.join(qa_figure_outpath, 'qa-%s_%s_%s.png' % (instr.__name__.split('.')[-1], date.strftime('%Y%m%d'), fid))
+            plt.savefig(ofilename, dpi=120)
+            sys.stdout.write('Figure created: %s\n ...\n' % ofilename)
 
     if decades_dataset:
         doc += flag_table(decades_dataset)
@@ -295,7 +295,7 @@ def process(decades_dataset=None, core_rawdlu_zip=None, ncfilename=None, outpath
     f.close()
 
     os.chdir(tmppath)
-    # We need to run it twice to get the tables adjusted properly
+    # We need to run pdflatex twice to get the tables adjusted properly
     os.system('pdflatex %s' % (texfile,))
     os.system('pdflatex %s' % (texfile,))
     pdf_filename = os.path.basename(texfile)[:-4]+'.pdf'

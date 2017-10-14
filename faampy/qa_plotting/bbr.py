@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 
-Quality Assurance-Quality Check (QA-QC) plotting for the FAAM Core Broad Band (pyranometers
-and pyrogeometers) Radiometers (BBR)
+Quality Assurance-Quality Check (QA-QC) plotting for the FAAM Core Broadband
+Radiometers (BBRs, pyranometers and pyrogeometers)
 
 
 Layout (landscape):
@@ -14,12 +14,12 @@ Layout (landscape):
   |            Sun position                 |
   -------------------------------------------
   |                                         |
-  |   Timeseries of longwave radiation;     |
+  |   Time series of longwave radiation;    |
   |          from pyrgeometers              |
   -------------------------------------------
   -------------------------------------------
   |                                         |
-  |   Timeseries of shortwave radiation;    |
+  |   Time series of shortwave radiation;   |
   |          from pyranometers              |
   -------------------------------------------
 
@@ -29,34 +29,33 @@ Created on Wed Apr 27 10:30:53 2016
 
 """
 
-import netCDF4
 import numpy as np
 import pandas as pd
-from matplotlib.dates import num2date
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import pytz
+import sys
 
 from general import *
 from utils import *
 from style import *
 
 
-VARIABLE_NAMES=['Time',             # Time of measurement (seconds since midnight on start date)
-                'WOW_IND',          # Weight on wheels indicator
-                'ALT_GIN',          # GPS altitude from the GIN
-                'LON_GIN',          # GPS longitude from the GIN
-                'LAT_GIN',          # GPS latitude from the GIN
-                'PS_RVSM',          # static pressure
-                'SW_DN_C',          # Corrected downward short wave irradiance, clear dome
-                'RED_DN_C',         # Corrected downward short wave irradiance, red dome
-                'SW_UP_C',          # Corrected upward short wave irradiance, clear dome
-                'RED_UP_C',         # Corrected upward short wave irradiance, red dome
-                'IR_UP_C',          # Corrected upward longwave irradiance (CGR4)
-                'IR_DN_C',          # Corrected downward longwave irradiance (CGR4)
-                'HDG_GIN',          # Aircraft Heading from the GIN
-                'SOL_AZIM',         # Sun azimuth angle in degrees
-                'SOL_ZEN']          # Sun zenith angle in degrees
+VARIABLE_NAMES = ['Time',     ## Time of measurement (seconds since midnight on start date)
+                  'WOW_IND',  ## Weight on wheels indicator
+                  'ALT_GIN',  ## GPS altitude from the GIN
+                  'LON_GIN',  ## GPS longitude from the GIN
+                  'LAT_GIN',  ## GPS latitude from the GIN
+                  'PS_RVSM',  ## static pressure
+                  'SW_DN_C',  ## Corrected downward short wave irradiance, clear dome
+                  'RED_DN_C', ## Corrected downward short wave irradiance, red dome
+                  'SW_UP_C',  ## Corrected upward short wave irradiance, clear dome
+                  'RED_UP_C', ## Corrected upward short wave irradiance, red dome
+                  'IR_UP_C',  ## Corrected upward longwave irradiance (CGR4)
+                  'IR_DN_C',  ## Corrected downward longwave irradiance (CGR4)
+                  'HDG_GIN',  ## Aircraft Heading from the GIN
+                  'SOL_AZIM', ## Sun azimuth angle in degrees
+                  'SOL_ZEN']  ## Sun zenith angle in degrees
 
 
 def calc_sun_position(data):
@@ -72,9 +71,12 @@ def calc_sun_position(data):
 
     """
     # sun position in reference to the aircraft heading
-    # 0: sun on the nose; 90: sun starboard; 180: sun from behind; 270: sun on port side
-    sp=data['SOL_AZIM'][:].ravel()-data['HDG_GIN'][:,0].ravel()
-    sp[sp < 0]+=360.0
+    #   0: sun on the nose
+    #  90: sun starboard
+    # 180: sun from behind
+    # 270: sun on port side
+    sp = data['SOL_AZIM'][:].ravel()-data['HDG_GIN'][:, 0].ravel()
+    sp[sp < 0] += 360.0
     data['sun_position'] = sp
     return data
 
@@ -92,9 +94,13 @@ def plot_sun_position(ax, data):
 
     """
     # sun position in reference to the aircraft heading
-    # 0: sun on the nose; 90: sun starboard; 180: sun from behind; 270: sun on port side
-
-    ax.plot_date(data['mpl_timestamp'][:,0].ravel(), data['sun_position'], '-', lw=2, label='Sun position')
+    #   0: sun on the nose
+    #  90: sun starboard
+    # 180: sun from behind
+    # 270: sun on port side
+    ax.plot_date(data['mpl_timestamp'][:, 0].ravel(),
+                 data['sun_position'],
+                 '-', lw=2, label='Sun position')
     ax.set_ylim(0, 360)
     ax.yaxis.set_ticks(np.arange(0.0, 361.0, 90.0))
     ax.legend(loc='upper right')
@@ -105,25 +111,17 @@ def plot_sun_position(ax, data):
 def calc_clearsky_irradiance(data, step=30):
     # see: http://pvlib-python.readthedocs.io/en/latest/index.html
 
-
     try:
         import pvlib
         PVLIB_MODULE = True
     except:
         PVLIB_MODULE = False
-        print('module pvlib not available ...')
+        sys.stdout.write('module pvlib not available ...\n')
         return data
 
-    times = mpl.dates.num2date(data['mpl_timestamp'][:,0].ravel())
+    times = mpl.dates.num2date(data['mpl_timestamp'][:, 0].ravel())
     # pvlib needs a pandas DatetimeINdex
     times = pd.DatetimeIndex(times)
-
-    # TODO: See if we should read in masked arrays
-    #idata = zip(data['LAT_GIN'][::step, 0].filled(),
-    #            data['LON_GIN'][::step, 0].filled(),
-    #            data['ALT_GIN'][::step, 0].filled(),
-    #            data['PS_RVSM'][::step, 0].filled()*100.,  # convert to Pascal
-    #            times[::step])
 
     idata = zip(data['LAT_GIN'][::step, 0],
                 data['LON_GIN'][::step, 0],
@@ -141,7 +139,8 @@ def calc_clearsky_irradiance(data, step=30):
     dayofyear = [t.dayofyear for t in times]
     dni_extra = [pvlib.irradiance.extraradiation(d) for d in dayofyear]
 
-    iput = zip(apparent_elevation, aod700, precipitable_water, press, dni_extra)
+    iput = zip(apparent_elevation, aod700,
+               precipitable_water, press, dni_extra)
 
     solis = [pvlib.clearsky.simplified_solis(i[0], i[1], i[2], i[3], i[4]) for i in iput]
     # see https://firstgreenconsulting.wordpress.com/2012/04/26/differentiate-between-the-dni-dhi-and-ghi/
@@ -162,8 +161,8 @@ def plot_altitude(ax, data):
     :param ax: axes object
     :param data: data dictionary
     """
-    alt = data['ALT_GIN'][:,0].ravel()/1000.
-    ax.plot_date(data['mpl_timestamp'][:,0].ravel(), alt, '-', lw=2, label='GPS alt')
+    alt = data['ALT_GIN'][:, 0].ravel()/1000.
+    ax.plot_date(data['mpl_timestamp'][:, 0].ravel(), alt, '-', lw=2, label='GPS alt')
     ax.set_ylabel('alt (km)')
     ax.legend(loc='upper right')
     plt.setp(ax.get_xticklabels(), visible=False)
@@ -174,10 +173,11 @@ def plot_clearsky_irradiance(ax, data):
     # see: http://pvlib-python.readthedocs.io/en/latest/index.html
 
     step = data['clearsky_irradiance_stepsize']
-    _ylim=ax.get_ylim()
-    timestamp = data['mpl_timestamp'][::step,0].ravel()
+    _ylim = ax.get_ylim()
+    timestamp = data['mpl_timestamp'][::step, 0].ravel()
     ghi = data['clearsky_irradiance_ghi']
-    ax.plot_date(timestamp, ghi, '-', color='0.3', lw=4, label='max irradiance', alpha=0.5)
+    ax.plot_date(timestamp, ghi,
+                 '-', color='0.3', lw=4, label='max irradiance', alpha=0.5)
     ax.set_ylim(_ylim)
 
 
@@ -195,17 +195,20 @@ def plot_pyranometers_ts(ax, data):
 
     for p in pars:
         if p[0] in data.keys():
-            ax.plot_date(data['mpl_timestamp'][:,0].ravel(), data[p[0]][:,0].ravel(), '-', label=p[1])
+            ax.plot_date(data['mpl_timestamp'][:, 0].ravel(),
+                         data[p[0]][:, 0].ravel(),
+                         '-', label=p[1])
     ax.legend(loc='upper right')
-    ax.text(0.05, 0.98, 'Pyranometers - corrected shortwave irradiance', axes_title_style, transform=ax.transAxes)
+    ax.text(0.05, 0.98,
+            'Pyranometers - corrected shortwave irradiance',
+            axes_title_style, transform=ax.transAxes)
     ax.set_ylabel('Irradiance (W m -2)')
     ax.set_xlabel('Time (utc)')
-    ylim = ax.get_ylim()
-    if ylim[0] < -50:
-        ax.set_ylim(-50, ylim[1])
-    ylim = ax.get_ylim()
-    if ylim[1] > 1500:
-        ax.set_ylim(ylim[0], 1500)
+    yl = ax.get_ylim()
+    if yl[0] < -50:
+        ax.set_ylim(-50, yl[1])
+    if yl[1] > 1500:
+        ax.set_ylim(yl[0], 1500)
     hourloc = mpl.dates.HourLocator()
     xtickformat = mpl.dates.DateFormatter('%H:%M')
     ax.xaxis.set_major_locator(hourloc)
@@ -219,12 +222,15 @@ def plot_pyrgeometers_ts(ax,data):
 
     """
     # these are yet to be fitted; will update to include when ready.
-    plt.setp(ax.get_xticklabels(),visible=False)
+    plt.setp(ax.get_xticklabels(), visible=False)
     ax.text(0.05, 0.98,
             'Pyrgeometers - corrected longwave irradiance',
             axes_title_style,
             transform=ax.transAxes)
     ax.set_ylabel('Irradiance (W m -2)')
+    yl = ax.get_ylim()
+    if yl[1] > 1500:
+        ax.set_ylim(yl[0], 1500)
     ax.legend()
     return ax
 
@@ -258,10 +264,10 @@ def main(ds):
         gs = gridspec.GridSpec(4, 1, wspace=0.05, height_ratios=[1, 1, 4, 4])
         fig = QaQc_Figure(landscape=True).setup()
 
-        fig.add_subplot(gs[3,:])
-        fig.add_subplot(gs[2,:], sharex = fig.get_axes()[0])
-        fig.add_subplot(gs[1,:], sharex = fig.get_axes()[0])
-        fig.add_subplot(gs[0,:], sharex = fig.get_axes()[0])
+        fig.add_subplot(gs[3, :])
+        fig.add_subplot(gs[2, :], sharex=fig.get_axes()[0])
+        fig.add_subplot(gs[1, :], sharex=fig.get_axes()[0])
+        fig.add_subplot(gs[0, :], sharex=fig.get_axes()[0])
         plot_pyranometers_ts(fig.get_axes()[0], data)
         if 'clearsky_irradiance_ghi' in data.keys():
             plot_clearsky_irradiance(fig.get_axes()[0], data)
@@ -272,17 +278,17 @@ def main(ds):
         gs = gridspec.GridSpec(3, 1, wspace=0.1, height_ratios=[1, 1, 6])
         fig = QaQc_Figure(landscape=True).setup()
 
-        fig.add_subplot(gs[2,:])
-        fig.add_subplot(gs[1,:])
-        fig.add_subplot(gs[0,:], sharex=fig.get_axes()[0])
+        fig.add_subplot(gs[2, :])
+        fig.add_subplot(gs[1, :], sharex=fig.get_axes()[0])
+        fig.add_subplot(gs[0, :], sharex=fig.get_axes()[0])
         plot_pyranometers_ts(fig.get_axes()[0], data)
         if 'clearsky_irradiance_ghi' in data.keys():
             plot_clearsky_irradiance(fig.get_axes()[0], data)
         plot_sun_position(fig.get_axes()[1], data)
         plot_altitude(fig.get_axes()[2], data)
 
-    for ax in fig.get_axes():
-        ax.callbacks.connect('xlim_changed', adjust_ylim)
+    # adjust ylim for GIN_ALT figure
+    fig.get_axes()[-1].callbacks.connect('xlim_changed', adjust_ylim)
 
     set_suptitle(fig, ds, 'QA-Broadband Radiometers')
 
@@ -294,5 +300,5 @@ def main(ds):
     for ax in fig.get_axes():
         add_takeoff(ax, data)
         add_landing(ax, data)
-
+    fig.canvas.draw()
     return fig

@@ -79,9 +79,9 @@ def plot_humidity_scatter(ax, data):
     x = data['WVSS2R_VMR'][:,0]
     y1 = data['WVSS2F_VMR'][:,0]
     y2 = data['VMR_CR2'][:,0]
-    
-    
-    
+
+
+
     # use only inflight data using weight on wheels
     x[data['WOW_IND'].ravel() != 0] = np.nan
     y1[data['WOW_IND'].ravel() != 0] = np.nan
@@ -246,21 +246,5 @@ def main(ds):
     for ax in fig.get_axes()[:-1]:
         add_takeoff(ax, data)
         add_landing(ax, data)
+    fig.canvas.draw()
     return fig
-
-
-#plt.close('all')
-#ds = netCDF4.Dataset('./data/humidity_qa_extract_20160317_b952.nc', 'r')
-#fig = main(ds)
-#ds.close()
-
-
-#file_list=glob2.glob('/home/axel/MONSOON2016/*/core_faam_*b9??.nc', 'r')
-#file_list=sorted(file_list)
-#for f in file_list:
-#    print(f[0])
-#    ds=netCDF4.Dataset(f[0], 'r')
-#    fig = main(ds)
-#    ds.close()
-
-

@@ -86,7 +86,7 @@ def plot_lamptemp_ts(ax, data):
     plt.setp(ax.get_xticklabels(), visible=False)
 
     ax.set_ylabel('temp (degC)')
-    ax.set_ylim(30, 42)
+    ax.set_ylim(34, 38)
     ax.plot_date(data['mpl_timestamp'][:, 0].ravel(),
                  data['AL52CO_lamptemp'][:].ravel(),
                  '-', color='#ff4d4d')
@@ -262,7 +262,7 @@ def main(ds):
     for ax in fig.get_axes():
         add_takeoff(ax, data)
         add_landing(ax, data)
-
+    fig.canvas.draw()
     return fig
 
 #plt.close('all')

@@ -140,5 +140,5 @@ def main(ds):
     for ax in fig.get_axes():
         add_takeoff(ax, data)
         add_landing(ax, data)
-
+    fig.canvas.draw()
     return fig
