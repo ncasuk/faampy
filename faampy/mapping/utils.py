@@ -77,8 +77,8 @@ def rotate_coord(x, y, angle):
 
 
 def get_wgs84_offset(coords):
-    """Uses the GeoidEval routines from [1] to get the offset between GPS data and
-    sea level.
+    """Uses the GeoidEval routines from [1] to get the offset between GPS data
+    and mean sea level.
 
     #to get the difference between WGS84 and mean sea level
     GeoidEval --input-file /tmp/tmpt35as
@@ -92,21 +92,38 @@ def get_wgs84_offset(coords):
     [1] http://geographiclib.sourceforge.net/
     [2] http://www.esri.com/news/arcuser/0703/geoid1of3.html
     """
-    #lon, lat = zip(*coord)
+
     if not isinstance(coords, list):
         coords = [coords, ]
 
+
     lon, lat = zip(*coords)
-    lon_str = [dec_to_dms_(l, 'ns') for l in lon]
-    lat_str = [dec_to_dms_(l, 'ew') for l in lat]
-    coords_str =  zip(lon_str,  lat_str)
+    lon = list(lon)
+    lat = list(lat)
+
+    bad_ix = []
+    for i in range(len(lon)):
+        if abs(lon[i]) > 180.:
+            lon[i] = 180.
+            bad_ix.append(i)
+        if abs(lat[i]) > 90.:
+            lat[i] = 90.
+            bad_ix.append(i)
+    bad_ix = unique(bad_ix)
+
+    lat_str = [dec_to_dms_(l, 'ns') for l in lat]
+    lon_str = [dec_to_dms_(l, 'ew') for l in lon]
+    coords_str =  zip(lat_str, lon_str)
     fd, fn =  tempfile.mkstemp()
     fd = open(fn, 'w')
     fd.writelines(['%s %s\n' % l for l in coords_str])
     fd.close()
-    geoideval = os.system('which GeoidEval')
-    result = subprocess.check_output('%s --input-file %s' % (geoideval, fn),  shell=True)
+    geoideval = subprocess.check_output(['which', 'GeoidEval']).strip()
+    result = subprocess.check_output('%s --input-file %s' % (geoideval, fn),
+                                     shell=True)
     result = [float(r) for r in result.split()]
+    for i in bad_ix:
+        result[i] = np.nan
     return result
 
 
@@ -214,9 +231,9 @@ def is_point_on_land(coords, shape_file=None):
     """Checks if a coords are over land or over water. This is done useing
     a shape file of world boundaries and looping over all Polygons to see
     if the point is in any of it.
-    
+
     """
-    
+
     import fiona
     from shapely.geometry import Point, shape
 
@@ -225,7 +242,7 @@ def is_point_on_land(coords, shape_file=None):
 
     lon, lat=coords
     pt=Point(lon, lat)
-    try:    
+    try:
         fc=fiona.open(shape_file)
     except:
         pass
@@ -235,4 +252,3 @@ def is_point_on_land(coords, shape_file=None):
           result=True
     fc.close()
     return result
- 
