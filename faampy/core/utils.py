@@ -208,7 +208,10 @@ def get_flight_duration(ds, verbose=False):
             wow_ind=wow_ind[:,0].ravel()
 
     if 'WOW_IND' in ds.variables.keys():
-        ix=np.where(wow_ind.filled() == 0)[0]
+        if hasattr(wow_ind, 'filled'):
+            ix=np.where(wow_ind.filled() == 0)[0]
+        else:
+            ix=np.where(wow_ind == 0)[0]
         ix_min, ix_max=np.min(ix), np.max(ix)
         dur=ds.variables['Time'][ix_max]-ds.variables['Time'][ix_min]
     elif 'GSPD_GIN' in ds.variables.keys():

@@ -344,7 +344,7 @@ class FlightSummary(object):
             for line in tbl:
                 if not line:
                     continue
-                print(line)
+                #print(line)
                 e=Event()
                 if self.basetime:
                     e.basetime=self.basetime
@@ -381,6 +381,7 @@ class FlightSummary(object):
                 tmp=line[37:52].strip()
                 tmp=re.sub('kft', '', tmp).strip()
                 heights=re.findall('[+-]?\d+.\d+', tmp)
+                #heights=re.findall('[+-]?[\d+]?.\d+', tmp)
                 e.Start_height=heights[0]
                 if len(heights) > 1:
                     e.Stop_height=heights[1]
@@ -389,7 +390,7 @@ class FlightSummary(object):
                 e.format='horace'
                 self.Entries.append(e)
             elif len(line.split(',')) > 2:
-                print(line)
+                #print(line)
                 line=line.split(',')
                 #skip header line
                 if ('Event' in line[0]):

@@ -86,7 +86,7 @@ def plot_lamptemp_ts(ax, data):
     plt.setp(ax.get_xticklabels(), visible=False)
 
     ax.set_ylabel('temp (degC)')
-    ax.set_ylim(30, 42)
+    ax.set_ylim(34, 38)
     ax.plot_date(data['mpl_timestamp'][:, 0].ravel(),
                  data['AL52CO_lamptemp'][:].ravel(),
                  '-', color='#ff4d4d')
@@ -160,7 +160,10 @@ def plot_co_ts(ax, data):
                               ts[cal_status_ix]*0.0,
                               'o', markersize=8, color='black', label='Cal')
 
-    lines = line1+line2+line3+line4
+    if 'line4' in locals():
+        lines = line1+line2+line3+line4
+    else:
+        lines = line1+line2+line3
     labs = [l.get_label() for l in lines]
     ax_r.legend(lines,labs)
     return ax
@@ -259,7 +262,7 @@ def main(ds):
     for ax in fig.get_axes():
         add_takeoff(ax, data)
         add_landing(ax, data)
-
+    fig.canvas.draw()
     return fig
 
 #plt.close('all')

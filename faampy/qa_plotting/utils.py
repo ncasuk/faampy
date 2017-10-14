@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 def sub_nans(ncfilename):
     """
     This function substitutes any NaN values with -9999
-    
+
     """
     dst=os.path.splitext(ncfilename)[0]+'_edited'+os.path.splitext(ncfilename)[1]
     shutil.copy(ncfilename, dst)
@@ -117,8 +117,8 @@ def get_fid(ds):
 
 def get_base_time(ds):
     """
-    This function looks for the different parameter names used for 'time' as this has been defined 
-    in different ways historically. 
+    This function looks for the different parameter names used for 'time' as this has been defined
+    in different ways historically.
 
     """
     if hasattr(ds, 'variables'):
@@ -157,7 +157,7 @@ def get_mpl_time(ds, basetime=None, freq=1):
     if hasattr(ds, 'variables'):
         if 'Time' in ds.variables.keys():
             vtime=ds.variables['Time'][:]
-        elif 'time' in ds.variables.keys():      
+        elif 'time' in ds.variables.keys():
             vtime=ds.variables['time'][:]
         elif 'TIME' in ds.variables.keys():
             vtime=ds.variables['TIME'][:]
@@ -282,10 +282,10 @@ def get_index(ds, inp):
 def freeze_color_cycle(ax):
     """A function that freezes the color cycle. This is useful for example when
     the twinx() command is used and the color cycle would normally be reseted.
-    
+
     Usage:
-    
-    import matplotlib.pyplot as plt    
+
+    import matplotlib.pyplot as plt
     import numpy as np
 
     plt.close('all')
@@ -308,12 +308,13 @@ def freeze_color_cycle(ax):
         plot(np.random.random(20))
 
     """
+    import matplotlib as mpl
     if mpl.__version__  >= '1.5.1':
-        next_color=ax._get_lines.prop_cycler.next()['color']    
+        next_color=ax._get_lines.prop_cycler.next()['color']
     else:
-        next_color=next(ax._get_lines.color_cycle)    
-    
+        next_color=next(ax._get_lines.color_cycle)
+
     ix=plt.rcParams['axes.color_cycle'].index(next_color)
     color_cycle=plt.rcParams['axes.color_cycle'][ix:]+plt.rcParams['axes.color_cycle'][:ix]
-    
+
     return color_cycle

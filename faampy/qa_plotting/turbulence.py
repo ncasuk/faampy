@@ -50,6 +50,7 @@ import numpy as np
 
 from general import *
 from style import *
+from utils import *
 
 FILTER_RANGES = {'ROLR_GIN':  (-3.0, 3.0),          ## rate-of-change of GIN roll angle
                  'ROLL_GIN':  (-3.0, 3.0),          ## Roll angle from POSAV GPS-aided Inertial Nav. unit (positive for left wing up)

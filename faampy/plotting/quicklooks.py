@@ -55,7 +55,7 @@ Plot_Config = [[['BTHEIM_U']],
 class Quicklooks(object):
     def __init__(self, fltsumm_file, core_file, outpath, *plot_config_file):
         self.Plot_Config = Plot_Config
-        if plot_config_file[0]:            
+        if plot_config_file[0]:
             f = open(plot_config_file[0], 'r')
             lines = f.readlines()
             f.close()
@@ -103,7 +103,7 @@ class Quicklooks(object):
             if re.findall('full-flight', e.Name.lower()):
                 plot_type='timeseries'
                 # make a full plot
-            elif re.findall('run|leg|box', e.Name.lower()):
+            elif re.findall('run|circle|leg|box', e.Name.lower()):
                 plot_type='timeseries'
             elif re.findall('prof', e.Name.lower()):
                 plot_type='profile'

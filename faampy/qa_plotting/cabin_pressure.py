@@ -26,7 +26,7 @@ if __name__ == '__main__': mpl.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
-from general import freeze_color_cycle, QaQc_Figure, adjust_ylim, \
+from general import QaQc_Figure, adjust_ylim, \
                     set_suptitle, get_data, add_takeoff, add_landing, \
                     zoom_to_flight_duration, add_time_buffer
 from utils import *

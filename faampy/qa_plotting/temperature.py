@@ -45,9 +45,10 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-from general import freeze_color_cycle, QaQc_Figure, \
+from general import QaQc_Figure, \
                     set_suptitle, get_data, add_takeoff, add_landing, \
                     zoom_to_flight_duration, add_time_buffer
+from utils import freeze_color_cycle
 from utils import *
 from style import rcParams, axes_title_style
 
@@ -158,7 +159,7 @@ def plot_iat_histogram(ax,data):
     if not 'NDTI' in data:
         return
     delta_iat = data['ITDI'][:].ravel() - data['NDTI'][:].ravel()
-        
+
     _range=(-4.0, 4.0)
     _step_size=0.1
     _bins= np.arange(_range[0], _range[1], _step_size)
@@ -181,10 +182,10 @@ def plot_iat(ax,data):
     if not 'NDTI' in data:
         labels=ax.get_yticklabels()
         labels[-1].set_visible(False)
-        return    
+        return
     line1 = ax.plot_date(data['mpl_timestamp'][:,0].ravel(), data['ITDI'][:,0].ravel(), '-', label='deiced')
     line2 = ax.plot_date(data['mpl_timestamp'][:,0].ravel(), data['NDTI'][:,0].ravel(), '-', label='non-deiced')
-    
+
     cc = freeze_color_cycle(ax)
     ax_a=ax.twinx()
     ax_a.set_color_cycle(cc)
@@ -308,6 +309,8 @@ def main(ds):
     set_suptitle(fig, ds, 'QA-Temperature')
 
     data =get_data(ds, VARIABLE_NAMES)
+    for var in ['ITDI', 'NDTI', 'TAT_DI_R', 'TAT_ND_R']:
+        data[var][data[var] <= 0] = np.nan
 
     # call all plotting methods
     plot_tat(ax_tat_ts, data)
