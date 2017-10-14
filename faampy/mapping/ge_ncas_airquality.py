@@ -66,9 +66,9 @@ def img_to_gtiff(img_filename, tif_filename):
 
 def parse_ncas_airquality(date):
     image_lists = {v: [] for v in VARIABLES}
-    if date == 'now':
-        lines = response.text.split('\n')            
-        
+    if date == 'today':
+        lines = response.text.split('\n')
+
         for line in lines:
             if line.strip().startswith('images'):
                 line = line.replace('\\/', '/')
@@ -80,7 +80,7 @@ def parse_ncas_airquality(date):
                 elif 'NOx_' in line:
                     image_lists['NOx'] = [ROOT_URL+img for img in images.split(',')]
                 elif 'PM25_' in line:
-                    image_lists['PM25'] = [ROOT_URL+img for img in images.split(',')]                
+                    image_lists['PM25'] = [ROOT_URL+img for img in images.split(',')]
     else:
         url_template = "https://sci.ncas.ac.uk/airquality/files/resource/%s/d02/%s/%s_%s_%0.2i.png"
         for v in VARIABLES:
@@ -91,10 +91,8 @@ def parse_ncas_airquality(date):
 
 
 def process(outpath, date, limit=None):
-    if date == 'now':
-        image_lists=parse_ncas_airquality('now')
-    else:
-        image_lists=parse_ncas_airquality(date)
+    image_lists = parse_ncas_airquality(date)
+
     if not limit:
         limit = len(image_lists[image_lists.keys()[0]])
     kml = simplekml.Kml()
@@ -122,15 +120,17 @@ def _argparser():
     import argparse
     sys.argv.insert(0, 'faampy ge_ncas_airquality')
     parser = argparse.ArgumentParser(description=__doc__)
+
     parser.add_argument('-o', '--outpath',
                         action="store",
                         default=os.path.expanduser('~'),
                         type=str,
                         help='outpath')
-    parser.add_argument('-d', '--date', 
+    parser.add_argument('-d', '--date',
                         action="store",
                         type=str,
                         required=False,
+                        default = 'today',
                         help='date in the format: %Y-%m-%d')
     parser.add_argument('-l', '--limit',
                         action="store",
@@ -143,7 +143,7 @@ def _argparser():
 def main():
     parser = _argparser()
     args = parser.parse_args()
-    outfile = process(args.outpath)
+    outfile = process(args.outpath, args.date)
     sys.stdout.write('Created ... %s. \n' % outfile)
 
 
