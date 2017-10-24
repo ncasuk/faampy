@@ -146,8 +146,9 @@ def parse_was_log(was_log_file, ds):
 
 
 def process(was_log_file, ncfile, outpath):
-    global _FID
+    global _FID, _KMZ_TMP_DIRECTORY
 
+    _KMZ_TMP_DIRECTORY = tempfile.mkdtemp()
     __setup_kmz__()
     _FID = re.search('[bBcC]\d{3}', ncfile).group()
     ds = netCDF4.Dataset(ncfile, 'r')
@@ -210,7 +211,6 @@ def main():
             process(was_log_file, ncfile, args.outpath)
         except:
             sys.stdout.write('Problem processing ... %s\n' % (os.path.basename(was_log_file)))
-
 
 if __name__ == '__main__':
     main()
