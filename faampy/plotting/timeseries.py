@@ -47,7 +47,7 @@ class Timeseries(object):
             flag_data = np.zeros(self.ds.variables[parname].shape).astype(bool)
         else:
             flag_data = self.ds.variables[parname+'_FLAG'][:]
-        mask = np.zeros(self.ds.variables[parname].shape).astype(bool)
+        mask = np.ones(flag_data.shape).astype(bool)
         if not parname+'_FLAG' in self.ds.variables.keys():
             return mask
 
@@ -177,4 +177,12 @@ class Timeseries(object):
 
     def get_figure(self):
         return(self.fig)
+
+import netCDF4
+ds = netCDF4.Dataset('/home/axel/gdrive/ncas/core_processing/2017/c067-oct-20/core_faam_20171020_v004_r0_c067.nc')
+p = Timeseries()
+p.setup(ds, [['CO_AERO',],], [('Time', (19119, 46320),)], [0,])
+p.plot()
+p.plot_formatter()
+
 
