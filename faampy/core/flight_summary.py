@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 '''
 FlightSummary module for processing the Flight Managers flight summary.
 The class parses the original text file and extract all entries. The module
@@ -344,7 +345,6 @@ class FlightSummary(object):
             for line in tbl:
                 if not line:
                     continue
-                #print(line)
                 e=Event()
                 if self.basetime:
                     e.basetime=self.basetime
@@ -390,7 +390,6 @@ class FlightSummary(object):
                 e.format='horace'
                 self.Entries.append(e)
             elif len(line.split(',')) > 2:
-                #print(line)
                 line=line.split(',')
                 #skip header line
                 if ('Event' in line[0]):
@@ -410,7 +409,7 @@ class FlightSummary(object):
                     e.Comment=''
                 e.format='decades'
                 self.Entries.append(e)
-        self.Entries.sort(key= lambda x: x.Start_time)
+        self.Entries.sort(key=lambda x: x.Start_time)
 
     def as_kml(self, ofile=None, fid='', date=''):
         kml=''
@@ -527,9 +526,13 @@ def _argparser():
     parser=argparse.ArgumentParser(prog='faampy flight_summary',
                                    description=__doc__,
                                    formatter_class=RawTextHelpFormatter)
-    parser.add_argument('fltsummfile', action="store", type=str, help='Flight Summary file')
-    parser.add_argument('ncfile', action="store", type=str, help='core_faam netCDF')
-    parser.add_argument('outpath', action="store", type=str, help='outpath where the newly formatted flight summaries will be saved')
+    parser.add_argument('fltsummfile', action="store",
+                        type=str, help='Flight Summary file')
+    parser.add_argument('ncfile', action="store",
+                        type=str, help='core_faam netCDF')
+    parser.add_argument('outpath', action="store",
+                        type=str,
+                        help='outpath where the newly formatted flight summaries will be saved')
     return parser
 
 

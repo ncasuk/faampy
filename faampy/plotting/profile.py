@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import numpy.ma as ma
 import sys
+import scipy.interpolate
 
 from matplotlib.ticker import MaxNLocator, ScalarFormatter
 
@@ -97,10 +98,13 @@ class Profile(object):
                         #y = ds.variables[self.vars[i][j]][:,0:64:2]
                         y = ma.masked_array(ds.variables[self.vars[i][j]][self.index,0:64:2].ravel(), mask=mask[self.index,0:64:2].ravel())
                     else:
-                        #self.x_data[i].append(ds.variables['ALT_GIN'][self.index,0:32:32/cols].ravel())
-                        self.x_data[i].append(ds.variables['ALT_GIN'][self.index,0:32:32/cols].ravel())
+                        _x = ds.variables['ALT_GIN'][self.index, :]
+                        spl = scipy.interpolate.UnivariateSpline(np.linspace(self.index[0], self.index[-1], _x.size), _x.ravel())
+                        xs = spl(np.linspace(self.index[0], self.index[-1], len(self.index)*cols))
+                        self.x_data[i].append(xs)
                         mask = self.__get_mask__(self.vars[i][j])
                         y = ma.masked_array(ds.variables[self.vars[i][j]][self.index,:].ravel(), mask=mask[self.index,:].ravel())
+                        
                     #mask = self.__get_mask__(ds, vars[i][j])
                 #y = ma.masked_array(ds.variables[vars[i][j]], mask=mask)
 
@@ -157,4 +161,3 @@ class Profile(object):
 
     def get_figure(self):
         return(self.fig)
-

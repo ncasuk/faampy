@@ -9,6 +9,8 @@ import sys
 
 from utils import get_mpl_time
 
+from matplotlib.dates import date2num
+
 try:
     from ppodd.core import *
 except:
@@ -148,8 +150,11 @@ def get_data(ds, var_names):
                         df=pd.concat([df, ndf], axis=1, join='outer')
 
         df = df.dropna()
-
         new_result={}
+        if isinstance(df.index, pd.DatetimeIndex):
+            secs_past_midnight = (df.index - pd.to_datetime(df.index.date)) / np.timedelta64(1, 's')
+            df.index = secs_past_midnight
+
         new_result['Time']=np.array(df.index, dtype=np.uint32)
         bs=datetime.datetime(ds['DATE'][2], ds['DATE'][1], ds['DATE'][0], 0, 0, 0)
 
