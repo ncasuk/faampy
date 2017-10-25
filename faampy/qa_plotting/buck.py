@@ -42,21 +42,21 @@ from style import *
 ALPHA=0.7
 
 #List of variable names that needs to be extract from the data source
-VARIABLE_NAMES=['VMR_CR2',       ## Water vapour volume mixing ratio measured by the Buck CR2 
-                'VMR_C_U',       ## Uncertainty estimate for water vapour volume mixing ratio measured by the Buck CR2 
+VARIABLE_NAMES=['VMR_CR2',       ## Water vapour volume mixing ratio measured by the Buck CR2
+                'VMR_C_U',       ## Uncertainty estimate for water vapour volume mixing ratio measured by the Buck CR2
                 'TDEW_CR2',      ## Mirror Temperature measured by the Buck CR2 Hygrometer
-                'TDEW_C_U',      ## Uncertainty estimate for Buck CR2 Mirror Temperature 
+                'TDEW_C_U',      ## Uncertainty estimate for Buck CR2 Mirror Temperature
                 'TDEW_GE',       ## Dew point from the General Eastern instrument
-                'ALT_GIN',       ## Altitude from POS AV 510 GPS-aided Inertial Navigation unit 
+                'ALT_GIN',       ## Altitude from POS AV 510 GPS-aided Inertial Navigation unit
                 'WOW_IND',       ## Weight on wheels indicator
-                'HGT_RADR']      ## Radar height from the aircraft radar altimeter. 
+                'HGT_RADR']      ## Radar height from the aircraft radar altimeter.
 
-                
+
 def plot_dewpoint(ax, data):
     """
     plotting mirror dew point temperatures for GE and BUCK
 
-    """    
+    """
 
     hourloc=mpl.dates.HourLocator()
     xtickformat=mpl.dates.DateFormatter('%H:%M')
@@ -84,7 +84,7 @@ def plot_altitude(ax, data):
 
     """
     ax.plot_date(data['mpl_timestamp'][:,0].ravel(), data['ALT_GIN'][:,0].ravel(), '-', label='ALT_GIN')
-    plt.setp(ax.get_xticklabels(), visible=False)  
+    plt.setp(ax.get_xticklabels(), visible=False)
     ax.set_ylabel('Altitude (m)')
     ax.text(0.05, 0.98,'Altitude', axes_title_style, transform=ax.transAxes)
     ax.legend(loc='upper right')
@@ -94,15 +94,15 @@ def plot_altitude(ax, data):
 def plot_vmr(ax, data):
     """
     plotting the buck data and the calculated uncertainty (timeseries)
-    
+
     """
     #data['VMR_CR2'].mask[data['TDEW_CR2'] < 0] = True
     #data['VMR_CR2'].fill_value = np.nan
-    #plot the uncertainty as a grey shadow below the line    
-    
+    #plot the uncertainty as a grey shadow below the line
+
     vmr=np.copy(data['VMR_CR2'])
     vmr_unc=np.copy(data['VMR_C_U'])
-    
+
     vmr[vmr <= 0]=np.nan
     vmr_unc[vmr <= 0]=np.nan
     vmr_unc[vmr_unc <= 0]=np.nan
@@ -127,8 +127,8 @@ def plot_vmr(ax, data):
 
 def main(ds):
     """
-    Creates an overview plot for the two dew point mirror instruments 
-    (i) General Eastern (GE) and the (2) BUCK CR2. 
+    Creates an overview plot for the two dew point mirror instruments
+    (i) General Eastern (GE) and the (2) BUCK CR2.
 
     """
 
@@ -141,9 +141,8 @@ def main(ds):
     for ax in fig.get_axes():
         ax.callbacks.connect('xlim_changed', adjust_ylim)
 
-
     set_suptitle(fig, ds, 'QA-BUCK')
-    
+
     data=get_data(ds, VARIABLE_NAMES)
 
     #Call the three plotting methods

@@ -2,6 +2,7 @@ from datetime import datetime
 import struct
 import numpy as np
 import os
+import sys
 import tempfile
 import zipfile
 
@@ -15,7 +16,7 @@ class TCPDataChecker(object):
 
         dlu_identifier = '$' + os.path.basename(ifile).split('_')[0]
         lines = [dlu_identifier+i for i in b.split(dlu_identifier)][1:]
-        
+
         timestamp = [struct.unpack('>9s i I', line[0:17])[2] for line in lines]
         ptp_sync = []
         for line in lines:
@@ -24,23 +25,30 @@ class TCPDataChecker(object):
                     ptp_sync.append(int(struct.unpack('s', line[17])[0]))
                 except:
                     ptp_sync.append(0)
-        
+
         packet_length = [len(line) for line in lines]
 
         n = len(timestamp)
-        duration = (timestamp[-1] - timestamp[0]) + 1
-        
+        if n > 0:
+            duration = (max(timestamp) - min(timestamp))+1
+        else:
+            self.summary=OrderedDict()
+            self.summary['file_name']=os.path.basename(ifile)
+            self.summary['duration'] = 0
+            return
+
         #http://stackoverflow.com/questions/10741346/numpy-most-efficient-frequency-counts-for-unique-values-in-an-array
         y=np.bincount(packet_length)
         ii=np.nonzero(y)[0]
         perc=[float(y[i])/n*100. for i in ii]
         packet_length_occ=zip(ii, perc)
-        #print(packet_length_occ)        
-        
+        #print(packet_length_occ)
+
         self.summary=OrderedDict()
         self.summary['file_name']=os.path.basename(ifile)
-        self.summary['data_start']=datetime.utcfromtimestamp(timestamp[0]).strftime('%H:%M:%S %Y-%m-%d')
-        self.summary['data_end']=datetime.utcfromtimestamp(timestamp[-1]).strftime('%H:%M:%S %Y-%m-%d')
+        # we need to
+        self.summary['data_start']=datetime.utcfromtimestamp(min(timestamp)).strftime('%H:%M:%S %Y-%m-%d')
+        self.summary['data_end']=datetime.utcfromtimestamp(max(timestamp)).strftime('%H:%M:%S %Y-%m-%d')
         self.summary['duration']=duration
         self.summary['n_data_packets']=n
         self.summary['n_unique_timestamps']=len(set(timestamp))
@@ -48,23 +56,27 @@ class TCPDataChecker(object):
         self.summary['completeness']=(float(n)/float(duration) * 100.0)
         #self.summary['packet_size']=float(np.where(np.array(packet_length) != defined_packet_length)[0].size)/len(timestamp)*100.0
         self.summary['packet_size']=packet_length_occ
-    
+
     def get_summary(self):
         return self.summary
-       
+
     def __str__(self):
         result=''
         result+='\nSummary:\n'
         result+='   File name         : %s\n' % self.summary['file_name']
+
+        if self.summary['duration'] == 0:
+            result += '    File contains no valid data.\n'
+            return result
         result+='   Data Start        : %s\n' % self.summary['data_start']
         result+='   Data End          : %s\n' % self.summary['data_end']
         result+='   Duration          : %i secs\n' % self.summary['duration']
-        result+='   Data packets      : %i\n' % self.summary['duration']
+        result+='   Data packets      : %i\n' % self.summary['n_data_packets']
         result+='   Unique Timestamps : %i \n' % self.summary['n_unique_timestamps']
-        result+='   PTP synced        : %i (%.1f\%)' % (self.summary['n_ptp_synced'],
-                                                        (float(self.summary['n_ptp_synced']/self.summary['duration']))*100.)
+        result+='   PTP synced        : %i (%.1f %%)\n' % (self.summary['n_ptp_synced'],
+                                                          ((float(self.summary['n_ptp_synced'])/float(self.summary['duration']))*100.))
         result+='   Completeness      : %.1f percent\n' % self.summary['completeness']
-        result+='   Packet size       : %.1f percent\n' % self.summary['percentage_wrong_packet_size']
+#        result+='   Packet size       : %.1f percent\n' % self.summary['percentage_wrong_packet_size']
         return result
 
 
@@ -89,7 +101,7 @@ def tcp_file_checker(core_rawdlu_file):
     for s in file_summaries:
         table.append([i[1] for i in s.items()])
     return table
-    
+
 #table=tcp_file_checker('/home/axel/gdrive/ncas/core_processing/2017/c027-aug-03/core_faam_20170803_r0_c027_rawdlu.zip')
 
 #core_rawdlu_file='./data/core_faam_20160317_r0_b952_rawdlu.zip'

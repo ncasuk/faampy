@@ -105,7 +105,8 @@ def get_data(ds, var_names):
     """
     Funtion to get the data from the specified netCDF dataset
     ds = netCDF dataset
-    var_names = variable names (i.e. VARIABLE_NAMES) as specified at the top of each qa-qc module
+    var_names = variable names (i.e. VARIABLE_NAMES) as specified at the
+    top of each qa-qc module
 
     """
     result={}
@@ -127,18 +128,26 @@ def get_data(ds, var_names):
                 #check if df exists
                 if not 'df' in locals():
                     if var.endswith('_FLAG'):
-                        df=pd.Series(list(np.array(ds[var[:-5]][:].flag())), index=ds[var[:-5]].times[:], dtype=np.dtype("object"), name=var)
+                        df=pd.Series(list(np.array(ds[var[:-5]][:].flag())),
+                                     index=ds[var[:-5]].times[:],
+                                     dtype=np.dtype("object"), name=var)
                     else:
-                        df=pd.Series(list(np.array(ds[var][:])), index=ds[var].times[:], dtype=np.dtype("object"), name=var)
+                        df=pd.Series(list(np.array(ds[var][:])),
+                                     index=ds[var].times[:],
+                                     dtype=np.dtype("object"), name=var)
                 else:
                     if var.endswith('_FLAG'):
-                        ndf=pd.Series(list(np.array(ds[var[:-5]][:].flag)), index=ds[var[:-5]].times[:], dtype=np.dtype("object"), name=var)
+                        ndf=pd.Series(list(np.array(ds[var[:-5]][:].flag)),
+                                      index=ds[var[:-5]].times[:],
+                                      dtype=np.dtype("object"), name=var)
                         df=pd.concat([df, ndf], axis=1, join='outer')
                     else:
-                        ndf=pd.Series(list(np.array(ds[var][:])), index=ds[var].times[:], dtype=np.dtype("object"), name=var)
+                        ndf=pd.Series(list(np.array(ds[var][:])),
+                                      index=ds[var].times[:],
+                                      dtype=np.dtype("object"), name=var)
                         df=pd.concat([df, ndf], axis=1, join='outer')
 
-        df=df.dropna()
+        df = df.dropna()
 
         new_result={}
         new_result['Time']=np.array(df.index, dtype=np.uint32)
@@ -161,44 +170,14 @@ def get_data(ds, var_names):
     return result
 
 
-
-def get_data_old(ds, var_names):
-    """
-    Funtion to get the data from old netCDF datasets
-    ds = netCDF dataset
-    var_names = variable names (i.e. VARIABLE_NAMES) as specified at the top of each qa-qc module
-    """
-    result = {}
-    df = None
-    if isinstance(ds, netCDF4.Dataset):
-        #Read all necessary data from netCDF dataset and convert to 1Hz
-        result['mpl_timestamp'] = get_mpl_time(ds, 32)
-        for var in var_names:
-            result[var] = ds.variables[var][:]
-    elif isinstance(ds, decades_dataset):
-        #result['mpl_timestamp'] = get_mpl_time(ds, 32)
-        for var in var_names:
-            if var != 'Time':
-                #result[var] = ds[var][:]
-                if not df:
-                    #create dataframe
-                    df=pd.Series(np.array(d[var]))
-                else:
-                    #add to datafrome
-                    pass
-    return result
-
-
 def get_wow_min_max(wow_ind):
     """
     This functions finds the weight on wheels minimum and maximum values.
     These can then be used in other functions to plot the take-off/landing.
 
     """
-    #wow_min = np.where(wow_ind.filled() == 0)[0].min()
-    #wow_max = np.where(wow_ind.filled() == 0)[0].max()
     if hasattr(wow_ind, 'filled'):
-        wow_ind=wow_ind.filled()
+        wow_ind = wow_ind.filled()
     wow_min = np.where(wow_ind == 0)[0].min()
     wow_max = np.where(wow_ind == 0)[0].max()
     return wow_min, wow_max
@@ -209,34 +188,43 @@ def add_takeoff(ax, data):
 
     """
     wow_min, wow_max = get_wow_min_max(data['WOW_IND'][:])
-    ax.axvline(data['mpl_timestamp'][wow_min,0], lw=VERTICAL_INDICATOR_WIDTH, color=VERTICAL_INDICATOR_COLOR, zorder=1)
+    ax.axvline(data['mpl_timestamp'][wow_min,0],
+               lw=VERTICAL_INDICATOR_WIDTH,
+               color=VERTICAL_INDICATOR_COLOR, zorder=1)
 
 
 def add_landing(ax, data):
     """oplots time of landing as vertical line.
 
     """
-    wow_min, wow_max=get_wow_min_max(data['WOW_IND'])
-    ax.axvline(data['mpl_timestamp'][wow_max,0], lw=VERTICAL_INDICATOR_WIDTH, color=VERTICAL_INDICATOR_COLOR, zorder=1)
+    wow_min, wow_max = get_wow_min_max(data['WOW_IND'])
+    ax.axvline(data['mpl_timestamp'][wow_max,0],
+               lw=VERTICAL_INDICATOR_WIDTH,
+               color=VERTICAL_INDICATOR_COLOR, zorder=1)
 
 
 def set_suptitle(fig, ds, qa_title):
     """
-    This function adds all relevant information to the figure title. i.e. flight number and date.
+    This function adds all relevant information to the figure title.
+    i.e. flight number and date.
 
     """
     if hasattr(ds, 'title'):
-        fig.header.set_text('%s\n%s - %s' % (qa_title, ds.title.split()[2], ds.title.split()[4]))
+        fig.header.set_text('%s\n%s - %s' % (qa_title, ds.title.split()[2],
+                                             ds.title.split()[4]))
     elif hasattr(ds, 'Title'):
-        fig.header.set_text('%s\n%s - %s' % (qa_title, ds.Title.split()[2], ds.Title.split()[4]))
+        fig.header.set_text('%s\n%s - %s' % (qa_title, ds.Title.split()[2],
+                                             ds.Title.split()[4]))
     else:
-        fig.header.set_text('%s\n%s - %s' % (qa_title, ds['FLIGHT'].data, datetime.datetime.strptime('%0.2i-%0.2i-%0.4i' % tuple(ds['DATE']), '%d-%m-%Y').strftime('%d-%b-%Y')))
+        fig.header.set_text('%s\n%s - %s' % (qa_title, ds['FLIGHT'].data,
+                                             datetime.datetime.strptime('%0.2i-%0.2i-%0.4i' % tuple(ds['DATE']), '%d-%m-%Y').strftime('%d-%b-%Y')))
     return
 
 
 def add_time_buffer(ax, time_buffer=3):
     """
-    Adding time buffer to the axis, which should be . time_buffer is in percent default: 3
+    Adding time buffer to the axis, which should be . time_buffer is in
+    percent default: 3
 
     """
     current_xrange=ax.get_xlim()[1]-ax.get_xlim()[0]
@@ -280,8 +268,7 @@ def zoom_to_flight_duration(ax, data):
     weight on wheels indicator shows takeoff/landing. Therefore ignoring pre and post flight data.
 
     """
-    wow_min, wow_max=get_wow_min_max(data['WOW_IND'])
-    new_xlim=(data['mpl_timestamp'][wow_min, 0],
-              data['mpl_timestamp'][wow_max, 0])
+    wow_min, wow_max = get_wow_min_max(data['WOW_IND'])
+    new_xlim = (data['mpl_timestamp'][wow_min, 0],
+                data['mpl_timestamp'][wow_max, 0])
     ax.set_xlim(new_xlim)
-    #adjust_ylim(ax)
