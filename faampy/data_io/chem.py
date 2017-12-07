@@ -85,3 +85,39 @@ def read_fgga(ifile):
     else:
         return
 
+
+def read_icl_na(ifile, apply_flag=False):
+    """Reads in the ICL data from the Aerodyne Tunable IR Laser Direct
+    Absorption Spectrometer (TILDAS) model QC-TILDAS-DUAL
+
+    :param ifile: nasaAmes input filename
+    :type ifile:
+    :param apply_flag:
+    :type apply_flag: boolean
+    :return: pandas.DataFrame"""
+
+    try:
+        import nappy
+    except:
+        sys.stdout.write('Can not import nappy ...\n')
+        return
+    ds = nappy.openNAFile(ifile)
+    ds.readData()
+
+    timestamp = netCDF4.num2date(ds.X, ds.getIndependentVariable(0)[1])
+    from collections import OrderedDict
+
+    dict = OrderedDict()
+    dict['timestamp'] = timestamp
+    for i, v in enumerate(['c2h6_conc', 'c2h6_flag']):
+        dict[v] = ds.V[i]
+    df = pd.DataFrame(dict)
+    df = df.set_index('timestamp')
+    if apply_flag:
+        df['c2h6_conc'][df['c2h6_flag'] != 0] = np.nan
+    return df
+
+icl_file = '/home/axel/gdrive/atsc/py-code/../data/faam/c065-oct-12/man-tildas_faam_20171012_rX_c065.na'
+df = read_icl_na(icl_file, apply_flag=True)
+
+
