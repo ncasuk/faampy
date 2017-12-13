@@ -11,7 +11,6 @@ spotted in those plots.
 
 """
 
-
 import datetime
 
 import matplotlib as mpl
@@ -38,6 +37,7 @@ import ozone
 import psap
 import so2
 import static_pressure
+import static_monitor
 import turbulence
 import twc
 
@@ -90,7 +90,7 @@ TEX_FIGURE = r"""\begin{figure}[htbp]
 \end{figure}
 """
 
-TEX_FINAL=r"\end{document}"
+TEX_FINAL = r"\end{document}"
 
 
 def create_titlepage(fid, datestring):
@@ -114,11 +114,11 @@ def create_preamble():
 def create_figure(ds, instr):
     """
     This function creates the QA-QC report by looking in the individual modules
-    (e.g. temperature, nevzorov, bbr, buck, nephelometer, psap, cabin_pressure, co,
-    humidity, twc, static_pressure, turbulence)
+    (e.g. temperature, nevzorov, bbr, buck, nephelometer, psap, cabin_pressure,
+    CO, humidity, twc, static_pressure, turbulence)
 
     """
-    doc=''
+    doc = ''
 
     sys.stdout.write('Working on %s ...\n' % (instr.__name__,))
     fig = instr.main(ds)
@@ -258,7 +258,7 @@ def process(decades_dataset=None, core_rawdlu_zip=None, ncfilename=None, outpath
     doc += create_titlepage(fid, datestring)
     for instr in [temperature, nevzorov, bbr, buck, nephelometer, cpc, psap,
                   cabin_pressure, co, ozone, so2, static_pressure,
-                  humidity, twc, turbulence]:
+                  static_monitor, humidity, twc, turbulence]:
         figure_success = False
         if instr.__name__.split('.')[-1] == 'turbulence':
             try:

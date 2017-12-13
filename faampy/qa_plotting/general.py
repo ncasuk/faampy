@@ -9,8 +9,6 @@ import sys
 
 from utils import get_mpl_time
 
-from matplotlib.dates import date2num
-
 try:
     from ppodd.core import *
 except:
@@ -37,19 +35,22 @@ common figure features that should be applied to all figures."""
     def __init__(self, landscape=False):
 
         self.fig = mpl.pyplot.figure()
-        self.fig.orientation='portrait'
+        self.fig.orientation = 'portrait'
         #set default size to DIN-A4 portrait
         self.fig.set_size_inches(8.27, 11.69, forward=True)
         #add FAAM logo to top left corner of figure
-        font_logo = mpl.font_manager.FontProperties(family='sans-serif', style='italic', size='xx-large', weight='bold')
+        font_logo = mpl.font_manager.FontProperties(family='sans-serif',
+                                                    style='italic',
+                                                    size='xx-large',
+                                                    weight='bold')
         self.fig.logo_text = self.fig.text(0.05, 0.98, 'FAAM',
-                                       horizontalalignment='left',
-                                       verticalalignment='top',
-                                       transform=self.fig.transFigure,
-                                       color='#004ACC')
+                                           horizontalalignment='left',
+                                           verticalalignment='top',
+                                           transform=self.fig.transFigure,
+                                           color='#004ACC')
         self.fig.logo_text.set_font_properties(font_logo)
 
-        self.fig.timestamp = self.fig.text(0.98, 0.02, 'created: %s' %(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
+        self.fig.timestamp = self.fig.text(0.98, 0.02, 'created: %s' % (datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ')),
                                            horizontalalignment='right',
                                            verticalalignment='bottom',
                                            transform=self.fig.transFigure,
@@ -59,45 +60,40 @@ common figure features that should be applied to all figures."""
 
         HEADER_POSITION=(0.5, 0.96)
 
-        #self.fig.header=self.fig.suptitle('')
         if not landscape:
-            self.fig.header=self.fig.text(HEADER_POSITION[0], HEADER_POSITION[1], '',
-                                      horizontalalignment='center',
-                                      verticalalignment='top',
-                                      transform=self.fig.transFigure)
+            self.fig.header = self.fig.text(HEADER_POSITION[0],
+                                            HEADER_POSITION[1],
+                                            '',
+                                            horizontalalignment='center',
+                                            verticalalignment='top',
+                                            transform=self.fig.transFigure)
 
         if landscape:
-            self.fig.orientation='landscape'
-            #get original width and height
-            width, height=tuple(self.fig.get_size_inches())
+            self.fig.orientation = 'landscape'
+            # get original width and height
+            width, height = tuple(self.fig.get_size_inches())
             self.fig.set_size_inches(height, width, forward=True)
 
-            x, y=self.fig.logo_text.get_position()
-            x_new, y_new=rotate_coord(x*width, y*height, 270)
+            x, y = self.fig.logo_text.get_position()
+            x_new, y_new = rotate_coord(x*width, y*height, 270)
             self.fig.logo_text.set_rotation(270)
             self.fig.logo_text.set_position((-x_new/height, 1.0-(y_new/width)))
             self.fig.logo_text.set_horizontalalignment('right')
             self.fig.timestamp.set_verticalalignment('top')
 
-            x, y=self.fig.timestamp.get_position()
-            x_new, y_new=rotate_coord(x*width, y*height, 270)
+            x, y = self.fig.timestamp.get_position()
+            x_new, y_new = rotate_coord(x*width, y*height, 270)
             self.fig.timestamp.set_rotation(270)
             self.fig.timestamp.set_position((-x_new/height, 1.0-(y_new/width)))
             self.fig.timestamp.set_horizontalalignment('left')
             self.fig.timestamp.set_verticalalignment('bottom')
 
-            x_new, y_new=rotate_coord(HEADER_POSITION[0]*width, HEADER_POSITION[1]*height, 270)
-            #self.fig.header.set_rotation(270)
-            #self.fig.header.set_position((-x_new/height, 1.0-(y_new/width)))
-            #self.fig.header.set_verticalalignment('center')
-            #self.fig.header.set_horizontalalignment('right')
-            #print(x_new, y_new)
-            #self.fig.header=self.fig.text(-x_new/height, 1.0-(y_new/width), 'rotated\nwith newlines',
-            self.fig.header=self.fig.text(-x_new/height, 0.5, '',
-                                          horizontalalignment='center',
-                                          verticalalignment='center',
-                                          rotation=270,
-                                          transform=self.fig.transFigure)
+            x_new, y_new = rotate_coord(HEADER_POSITION[0]*width, HEADER_POSITION[1]*height, 270)
+            self.fig.header = self.fig.text(-x_new/height, 0.5, '',
+                                            horizontalalignment='center',
+                                            verticalalignment='center',
+                                            rotation=270,
+                                            transform=self.fig.transFigure)
 
     def setup(self):
         return self.fig

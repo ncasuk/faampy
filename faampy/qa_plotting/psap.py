@@ -61,7 +61,7 @@ def plot_psap_lin_flag(ax,data):
 
     ax.set_ylabel('flag (-)')
     ax.set_ylim(-0.2,3.2)
-    ax.legend()
+    ax.legend(loc='upper right')
     ax.text(0.05, 0.98,'psap-lin flag', axes_title_style, transform=ax.transAxes)
     return ax
 
@@ -76,7 +76,7 @@ def plot_psap_flo(ax,data):
     plt.setp(ax.get_xticklabels(),visible=False)
     ax.set_ylabel('flow (l m-1)')
     ax.set_ylim(-0.2,4)
-    ax.legend()
+    ax.legend(loc='upper right')
     ax.text(0.05, 0.98,'psap flow', axes_title_style, transform=ax.transAxes)
     return ax
 

@@ -33,7 +33,7 @@ from utils import *
 from style import *
 
 
-#List of variable names that need to be extracted from the data source
+# List of variable names that need to be extracted from the data source
 VARIABLE_NAMES = ['Time',         # Time of measurement (seconds since midnight on start date)
                   'O3_TECO',      # Static pressure from the aircraft RVSM (air data) system
                   'ALT_GIN',      # GPS Altitude
@@ -61,20 +61,21 @@ def plot_alt_ts(ax, data):
 
 def plot_o3_ts(ax, data):
     """
-    Creates a timeseries plot for cabin temp, cabin pressure and static pressure
+    Creates a timeseries plot for cabin temp, cabin pressure,
+    and static pressure
 
     """
     hourloc = mpl.dates.HourLocator()
     xtickformat = mpl.dates.DateFormatter('%H:%M')
 
-    x=data['mpl_timestamp'][:,0]
-    y=data['O3_TECO'][:,0]
+    x = data['mpl_timestamp'][:,0]
+    y = data['O3_TECO'][:,0]
 
-    x[data['WOW_IND'].ravel() != 0]=np.nan
-    y[data['WOW_IND'].ravel() != 0]=np.nan
+    x[data['WOW_IND'].ravel() != 0] = np.nan
+    y[data['WOW_IND'].ravel() != 0] = np.nan
 
     ax.plot_date(x, y, '-', label='O3_TECO')
-    ax.legend()
+    ax.legend(loc='upper right')
     ax.xaxis.set_major_formatter(xtickformat)
     ax.xaxis.set_major_locator(hourloc)
     ax.set_ylabel('O3 (ppbV)')
@@ -90,8 +91,8 @@ def main(ds):
     gs = gridspec.GridSpec(2, 1, hspace=0.05, height_ratios=[1, 4])
     fig = QaQc_Figure(landscape=True).setup()
 
-    fig.add_subplot(gs[1,:])
-    fig.add_subplot(gs[0,:], sharex=fig.get_axes()[0])
+    fig.add_subplot(gs[1, :])
+    fig.add_subplot(gs[0, :], sharex=fig.get_axes()[0])
     set_suptitle(fig, ds, 'QA-O3 TECO')
 
     data = get_data(ds, VARIABLE_NAMES)

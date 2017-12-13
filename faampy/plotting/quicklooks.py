@@ -34,7 +34,7 @@ from faampy.core.flight_summary import FlightSummary, Event
 from timeseries import Timeseries
 from profile import Profile
 from skewt import SkewT
-from map import Map
+from atlas import Map
 
 try:
     import seaborn

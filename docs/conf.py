@@ -25,11 +25,16 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # TODO: This list needs tidying up at some point, when I have figured out which modules breack the
 #       building process on readthedocs
-MOCK_MODULES = ['numpy', 'scipy', 'scipy.ndimage', 'scipy.stats', 'matplotlib', 'matplotlib.pyplot', 'numpy.ma', 'matplotlib.ticker',
-                'matplotlib.patches', 'matplotlib.gridspec', 'matplotlib.image', 'matplotlib.dates', 'matplotlib.cbook', 'Image', 'PIL', 'PIL.Image', 'PIL.ExifTags', 'ephem',
-                'mpl_toolkits.basemap.proj', 'math', 'mpl_toolkits.basemap.Basemap', 'mpl_toolkits.basemap', 'mapnik', 'shapely', 'nose', 'fiona', 'georasters',
-                'pandas', 'netCDF4', 'osgeo', 'pyspatialite', 'pyspatialite.dbapi2', 'cartopy', 'cartopy.crs', 'cartopy.feature', 'pyproj',
-                'osgeo.ogr', 'gdal', 'simplekml', '_geoslib', 'mpl_toolkits.basemap.pyproj', 'urllib2', 'NaturalEarthFeature']
+MOCK_MODULES = ['numpy',
+                'scipy', 'scipy.ndimage', 'scipy.stats', 'scipy.interpolate',
+                'matplotlib', 'matplotlib.pyplot', 'numpy.ma', 'matplotlib.ticker',
+                'matplotlib.patches', 'matplotlib.gridspec', 'matplotlib.image', 'matplotlib.dates', 'matplotlib.cbook',
+                'Image', 'PIL', 'PIL.Image', 'PIL.ExifTags', 'ephem',
+                'mpl_toolkits.basemap.proj', 'math', 'mpl_toolkits.basemap.Basemap', 'mpl_toolkits.basemap', 'mpl_toolkits.basemap.pyproj',
+                'mapnik', 'shapely', 'nose', 'fiona', 'georasters',
+                'pandas', 'netCDF4', 'osgeo', 'pyspatialite', 'pyspatialite.dbapi2',
+                'cartopy', 'cartopy.crs', 'cartopy.feature', 'NaturalEarthFeature',
+                'pyproj', 'osgeo.ogr', 'gdal', 'simplekml', '_geoslib', 'urllib2', 'skewt']
 
 
 

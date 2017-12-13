@@ -5,26 +5,17 @@ import matplotlib as mpl
 
 from cycler import cycler
 
-rcParams=mpl.rcParams
-
-#to get the complete list of settings type
-#print(plt.rcParams)
-
-#mpl.rcParams=mpl.rcParamsDefault
-#plt.style.use('bmh')
-#plt.style.use('seaborn-pastel')
+rcParams = mpl.rcParams
 
 #sets standard way to plot axes titles.
 axes_title_style = {'fontweight' : 'bold',
                     'verticalalignment' : 'top',
                     'horizontalalignment' : 'left'}
 
-
 # general settings that apply to everything
 rcParams['lines.linewidth'] = 1.2
 
 # colour cycle
-#rcParams['axes.color_cycle'] = [u'#33adff',    #blue
 rcParams['axes.prop_cycle'] = cycler('color', [u'#33adff',    # blue
                                                u'#ffaf4d',    # orange
                                                u'#ff4d4d',    # red
@@ -58,7 +49,6 @@ if output_device == 'screen':
      #add some layout settings here
     rcParams['axes.facecolor'] = '#f2f2f2'
     rcParams['axes.edgecolor'] = 'k'
-    #mpl.rcParams['legend.facecolor'] = '#f2f2f2'
 elif output_device == 'pdf':
      #add some pdf specific layout settings here
     rcParams['axes.edgecolor'] = 'k'
@@ -71,4 +61,3 @@ elif output_device == 'presentation':
     rcParams['ytick.labelsize'] = 'large'
 else:
     pass
-
