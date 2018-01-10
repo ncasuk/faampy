@@ -206,15 +206,18 @@ def file_table(core_rawdlu_zip):
     \endlastfoot
     """
 
-    table=tcp_file_checker(core_rawdlu_zip)
+    table = tcp_file_checker(core_rawdlu_zip)
     for line in table:
-        line[-1] = '\Tstrut'+r' \\ '.join(['%i: {%5.1f}' % (l[0], l[1]) for l in line[-1]])
-        l = r'%s & \shortstack{%s\Tstrut\\%s\Bstrut} & %i & %i & %i & %i & %.1f & \shortstack{%s}\\' % tuple(line)
-        l = l.replace('_', '\_')
-        doc += l
-        doc += '\n'
-        doc += r'\hline'
-        doc += '\n'
+        try:
+            line[-1] = '\Tstrut'+r' \\ '.join(['%i: {%5.1f}' % (l[0], l[1]) for l in line[-1]])
+            l = r'%s & \shortstack{%s\Tstrut\\%s\Bstrut} & %i & %i & %i & %i & %.1f & \shortstack{%s}\\' % tuple(line)
+            l = l.replace('_', '\_')
+            doc += l
+            doc += '\n'
+            doc += r'\hline'
+            doc += '\n'
+        except:
+            pass
 
     doc += r'\hline'
     doc += '\n'
