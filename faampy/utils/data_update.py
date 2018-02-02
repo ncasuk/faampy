@@ -59,14 +59,18 @@ def update_spatial_db(inpath, overwrite=False):
                                                                          fltsumm_file.filename),
                                                             os.path.join(f.path, f.filename))
         except:
-            pass
+            continue
+
+        if not fs.Entries:
+            sdb.close()
+            return
 
         for ent in fs.Entries:
             # Only consider two-point events
             if ent.Stop_time:
                 try:
                     wkt = 'LINESTRINGZ(%s, %s)' % (' '.join([str(e) for e in ent.Coords[0]]),
-                                                  ' '.join([str(e) for e in ent.Coords[-1]]))
+                                                   ' '.join([str(e) for e in ent.Coords[-1]]))
                     sdb.insert_fltsumm_event(f.fid,
                                              ent.Name,
                                              time_convert(fs.date, ent.Start_time_48),
