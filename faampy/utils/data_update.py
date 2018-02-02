@@ -16,20 +16,28 @@ from faampy.core.faam_data import FAAM_Dataset
 from faampy.core.faam_spatial import FAAM_Spatial_DB
 import faampy.core.flight_summary
 
-def update_fltcons_db(inpath):
-    faampy.fltcons.update.update(inpath=inpath, clean=True)
-    return
-
 
 def time_convert(base_time, time_string):
-    secs = int(time_string[0:2])*3600+\
-           int(time_string[2:4])*60+\
+    secs = int(time_string[0:2])*3600 + \
+           int(time_string[2:4])*60 + \
            int(time_string[4:6])
     result = base_time+datetime.timedelta(seconds=secs)
     return result
 
 
+def update_fltcons_db(inpath):
+    """
+    :param str inpath: directory that will be searched for flight constant files
+    """
+    faampy.fltcons.update.update(inpath=inpath, clean=True)
+    return
+
+
 def update_spatial_db(inpath, overwrite=False):
+    """
+    :param str inpath: inpath that is searched for core-hires data files
+    :param bool overwrite: if true existing flight tracks will be overwritten
+    """
     # connect to database
     try:
         sdb = FAAM_Spatial_DB(os.path.join(faampy.FAAMPY_DATA_PATH,
@@ -53,6 +61,8 @@ def update_spatial_db(inpath, overwrite=False):
             ds = FAAM_Dataset(os.path.join(f.path, f.filename))
             dt = datetime.datetime.strptime(f.date, '%Y%m%d')
             sdb.insert_flight_track(f.fid, dt, ds.coords.as_wkt(simplified=True, as_type='LINESTRINGZ'), overwrite=overwrite)
+            sys.stdout.write('Added %s:flight_track to %s ...\n' % \
+                              (f.fid, os.path.basename(sdb.db_file)))
             for fltsumm_file in fltsumm_file_list:
                 if f.fid == fltsumm_file.fid:
                     fs = faampy.core.flight_summary.process(os.path.join(fltsumm_file.path,
@@ -63,7 +73,7 @@ def update_spatial_db(inpath, overwrite=False):
 
         if not fs.Entries:
             sdb.close()
-            return
+            continue
 
         for ent in fs.Entries:
             # Only consider two-point events
@@ -77,8 +87,8 @@ def update_spatial_db(inpath, overwrite=False):
                                              time_convert(fs.date, ent.Stop_time_48),
                                              wkt,
                                              overwrite=overwrite)
-                    sys.stdout.write('Added %s to %s ...\n' % \
-                              (f.fid, os.path.basename(sdb.db_file)))
+                    sys.stdout.write('Added %s:%s to %s ...\n' % \
+                              (f.fid, ent.Name, os.path.basename(sdb.db_file)))
                 except:
                     sys.stdout.write('Errors adding %s to %s ...\n' % \
                               (f.fid, os.path.basename(sdb.db_file)))
