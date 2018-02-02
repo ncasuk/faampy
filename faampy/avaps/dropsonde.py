@@ -1,30 +1,31 @@
 #!/usr/bin/python
 
-'''
-Created on 19 May 2010
+"""
+Creates a kmz file from dropsonde data, that can be opened in google-earth.
 
-@author: axel
-'''
+The falling path is shown as a profile in google earth and the profiles of
+temperature, humidity, wind speed and wind direction are visible in a ballon,
+when clicked on the Sonde icon.
+
+"""
 
 import datetime
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import netCDF4
 import numpy as np
 import os
 import re
+import shutil
 import sys
 import tempfile
 import zipfile
 import time
 
-#from faampy._3rdparty.haversine import points2distance, recalculate_coordinate
+import faampy
+from faampy._3rdparty.haversine import points2distance
 
-from haversine import points2distance, recalculate_coordinate
-
-
-# TODO: Use the icon from the faampy icon folder
-_DROPSONDE_ICON = '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00 \x00\x00\x00 \x08\x03\x00\x00\x00D\xa4\x8a\xc6\x00\x00\x00\x01sRGB\x00\xae\xce\x1c\xe9\x00\x00\x003PLTE@\x00\x00\t\x06\x03I\x17\x182.*{&)bICFPc\xa99=\xcd28wP7\xe5_`\xaa{Zt\x97\xc8\xa1\x92\x93\xd7\x86\x82\xf7\xb2\xae\xd8\xcf\xd0o\x99\xb5\xad\x00\x00\x00\x01tRNS\x00@\xe6\xd8f\x00\x00\x00\x01bKGD\x00\x88\x05\x1dH\x00\x00\x00\tpHYs\x00\x00\x0b\x13\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\x07tIME\x07\xda\n\x05\t\x0e \xa8#K\xb3\x00\x00\x00\xe5IDAT8\xcb\xa5\x92\xc1b\xc4 \x08D\x1d\x81\x88\xa4\xa8\xff\xff\xb5\x8b\xb9\xb4\xdb\x86\xf4\xb0\x1c\xbc\xccs\x98I,\xe5m\x18\x95[\xab(w#\x8a\xc6\x18\xc3\xcc\x82\xf9\x03\xd5\xb5\xe2r \xd56\x81\xfe\x8e\x88\xa9\x1a+W\xe6\xc6\x9b0\x0e\xb39\xe7\x0f\x07SkZyg\x08*\x0e\xc4\x1e\xf9\x06\x94Uu\xef\x0e9|b~\xa7\x08\xddj\xd5\x06\xde\x0c\xdf4\xc1\x0eo\xd0\xba\xe7\xbe\xe8\x1c\x83m\xb4L\x8ei\x91{"\x95K!\x9b\xfa _A\xcag\xfa\xbf\xc0\xfa\xc4`\x01 B\xde\x91B~\x04.\xfd\x198\x8e\r\xa4\xba\xf4.TS\x00\xd4\xcfM +Jr\x06@\x90L\xef}\x03\xe9\x02\xa1K\x17Pjp\x06 O\x0f\xa1x\x17\x81g_\xf9\xab,\x97\xa8\x90U\\\xcb\x9d\x8e\xb5\x8e\xfb\xeb\x0e\x12w\xc0\xb3\x84\x88\x8aN\xf9\x82\xb0p\xd9?)\x01^\xa0$\x07L\x0c\x13\x1c\x17\x00\x00\x00\x00IEND\xaeB`\x82'
 
 _KML_HEADER = """<?xml version="1.0" encoding="UTF-8"?>
       <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/
@@ -75,7 +76,6 @@ _KML_LINESTRING = """<LineString>
   </Placemark>
 """
 
-
 _KML_FOOTER = """
 </Folder>
 </kml>
@@ -83,38 +83,43 @@ _KML_FOOTER = """
 
 
 class Dropsonde(object):
-    """Class that processes the dropsonde files. It's main purpose
-    at the moment is to create a kmz-file, that is viewable in googleearth."""
+    """
+    Class that processes the dropsonde files. Its main purpose
+    at the moment is to create a kmz-file, that is viewable in googleearth.
+    """
 
     def __init__(self):
         self.kmz_filename = None
         self.kmz_path = None
-        #creates directory structure for the kmz
+        # creates directory structure for the kmz
         self.kmz_tmp_directory = tempfile.mkdtemp()
         os.mkdir(os.path.join(self.kmz_tmp_directory, 'icons'))
         os.mkdir(os.path.join(self.kmz_tmp_directory, 'figures'))
-        icon = open(os.path.join(self.kmz_tmp_directory, 'icons', 'dropsonde_32x32.png'), 'wb')
-        icon.write(_DROPSONDE_ICON)
-        icon.close()
+        # copy the dropsonde icon
+        src = os.path.join(os.path.dirname(faampy.__file__), '..',
+                           'files', 'icons', 'dropsonde_32x32.png')
+        dst = os.path.join(self.kmz_tmp_directory, 'icons',
+                           'dropsonde_32x32.png')
+        shutil.copy(src, dst)
 
     def __decdeg2dms__(self, dd):
-        """converts degree representation of lon/lat to decimal"""
-        mnt,sec = divmod(dd * 3600, 60)
-        deg,mnt = divmod(mnt, 60)
-        return deg,mnt,sec
+        """
+        converts degree representation of lon/lat to decimal
+        """
+        mnt, sec = divmod(dd * 3600, 60)
+        deg, mnt = divmod(mnt, 60)
+        return deg, mnt, sec
 
     def __zip__(self):
         files4zipping = []
         for root, subFolders, files in os.walk(self.kmz_tmp_directory):
-            for file in files:
-                files4zipping.append(os.path.join(root,file))
-        #if not self.kmz_file:
-        #    self.setOutputfile()
+            for f in files:
+                files4zipping.append(os.path.join(root, f))
         outfile = os.path.join(self.kmz_path, self.kmz_filename)
         zip = zipfile.ZipFile(outfile, mode='w')
-        for file in files4zipping:
-            zipname = file[len(self.kmz_tmp_directory) + (len(os.sep)):]
-            zip.write(file, zipname)
+        for f in files4zipping:
+            zipname = f[len(self.kmz_tmp_directory) + (len(os.sep)):]
+            zip.write(f, zipname)
 
     def close(self):
         self.ds.close()
@@ -147,17 +152,29 @@ class Dropsonde(object):
             self.__read_txt__(file)
 
     def __read_txt__(self, txtfile):
-        #open the netcdf file
+        """
+        Read the data from the txt data files.
+        """
+        # open the text data file
         f = open(txtfile, 'r')
         data = f.readlines()
-        self.lat_raw, self.lon_raw, self.alt_raw = [],[], []
+        self.lat_raw = []
+        self.lon_raw = []
+        self.alt_raw = []
         self.alt = []
-        self.press, self.rh_raw,  self.wspd_raw,  self.wdir_raw,  self.dz,  self.sat_num, self.temp_raw = [], [], [], [], [], [], []
-        self.theta_raw,  self.gps_alt = [], []
-        self.id=''
-        self.launch_time=''
-        self.project_name=''
-        self.mission_id=''
+        self.press = []
+        self.rh_raw = []
+        self.wspd_raw = []
+        self.wdir_raw = []
+        self.dz = []
+        self.sat_num = []
+        self.temp_raw = []
+        self.theta_raw = []
+        self.gps_alt = []
+        self.id = ''
+        self.launch_time = ''
+        self.project_name = ''
+        self.mission_id = ''
 
         for line in data:
             if line.startswith('AVAPS-T'):
@@ -166,8 +183,8 @@ class Dropsonde(object):
                 elif 'Launch Time' in line:
                     self.launch_time = line[45:].strip()
                 elif 'Project Name' in line:
-                    self.project_name=line.split(':')[1].split(',')[0].strip()
-                    self.mission_id=line.split(':')[1].split(',')[1].strip()
+                    self.project_name = line.split(':')[1].split(',')[0].strip()
+                    self.mission_id = line.split(':')[1].split(',')[1].strip()
                 elif ((self.id == '') and (line.split()[1] == 'END')):
                     self.id = line.split()[2]
             elif line.startswith('AVAPS-D'):
@@ -175,9 +192,9 @@ class Dropsonde(object):
                 self.lat_raw.append(float(line.split()[12]))
                 self.alt_raw.append(float(line.split()[19]))
 
-                R = 8.3114472 # gas constant
-                T = float(line.split()[5]) + 273.15# current temperature in K
-                cp = 1.0038 # heat capacity of air
+                R = 8.3114472  # gas constant
+                T = float(line.split()[5]) + 273.15  # current temperature in K
+                cp = 1.0038    # heat capacity of air
                 P = float(line.split()[5])
                 P_0 = 1000.0
                 self.theta_raw.append(T * (P/P_0)**(R/cp))
@@ -191,7 +208,9 @@ class Dropsonde(object):
                 self.alt.append(float(line.split()[12]))
 
         # create empty lists for latitude, longitude, altitude
-        self.lat = []; self.lon = []; self.alt =[]
+        self.lat = []
+        self.lon = []
+        self.alt = []
 
         for i in range(len(self.lat_raw)):
             if not (-999 in [self.lat_raw[i],self.lon_raw[i], self.alt_raw[i]]):
@@ -202,7 +221,11 @@ class Dropsonde(object):
                         self.alt.append(self.alt_raw[i])
 
     def __read_netcdf__(self, ncfile):
+        """
+        Read in data from the netCDF.
 
+        :param str ncfile: netCDF filename to be red
+        """
         # open the netcdf file
         self.ds = netCDF4.Dataset(ncfile, 'r')
 
@@ -210,7 +233,9 @@ class Dropsonde(object):
         self.launch_time = datetime.datetime.strptime(self.ds.variables['base_time'].string, '%a %b %d %H:%M:%S %Y')
 
         # create empty lists for latitude, longitude, alitude
-        self.lat = []; self.lon = []; self.alt =[]
+        self.lat = []
+        self.lon = []
+        self.alt =[]
 
         self.lat_raw = list(self.ds.variables['lat'][:])
         self.lon_raw = list(self.ds.variables['lon'][:])
@@ -227,14 +252,15 @@ class Dropsonde(object):
                 self.alt.append(self.alt_raw[i])
 
     def __get_fid__(self):
-        """get the flight number from the netcdf global attributes"""
+        """
+        Get the flight number from the netcdf global attributes.
+        """
         fid = None
-        pattern = '[b,B]\d{3}'
-        #check several attributes to make sure that we get the fid
+        # check several attributes to make sure that we get the fid
         vars = [self.ds.SoundingDescription,]
 
         for var in vars:
-            fid = re.search('[b,B]\d{3}', var)
+            fid = re.search('[bBcC]\d{3}', var)
             if fid:
                 result = fid.group().lower()
                 return result
@@ -246,7 +272,7 @@ class Dropsonde(object):
         self.kml_name = '%s-%s' % (self.__get_fid__(),
                                    re.split('[_,.]', self.ds.SoundingDescription)[1])
 
-        description = "<![CDATA[<h4>" +self.launch_time.strftime('%Y-%m-%d %H:%M:%S')+"</h4><h3>Summary</h3>" + \
+        description = "<![CDATA[<h4>" + self.launch_time.strftime('%Y-%m-%d %H:%M:%SZ')+"</h4><h3>Summary</h3>" + \
                       """<p><b>First time stamp:</b> """ + \
                       time.strftime('%H:%M:%S', time.gmtime(min(self.ds.variables['time'][:]))) + \
                       """<br><b>Last time stamp:</b> """ + \
@@ -265,7 +291,9 @@ class Dropsonde(object):
                                            float(self.alt[i]))
 
         # point feature; location of the icon
-        pt_lat, pt_lon, pt_alt = float(self.lat[-1]), float(self.lon[-1]), float(self.alt[-1])
+        pt_lat = float(self.lat[-1])
+        pt_lon = float(self.lon[-1])
+        pt_alt = float(self.alt[-1])
 
         kml += _KML_PLACEMARK % (self.kml_name, description)
         kml += _KML_POINT % (pt_lon, pt_lat, pt_alt)
@@ -278,22 +306,15 @@ class Dropsonde(object):
                   'font.size': 9,
                   'xtick.labelsize': 8,
                   'ytick.labelsize': 8,
+                  'figure.subplot.wspace': 0.05,
                   'text.usetex': False}
 
         plt.clf()
         plt.rcParams.update(params)
 
-        ymin = 0; ymax = 10
+        fig = plt.figure(1, figsize=(10,8))
 
-        line_style = 'b-'
-        line_width = '2'
-
-        plt.figure(1, figsize=(5,4), dpi=120)
-
-        font = matplotlib.font_manager.FontProperties()
-        #font.set_size(7)
-
-        alt = self.ds.variables['alt'][:].data / 1000.0   #convert height to km
+        alt = self.ds.variables['alt'][:].data / 1000.0   # convert height to km
         theta = self.ds.variables['theta'][:].data - 273.15
         dp = self.ds.variables['dp'][:].data
         tdry = self.ds.variables['tdry'][:].data
@@ -302,39 +323,58 @@ class Dropsonde(object):
         u = self.ds.variables['u_wind'][:].data
         v = self.ds.variables['v_wind'][:].data
 
-        plt.subplots_adjust(hspace = 0.25, wspace = 0.15)
-
+        fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
 
         # --- 1st plot ---
-
-        plt.subplot(1,2,1)
         ix = np.where((tdry != -999) & (alt > 0))
-        plt.plot(tdry[ix], alt[ix], '-', lw=3, label='tdry')
+        ax1.plot(tdry[ix], alt[ix], '-', lw=3, label='tdry')
         ix = np.where((dp != -999) & (alt > 0))
-        plt.plot(dp[ix], alt[ix], '-', lw=3, label='dp')
+        ax1.plot(dp[ix], alt[ix], '-', lw=3, label='dp')
         ix = np.where((theta > -100) & (alt > 0))
-        plt.plot(theta[ix], alt[ix], '-', lw=3, label='theta')
-        plt.grid()
-        plt.xlabel('temperature (C)')
-        plt.legend(loc='upper right')
-        plt.ylabel('height (km)')
+        ax1.plot(theta[ix], alt[ix], '-', lw=3, label='theta')
+        ax1.grid(True)
+        ax1.set_xlabel('temperature (C)')
+        ax1.legend(loc='upper right')
+        ax1.set_ylabel('height (km)')
 
         # --- 2nd plot ---
-
-        plt.subplot(1,2,2)
         ix = np.where((wspd[:] > 0) & (alt > 0))
-        p1, = plt.plot(wspd[:][ix], alt[ix], '-', color='blue', lw=3, label='wspd')
-        plt.xlabel('wspd (ms-1)')
-        plt.twiny()
-        plt.plot(wdir[:][ix], alt[ix], '-', color='green', lw=3, label='wdir')
-        plt.xlim(0,360)
-        plt.xlabel('wdir (deg)')
-        plt.ylabel('altitude (m)')
-        plt.legend()
-        #plt.tight_layout()
-        self.fig_filename = os.path.join(self.kmz_tmp_directory, 'figures', self.id + '.png')
+        p1, = ax2.plot(wspd[:][ix], alt[ix],
+                       '-', color='blue', lw=3, label='wspd')
+        ax2.set_xlabel('wspd (ms-1)')
+        ax2.yaxis.grid(True)
+        ax2_b = ax2.twiny()
+
+        # The below snipped is necessary to avoid ugly vertical lines
+        # in the figures when the wdir crosses the 360 deg mark
+        _wdir = [float(wdir[ix[0][0]]), ]
+        _alt = [float(alt[ix[0][0]]), ]
+        for i in ix[0][1:]:
+            _wdir.append(wdir[i])
+            _alt.append(alt[i])
+            delta = np.abs(_wdir[-1]-_wdir[-2])
+            if delta > 180:
+                _wdir.insert(-1, None)
+                _alt.insert(-1, None)
+
+        p2, = ax2_b.plot(_wdir, _alt, '-',
+                         color='green', lw=3, label='wdir')
+        ax2_b.set_xlim(0, 360)
+        ax2_b.set_xlabel('wdir (deg)')
+        ax2_b.set_ylabel('altitude (m)')
+
+        lines = [p1, p2]
+        labs = [l.get_label() for l in lines]
+        ax2_b.legend(lines, labs, loc='upper right')
+
+        self.fig_filename = os.path.join(self.kmz_tmp_directory,
+                                         'figures', self.id + '.png')
         plt.savefig(self.fig_filename)
-        plt.close()
+        fig_label = '%s: %s' % (self.__get_fid__(),
+                                self.launch_time.strftime('%Y-%m-%d %H:%M:%SZ'))
+        fig.text(0.05, 0.96, fig_label, va='top', ha='left', transform=fig.transFigure)
+        fig.canvas.draw()
+        return fig
 
     def write_kml(self):
         f = open(os.path.join(self.kmz_tmp_directory, 'doc.kml'), 'w')
@@ -342,15 +382,21 @@ class Dropsonde(object):
         f.close()
 
     def calc_drift(self):
-        start_point = (self.__decdeg2dms__(self.lon[-1]), self.__decdeg2dms__(self.lat[-1]))
-        end_point = (self.__decdeg2dms__(self.lon[0]), self.__decdeg2dms__(self.lat[0]))
-        #calculate north-south drift
-        self.drift_ns = points2distance((self.__decdeg2dms__(self.lon[-1]), self.__decdeg2dms__(self.lat[-1])),
-                                    (self.__decdeg2dms__(self.lon[-1]), self.__decdeg2dms__(self.lat[ 0])))
-        #calculate east-west drift
-        self.drift_ew = points2distance((self.__decdeg2dms__(self.lon[-1]), self.__decdeg2dms__(self.lat[-1])),
-                                    (self.__decdeg2dms__(self.lon[ 0]), self.__decdeg2dms__(self.lat[-1])))
-        #calculate total drift
+        start_point = (self.__decdeg2dms__(self.lon[-1]),
+                       self.__decdeg2dms__(self.lat[-1]))
+        end_point = (self.__decdeg2dms__(self.lon[0]),
+                     self.__decdeg2dms__(self.lat[0]))
+        # calculate north-south drift
+        self.drift_ns = points2distance((self.__decdeg2dms__(self.lon[-1]),
+                                         self.__decdeg2dms__(self.lat[-1])),
+                                        (self.__decdeg2dms__(self.lon[-1]),
+                                         self.__decdeg2dms__(self.lat[0])))
+        # calculate east-west drift
+        self.drift_ew = points2distance((self.__decdeg2dms__(self.lon[-1]),
+                                         self.__decdeg2dms__(self.lat[-1])),
+                                        (self.__decdeg2dms__(self.lon[0]),
+                                         self.__decdeg2dms__(self.lat[-1])))
+        # calculate total drift
         self.drift_tot = points2distance(start_point, end_point)
 
 
@@ -359,19 +405,22 @@ def process(iput, opath):
         iput_file_list = []
         for root, subFolders, files in os.walk(iput):
             for f in files:
-                #print(f)
-                #if f.startswith('faam-dropsonde'):
                 if re.match('faam-dropsonde.*proc.nc', f):
                     iput_file_list.append(os.path.join(root, f))
+        iput_file_list.sort()
     else:
         iput_file_list = [iput,]
 
     for ifile in iput_file_list:
+        sys.stdout.write('Working on %s ...\n' % (os.path.basename(ifile),))
         try:
             d = Dropsonde()
             d.read(ifile)
             d.set_outpath(opath)
-            d.calc_drift()
+            try:
+                d.calc_drift()
+            except:
+                pass
             d.create_figure()
             d.create_kml()
             d.write_kml()
@@ -379,23 +428,28 @@ def process(iput, opath):
         except:
             pass
 
-if __name__ == '__main__':
+
+def _argparser():
     import argparse
-    parser = argparse.ArgumentParser(description="Creates a kmz file from dropsonde data.")
-    parser.add_argument('--outpath', action="store", type=str, default=os.path.expanduser('~'), help='Directory where the kmz file will be stored. Default: $HOME.')
-    parser.add_argument('input', action="store", type=str, help='Individual dropsonde file or folder which contains dropsonde data.')
+    sys.argv.insert(0, 'faampy ge_avaps')
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--outpath',
+                        action="store", type=str,
+                        default=os.path.expanduser('~'),
+                        help='Directory where the kmz file will be saved to. Default: $HOME.')
+    parser.add_argument('input',
+                        action="store",
+                        type=str,
+                        help='Individual dropsonde file or direcotry name which contains dropsonde data.')
+    return parser
+
+
+def main():
+    parser = _argparser()
     args = parser.parse_args()
     process(args.input, args.outpath)
     sys.stdout.write('Done ...\n')
 
 
-#ifile = '/home/axel/Dropbox/campaigns/wintex2016/b949-mar-09/faam-dropsonde_faam_20160309125648_r0_b949_raw.nc'
-#ifile = '/home/axel/b949_avaps/D20160309_125648QC.nc'
-#d = Dropsonde()
-#d.read(ifile)
-#d.set_outpath('/home/axel/')
-#d.calc_drift()
-#d.create_figure()
-#d.create_kml()
-#d.write_kml()
-#d.__zip__()
+if __name__ == '__main__':
+    main()
