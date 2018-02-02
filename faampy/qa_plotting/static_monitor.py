@@ -28,7 +28,7 @@ import style
 
 mpl.rcParams = style.rcParams
 
-#List of variable names that need to be extracted from the data source
+# List of variable names that need to be extracted from the data source
 VARIABLE_NAMES = ['Time',      # Time of measurement (seconds since midnight on start date)
                   'EXX_JCI',   # Raw counts
                   'WOW_IND']   # Weight on wheels indicator

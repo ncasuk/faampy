@@ -7,10 +7,12 @@ from cycler import cycler
 
 rcParams = mpl.rcParams
 
-#sets standard way to plot axes titles.
-axes_title_style = {'fontweight' : 'bold',
-                    'verticalalignment' : 'top',
-                    'horizontalalignment' : 'left'}
+ALPHA = 0.7
+
+# sets standard way to plot axes titles.
+axes_title_style = {'fontweight': 'bold',
+                    'verticalalignment': 'top',
+                    'horizontalalignment': 'left'}
 
 # general settings that apply to everything
 rcParams['lines.linewidth'] = 1.2
@@ -27,7 +29,7 @@ rcParams['axes.prop_cycle'] = cycler('color', [u'#33adff',    # blue
                                                u'#4dffc3',    # green
                                                u'#7070db'])   # bluey purple
 
-#grid options
+# grid options
 rcParams['axes.grid'] = True                # shows grid
 rcParams['grid.color'] = 'LightSlateGrey'   # light grey colour for grid lines
 
@@ -35,22 +37,21 @@ rcParams['grid.color'] = 'LightSlateGrey'   # light grey colour for grid lines
 rcParams['legend.fontsize'] = 'small'
 rcParams['legend.fancybox'] = True
 
-##figure options
+# figure options
 rcParams['figure.facecolor'] = 'w'
 
-
-##CHOOSE: which version you want - pdf, presentation or screen output:
-#output_device = 'screen'
-#output_device = 'presentation'
+# CHOOSE: which version you want - pdf, presentation or screen output:
+# output_device = 'screen'
+# output_device = 'presentation'
 output_device = 'pdf'
 
 
 if output_device == 'screen':
-     #add some layout settings here
+    # add some layout settings here
     rcParams['axes.facecolor'] = '#f2f2f2'
     rcParams['axes.edgecolor'] = 'k'
 elif output_device == 'pdf':
-     #add some pdf specific layout settings here
+    # add some pdf specific layout settings here
     rcParams['axes.edgecolor'] = 'k'
 elif output_device == 'presentation':
     rcParams['lines.linewidth'] = 2.5

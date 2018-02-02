@@ -23,8 +23,6 @@ Layout (portrait):
   |                                         |
   -------------------------------------------
 
-
-
 '''
 
 
@@ -32,24 +30,21 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 if __name__ == '__main__': mpl.use('Agg')
-import netCDF4
 import numpy as np
 
 from general import *
 from utils import *
-from style import *
+from style import ALPHA, axes_title_style
 
-ALPHA=0.7
-
-#List of variable names that needs to be extract from the data source
-VARIABLE_NAMES=['VMR_CR2',       ## Water vapour volume mixing ratio measured by the Buck CR2
-                'VMR_C_U',       ## Uncertainty estimate for water vapour volume mixing ratio measured by the Buck CR2
-                'TDEW_CR2',      ## Mirror Temperature measured by the Buck CR2 Hygrometer
-                'TDEW_C_U',      ## Uncertainty estimate for Buck CR2 Mirror Temperature
-                'TDEW_GE',       ## Dew point from the General Eastern instrument
-                'ALT_GIN',       ## Altitude from POS AV 510 GPS-aided Inertial Navigation unit
-                'WOW_IND',       ## Weight on wheels indicator
-                'HGT_RADR']      ## Radar height from the aircraft radar altimeter.
+# List of variable names that needs to be extract from the data source
+VARIABLE_NAMES = ['VMR_CR2',       # Water vapour volume mixing ratio measured by the Buck CR2
+                  'VMR_C_U',       # Uncertainty estimate for water vapour volume mixing ratio measured by the Buck CR2
+                  'TDEW_CR2',      # Mirror Temperature measured by the Buck CR2 Hygrometer
+                  'TDEW_C_U',      # Uncertainty estimate for Buck CR2 Mirror Temperature
+                  'TDEW_GE',       # Dew point from the General Eastern instrument
+                  'ALT_GIN',       # Altitude from POS AV 510 GPS-aided Inertial Navigation unit
+                  'WOW_IND',       # Weight on wheels indicator
+                  'HGT_RADR']      # Radar height from the aircraft radar altimeter.
 
 
 def plot_dewpoint(ax, data):
@@ -58,13 +53,13 @@ def plot_dewpoint(ax, data):
 
     """
 
-    hourloc=mpl.dates.HourLocator()
-    xtickformat=mpl.dates.DateFormatter('%H:%M')
+    hourloc = mpl.dates.HourLocator()
+    xtickformat = mpl.dates.DateFormatter('%H:%M')
 
-    tdew_cr2=data['TDEW_CR2'][:,0]
-    tdew_cr2[tdew_cr2 < 0]=np.nan
-    ax.plot_date(data['mpl_timestamp'][:,0], tdew_cr2,
-                 '-', alpha=ALPHA, label='BUCK')
+    tdew_cr2 = data['TDEW_CR2'][:,0]
+    tdew_cr2[tdew_cr2 < 0] = np.nan
+    ax.plot_date(data['mpl_timestamp'][:,0],
+                 tdew_cr2, '-', alpha=ALPHA, label='BUCK')
 
     ax.plot_date(data['mpl_timestamp'][:,0],
                  data['TDEW_GE'][:,0],
@@ -100,12 +95,12 @@ def plot_vmr(ax, data):
     #data['VMR_CR2'].fill_value = np.nan
     #plot the uncertainty as a grey shadow below the line
 
-    vmr=np.copy(data['VMR_CR2'])
-    vmr_unc=np.copy(data['VMR_C_U'])
+    vmr = np.copy(data['VMR_CR2'])
+    vmr_unc = np.copy(data['VMR_C_U'])
 
-    vmr[vmr <= 0]=np.nan
-    vmr_unc[vmr <= 0]=np.nan
-    vmr_unc[vmr_unc <= 0]=np.nan
+    vmr[vmr <= 0] = np.nan
+    vmr_unc[vmr <= 0] = np.nan
+    vmr_unc[vmr_unc <= 0] = np.nan
     ax.fill_between(data['mpl_timestamp'][:,0],
                     vmr[:,0],
                     vmr[:,0] - vmr_unc[:,0],
@@ -118,7 +113,9 @@ def plot_vmr(ax, data):
     ax.plot_date(data['mpl_timestamp'][:,0], vmr[:,0], '-', label= 'BUCK')
     plt.setp(ax.get_xticklabels(), visible=False)
     ax.set_ylabel('VMR (ppm)')
-    ax.text(0.05, 0.98,'Buck mixing ratio timeseries', axes_title_style, transform=ax.transAxes)
+    ax.text(0.05, 0.98,'Buck mixing ratio timeseries',
+            axes_title_style,
+            transform=ax.transAxes)
     ax.legend(loc='upper right')
     if ax.get_ylim()[0] < 0:
         ax.set_ylim(0, ax.get_ylim()[1])
@@ -132,9 +129,9 @@ def main(ds):
 
     """
 
-    #Setup up axes layout: 3 axes in one column
-    gs=gridspec.GridSpec(3, 1, height_ratios=[1,1,2], hspace=0.05)
-    fig=QaQc_Figure().setup()
+    # Setup up axes layout: 3 axes in one column
+    gs = gridspec.GridSpec(3, 1, height_ratios=[1,1,2], hspace=0.05)
+    fig = QaQc_Figure().setup()
     fig.add_subplot(gs[0])
     fig.add_subplot(gs[1], sharex=fig.get_axes()[0])
     fig.add_subplot(gs[2], sharex=fig.get_axes()[0])
@@ -143,7 +140,7 @@ def main(ds):
 
     set_suptitle(fig, ds, 'QA-BUCK')
 
-    data=get_data(ds, VARIABLE_NAMES)
+    data = get_data(ds, VARIABLE_NAMES)
 
     #Call the three plotting methods
     plot_altitude(fig.get_axes()[0], data)

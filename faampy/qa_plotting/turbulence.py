@@ -70,7 +70,18 @@ VARIABLE_NAMES = ['Time',         # Time of measurement (seconds since midnight 
                   'U_C',          # Eastward wind component
                   'V_C',          # Northward wind component
                   'TAS',          # True air speed measured by the turbulence probe
-                  'TAS_RVSM']     #
+                  'TAS_RVSM',
+                  'IAS_RVSM']     #
+
+
+def add_hdg_offset(hdg, hdg_offset):
+    """function takes care of angle calculations and substracts 360 if
+    hdg is greater than 360 and adds 360 if angle is smaller than 0.
+    """
+    result = np.array(hdg) + hdg_offset
+    result[np.where(result > 360.)] += -360.
+    result[np.where(result < 0.)] += 360.
+    return result
 
 
 def calc_bulk_wspd(tas_rvsm, hdg_gin, gspd_north, gspd_east, dit, hdg_offset=None, tas_scale_factor=None):
@@ -145,6 +156,7 @@ class TurbuOverview(object):
     def __init__(self):
         self.Data = None
         self.Index = None
+        self.Hdg_offset = 0.35
         self.PlotData = {}
 
     def __get_index__(self):

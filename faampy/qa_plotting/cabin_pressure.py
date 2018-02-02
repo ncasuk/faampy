@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 Quality Assurance-Quality Check (QA-QC) plotting for the cabin pressure and
 cabin temperature on the FAAM aircraft. Also includes static pressure from
 the aircraft RVSM (air data) system for control.
@@ -19,38 +19,41 @@ Layout (landscape):
   |                                         |
   -------------------------------------------
 
-'''
+"""
 
 import matplotlib as mpl
-if __name__ == '__main__': mpl.use('Agg')
-import matplotlib.pyplot as plt
 import numpy as np
 
 from general import QaQc_Figure, adjust_ylim, \
                     set_suptitle, get_data, add_takeoff, add_landing, \
                     zoom_to_flight_duration, add_time_buffer
-from utils import *
+from utils import freeze_color_cycle
 from style import *
 
 
 #List of variable names that need to be extracted from the data source
-VARIABLE_NAMES=['Time',             # Time of measurement (seconds since midnight on start date)
-                'PS_RVSM',          # Static pressure from the aircraft RVSM (air data) system
-                'CAB_PRES',         # Cabin pressure
-                'CAB_TEMP',         # Cabin temperature at the core consoles
-                'WOW_IND']          # Weight on wheels indicator
+VARIABLE_NAMES = ['Time',             # Time of measurement (seconds since midnight on start date)
+                  'PS_RVSM',          # Static pressure from the aircraft RVSM (air data) system
+                  'CAB_PRES',         # Cabin pressure
+                  'CAB_TEMP',         # Cabin temperature at the core consoles
+                  'WOW_IND']          # Weight on wheels indicator
 
 
 def plot_timeseries(ax, data):
     """
-    Creates a timeseries plot for cabin temp, cabin pressure and static pressure
-
+    Creates a timeseries plot for cabin temperature, cabin pressure
+    and static pressure.
     """
+
     hourloc = mpl.dates.HourLocator()
     xtickformat = mpl.dates.DateFormatter('%H:%M')
 
-    line1 = ax.plot_date(data['mpl_timestamp'][:,0], data['CAB_PRES'][:].ravel(), '-', label='Cabin pressure')
-    line2 = ax.plot_date(data['mpl_timestamp'][:].ravel(), data['PS_RVSM'][:].ravel(),'-', label='Static pressure')
+    line1 = ax.plot_date(data['mpl_timestamp'][:, 0],
+                         data['CAB_PRES'][:].ravel(),
+                         '-', lw=2, label='Cabin pressure')
+    line2 = ax.plot_date(data['mpl_timestamp'][:].ravel(),
+                         data['PS_RVSM'][:].ravel(),
+                         '-', lw=2, label='Static pressure')
     ax.xaxis.set_major_formatter(xtickformat)
     ax.set_ylabel('Pressure (mb)')
     ax.set_xlabel('Time (utc)')
@@ -59,7 +62,9 @@ def plot_timeseries(ax, data):
     ax_r = ax.twinx()
     ax_r.set_color_cycle(cc)
 
-    line3 = ax_r.plot_date(data['mpl_timestamp'][:,0], data['CAB_TEMP'][:,0], '-', label='Cabin temperature')
+    line3 = ax_r.plot_date(data['mpl_timestamp'][:, 0],
+                           data['CAB_TEMP'][:, 0],
+                           '-', lw=2, label='Cabin temperature')
 
     ax_r.set_ylabel('Cabin Temperature (C)')
     ax_r.grid(False)
@@ -80,10 +85,13 @@ def main(ds):
 
     fig = QaQc_Figure(landscape=True).setup()
     fig.add_subplot(111)
+    # squeeze the plot a little bit, otherwise the label on the right hand
+    # side overlaps the figure title
+    fig.subplots_adjust(right=0.85)
     for ax in fig.get_axes():
         ax.callbacks.connect('xlim_changed', adjust_ylim)
 
-    set_suptitle(fig, ds, 'QA-Cabin Pressure/Temperature')
+    set_suptitle(fig, ds, 'QA-Cabin Pressure & Temperature')
 
     data = get_data(ds, VARIABLE_NAMES)
     data['CAB_PRES'][(data['CAB_PRES'] > 1050) | (data['CAB_PRES'] < 700)] = np.nan
@@ -98,9 +106,3 @@ def main(ds):
     add_takeoff(ax, data)
     add_landing(ax, data)
     return fig
-
-#plt.close('all')
-#ncfile = './data/core_faam_20160303_v004_r0_b947.nc'
-#ds = netCDF4.Dataset(ncfile, 'r')
-#ds=d
-#fig = main(ds)

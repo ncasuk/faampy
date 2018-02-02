@@ -30,7 +30,8 @@ def rotate_coord(x, y, angle):
 
 class QaQc_Figure(object):
     """Main Quality Assurance/Quality Control Figure. This class defines some
-common figure features that should be applied to all figures."""
+common figure features that should be applied to all figures.
+    """
 
     def __init__(self, landscape=False):
 
@@ -43,14 +44,16 @@ common figure features that should be applied to all figures."""
                                                     style='italic',
                                                     size='xx-large',
                                                     weight='bold')
-        self.fig.logo_text = self.fig.text(0.05, 0.98, 'FAAM',
+        self.fig.logo_text = self.fig.text(0.05, 0.98,
+                                           'FAAM',
                                            horizontalalignment='left',
                                            verticalalignment='top',
                                            transform=self.fig.transFigure,
                                            color='#004ACC')
         self.fig.logo_text.set_font_properties(font_logo)
 
-        self.fig.timestamp = self.fig.text(0.98, 0.02, 'created: %s' % (datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ')),
+        self.fig.timestamp = self.fig.text(0.98, 0.02,
+                                           'created: %s' % (datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ')),
                                            horizontalalignment='right',
                                            verticalalignment='bottom',
                                            transform=self.fig.transFigure,
@@ -88,7 +91,8 @@ common figure features that should be applied to all figures."""
             self.fig.timestamp.set_horizontalalignment('left')
             self.fig.timestamp.set_verticalalignment('bottom')
 
-            x_new, y_new = rotate_coord(HEADER_POSITION[0]*width, HEADER_POSITION[1]*height, 270)
+            x_new, y_new = rotate_coord(HEADER_POSITION[0]*width,
+                                        HEADER_POSITION[1]*height, 270)
             self.fig.header = self.fig.text(-x_new/height, 0.5, '',
                                             horizontalalignment='center',
                                             verticalalignment='center',
@@ -106,10 +110,13 @@ def get_data(ds, var_names):
     var_names = variable names (i.e. VARIABLE_NAMES) as specified at the
     top of each qa-qc module
 
+    :param ds: dataset (either decades_dataset or netCDF4.Dataset)
+    :param list var_names: list of variable names to be extracted
     """
     result={}
 
-    if isinstance(ds, netCDF4.Dataset):
+    if 'netCDF4' in str(type(ds)):
+        #if isinstance(ds, netCDF4.Dataset):
         #Read all necessary data from netCDF dataset and convert to 1Hz
         result['mpl_timestamp'] = get_mpl_time(ds, freq=32)
         for var in var_names:
@@ -117,10 +124,11 @@ def get_data(ds, var_names):
                 continue
             else:
                 result[var] = ds.variables[var][:]
-    elif isinstance(ds, decades_dataset):
-        #result['mpl_timestamp'] = get_mpl_time(ds, 32)
+    #elif isinstance(ds, decades_dataset):
+    elif 'decades_dataset' in str(type(ds)):
+     #result['mpl_timestamp'] = get_mpl_time(ds, 32)
         for var in var_names:
-            if (var not in ds.keys()) and (var[:-5] not in ds.keys()) :
+            if (var not in list(ds.keys()) and (var[:-5] not in list(ds.keys()))):
                 continue
             if var != 'Time':
                 #check if df exists
@@ -188,6 +196,9 @@ def add_takeoff(ax, data):
     """oplots time of take-off as vertical line.
 
     """
+    if 'WOW_IND' not in list(data.keys()):
+        return
+
     wow_min, wow_max = get_wow_min_max(data['WOW_IND'][:])
     ax.axvline(data['mpl_timestamp'][wow_min,0],
                lw=VERTICAL_INDICATOR_WIDTH,
@@ -198,6 +209,9 @@ def add_landing(ax, data):
     """oplots time of landing as vertical line.
 
     """
+    if 'WOW_IND' not in list(data.keys()):
+        return
+
     wow_min, wow_max = get_wow_min_max(data['WOW_IND'])
     ax.axvline(data['mpl_timestamp'][wow_max,0],
                lw=VERTICAL_INDICATOR_WIDTH,
@@ -269,7 +283,15 @@ def zoom_to_flight_duration(ax, data):
     weight on wheels indicator shows takeoff/landing. Therefore ignoring pre and post flight data.
 
     """
+    if not 'WOW_IND' in list(data.keys()):
+        if 'IAS_RVSM' in list(data.keys()):
+            wow_ind = np.ones(data['IAS_RVSM'].shape[0])
+            wow_ind[np.mean(data['IAS_RVSM'], axis=1) > 80] = 0
+            data['WOW_IND'] = wow_ind[:]
+        else:
+            return
     wow_min, wow_max = get_wow_min_max(data['WOW_IND'])
     new_xlim = (data['mpl_timestamp'][wow_min, 0],
                 data['mpl_timestamp'][wow_max, 0])
     ax.set_xlim(new_xlim)
+

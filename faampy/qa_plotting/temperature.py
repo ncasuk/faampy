@@ -54,14 +54,14 @@ from style import rcParams, axes_title_style
 
 
 #parameter names used in this script to plot temperature graphs
-VARIABLE_NAMES=['Time',        ## Time of measurement (seconds since midnight on start date)
-                'ITDI',        ## DEICED IND TEMP
-                'NDTI',        ## NONDEICED IND TEMP
-                'TAT_DI_R',    ## True air temperature from the Rosemount deiced temperature sensor
-                'TAT_ND_R',    ## True air temperature from the Rosemount non-deiced temperature sensor
-                'WOW_IND',     ## Weight on wheels indicator
-                'PRTAFT_deiced_temp_flag',
-                'LWC_JW_U']
+VARIABLE_NAMES = ['Time',        ## Time of measurement (seconds since midnight on start date)
+                  'ITDI',        ## DEICED IND TEMP
+                  'NDTI',        ## NONDEICED IND TEMP
+                  'TAT_DI_R',    ## True air temperature from the Rosemount deiced temperature sensor
+                  'TAT_ND_R',    ## True air temperature from the Rosemount non-deiced temperature sensor
+                  'WOW_IND',     ## Weight on wheels indicator
+                  'PRTAFT_deiced_temp_flag',
+                  'LWC_JW_U']
 
 
 def power_spectrum(data, *args):
@@ -124,15 +124,15 @@ def plot_power_spectrum(ax, data):
 
 
 #plotting deiced vs non-deiced indicated air temp (scatter plot)
-def plot_iat_scatter(ax,data):
+def plot_iat_scatter(ax, data):
     """
     plots scatter graph for deiced and non-deiced indicated air temp
 
     """
     ####due to the 32hz measuring frequency of rosemount we use '[:]' - this plots it with the 32hz mpl_timestamp size
     if 'NDTI' in data:
-        ax.plot(data['NDTI'][:,0].ravel(),
-                data['ITDI'][:,0].ravel(),
+        ax.plot(data['NDTI'][:, 0].ravel(),
+                data['ITDI'][:, 0].ravel(),
                 '.', color='#9acd32')
     #plot 1-to-1 dashed line with same colour as the grid
     ax.plot(ax.get_xlim(),
@@ -151,12 +151,12 @@ def plot_iat_scatter(ax,data):
     return ax
 
 
-def plot_iat_histogram(ax,data):
+def plot_iat_histogram(ax, data):
     """
     plotting delta IAT (histogram)
 
     """
-    if not 'NDTI' in data:
+    if 'NDTI' not in list(data.keys()):
         return
     delta_iat = data['ITDI'][:].ravel() - data['NDTI'][:].ravel()
 
@@ -174,17 +174,21 @@ def plot_iat_histogram(ax,data):
     return ax
 
 
-def plot_iat(ax,data):
+def plot_iat(ax, data):
     """
     plot timeseries of indicated air temp; deiced, non-deiced and delta
 
     """
-    if not 'NDTI' in data:
-        labels=ax.get_yticklabels()
+    if 'NDTI' not in data.keys():
+        labels = ax.get_yticklabels()
         labels[-1].set_visible(False)
         return
-    line1 = ax.plot_date(data['mpl_timestamp'][:,0].ravel(), data['ITDI'][:,0].ravel(), '-', label='deiced')
-    line2 = ax.plot_date(data['mpl_timestamp'][:,0].ravel(), data['NDTI'][:,0].ravel(), '-', label='non-deiced')
+    line1 = ax.plot_date(data['mpl_timestamp'][:, 0].ravel(),
+                         data['ITDI'][:, 0].ravel(),
+                         '-', label='deiced')
+    line2 = ax.plot_date(data['mpl_timestamp'][:,0].ravel(),
+                         data['NDTI'][:,0].ravel(),
+                         '-', label='non-deiced')
 
     cc = freeze_color_cycle(ax)
     ax_a=ax.twinx()
@@ -246,14 +250,15 @@ def plot_lwc(ax, data):
     plots liquid water content timeseries i.e. cloud status
 
     """
-    if not 'LWC_JW_U' in data:
-        return
+    if 'LWC_JW_U' in list(data.keys()):
+        lwc = data['LWC_JW_U'][:, 0]
+        lwc = np.clip(lwc, 0, 1)
+    else:
+        n = len(data['mpl_timestamp'][:,0])
+        lwc = np.zeros(n)*np.nan
     plt.setp(ax.get_xticklabels(), visible=False)
     plt.setp(ax.get_yticklabels(), visible=False)
-    #ax.text(0.5, 0.5, 'TODO: Will show cloud status IN/OUT', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
-    lwc=data['LWC_JW_U'][:,0]
-    lwc=np.clip(lwc, 0, 1)
-    ax.plot_date(data['mpl_timestamp'][:,0], lwc, '-')
+    ax.plot_date(data['mpl_timestamp'][:, 0], lwc, '-')
     ax.set_ylabel('lwc')
     ax.set_ylim(0, 1.1)
     return ax
@@ -288,27 +293,29 @@ def main(ds):
     It calls all plotting functions and sets up axes layout.
 
     """
-    #Setup up axes layout: 3 axes in one column
-    gs=gridspec.GridSpec(2, 1, height_ratios=[1,4])
-    top_cell=gs[0,0]
-    bottom_cell=gs[1,0]
+    # Setup up axes layout: 3 axes in one column
+    gs = gridspec.GridSpec(2, 1, height_ratios=[1,4])
+    top_cell = gs[0,0]
+    bottom_cell = gs[1,0]
 
-    gs1=gridspec.GridSpecFromSubplotSpec(4,1, bottom_cell, height_ratios=[1,1,10,10], hspace=0.05)
+    gs1 = gridspec.GridSpecFromSubplotSpec(4, 1, bottom_cell,
+                                           height_ratios=[1, 1, 10, 10],
+                                           hspace=0.05)
 
-    fig=QaQc_Figure().setup()
-    ax_tat_ts=fig.add_subplot(gs1[3])                                # axes for true air temperature time series
-    ax_iat_ts=fig.add_subplot(gs1[2], sharex=fig.get_axes()[0])      # axes for indicated air temperature time series
-    ax_lwc_ts=fig.add_subplot(gs1[1], sharex=fig.get_axes()[0])      # axes for cloud indicator
-    ax_heater_ts=fig.add_subplot(gs1[0], sharex=fig.get_axes()[0])   # axes for heater indicator
+    fig = QaQc_Figure().setup()
+    ax_tat_ts = fig.add_subplot(gs1[3])                                # axes for true air temperature time series
+    ax_iat_ts = fig.add_subplot(gs1[2], sharex=fig.get_axes()[0])      # axes for indicated air temperature time series
+    ax_lwc_ts = fig.add_subplot(gs1[1], sharex=fig.get_axes()[0])      # axes for cloud indicator
+    ax_heater_ts = fig.add_subplot(gs1[0], sharex=fig.get_axes()[0])   # axes for heater indicator
 
     gs2=gridspec.GridSpecFromSubplotSpec(1,3, top_cell, hspace=0.15)
-    ax_scatter=fig.add_subplot(gs2[0], aspect='equal')               # axes for scatter plot
-    ax_hist=fig.add_subplot(gs2[1])                                  # axes for histogram
-    ax_ps=fig.add_subplot(gs2[2])                                    # axes for power spectrum
+    ax_scatter = fig.add_subplot(gs2[0], aspect='equal')               # axes for scatter plot
+    ax_hist = fig.add_subplot(gs2[1])                                  # axes for histogram
+    ax_ps = fig.add_subplot(gs2[2])                                    # axes for power spectrum
 
     set_suptitle(fig, ds, 'QA-Temperature')
 
-    data =get_data(ds, VARIABLE_NAMES)
+    data = get_data(ds, VARIABLE_NAMES)
     for var in ['ITDI', 'NDTI', 'TAT_DI_R', 'TAT_ND_R']:
         data[var][data[var] <= 0] = np.nan
 

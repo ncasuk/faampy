@@ -197,7 +197,7 @@ def get_flight_duration(ds, quite=None):
     else:
          ias=ias[:]
 
-    if 'GSPD_GIN' in ds.variables.keys():
+    if 'GSPD_GIN' in list(ds.variables.keys()):
         gspd=ds.variables['GSPD_GIN'][:]
         #if hasattr(gspd, 'data'):
         #    gspd=gspd.data
@@ -209,12 +209,11 @@ def get_flight_duration(ds, quite=None):
         #    wow_ind=wow_ind.data
         if len(wow_ind.shape) > 1: wow_ind=wow_ind[:,0].ravel()
 
-
-    if 'WOW_IND' in ds.variables.keys():
+    if 'WOW_IND' in list(ds.variables.keys()):
         ix=np.where(wow_ind == 0)[0]
         ix_min, ix_max=np.min(ix), np.max(ix)
         dur=ds.variables['Time'][ix_max]-ds.variables['Time'][ix_min]
-    elif 'GSPD_GIN' in ds.variables.keys():
+    elif 'GSPD_GIN' in list(ds.variables.keys()):
         #filter for indicated airspeed greater 60
         ix=np.where((ias > 60) & (gspd > 60))
         ix_min, ix_max=np.min(ix), np.max(ix)
@@ -247,16 +246,18 @@ def get_index_from_hhmmss(ds, hhmmss):
     """return the index from a FAAM core netcdf where the 'Time'-variables matches
     the time 'hhmmss' string matches the
 
-    >>> import netCDF4
-    >>> ds = netCDF4.Dataset('core_faam_20130225_v004_r0_b753.nc', 'r')
-    >>> get_index_from_hhmmss(ds, '120000')
-    Out[1]: 7668
-    >>>
+    Example::
+
+        >>> import netCDF4
+        >>> ds = netCDF4.Dataset('core_faam_20130225_v004_r0_b753.nc', 'r')
+        >>> get_index_from_hhmmss(ds, '120000')
+        Out[1]: 7668
+        >>>
 
     """
     #convert time in string format to seconds past midnight
-    secs=conv_time_to_secs(hhmmss)
-    ix=get_index_from_secs(ds, secs)
+    secs = conv_time_to_secs(hhmmss)
+    ix = get_index_from_secs(ds, secs)
     return ix
 
 
@@ -272,18 +273,21 @@ def get_index(ds, inp):
 
     """
     if isinstance(inp, int):
-        ix=get_index_from_secs(ds, inp)
+        ix = get_index_from_secs(ds, inp)
     elif len(inp) == 6 and re.match('\d{6}', inp):
-        ix=get_index_from_hhmmss(ds, inp)
+        ix = get_index_from_hhmmss(ds, inp)
     else:
         pass
     return ix
+
 
 def freeze_color_cycle(ax):
     """A function that freezes the color cycle. This is useful for example when
     the twinx() command is used and the color cycle would normally be reseted.
 
-    Usage:
+    :param ax: axis
+
+    Usage::
 
     import matplotlib.pyplot as plt
     import numpy as np
@@ -308,13 +312,12 @@ def freeze_color_cycle(ax):
         plot(np.random.random(20))
 
     """
-    import matplotlib as mpl
-    if mpl.__version__  >= '1.5.1':
-        next_color=ax._get_lines.prop_cycler.next()['color']
+    if mpl.__version__ >= '1.5.1':
+        next_color = ax._get_lines.prop_cycler.next()['color']
     else:
-        next_color=next(ax._get_lines.color_cycle)
+        next_color = next(ax._get_lines.color_cycle)
 
-    ix=plt.rcParams['axes.color_cycle'].index(next_color)
-    color_cycle=plt.rcParams['axes.color_cycle'][ix:]+plt.rcParams['axes.color_cycle'][:ix]
-
+    ix = plt.rcParams['axes.color_cycle'].index(next_color)
+    color_cycle = plt.rcParams['axes.color_cycle'][ix:] + \
+                  plt.rcParams['axes.color_cycle'][:ix]
     return color_cycle

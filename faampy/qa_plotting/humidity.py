@@ -38,9 +38,10 @@ import numpy as np
 
 from humidity_formulae import dp2vp, vp2vmr
 
-from general import QaQc_Figure, set_suptitle, get_data, add_takeoff, \
-                    add_landing, zoom_to_flight_duration, add_time_buffer
 from utils import *
+from general import add_time_buffer, QaQc_Figure, set_suptitle, get_data, \
+                    add_takeoff, add_landing, zoom_to_flight_duration, \
+                    adjust_ylim
 from style import axes_title_style, rcParams
 
 #parameter names used to create the humidity plots
@@ -76,11 +77,9 @@ def plot_humidity_scatter(ax, data):
 
     """
 
-    x = data['WVSS2R_VMR'][:,0]
-    y1 = data['WVSS2F_VMR'][:,0]
-    y2 = data['VMR_CR2'][:,0]
-
-
+    x = data['WVSS2R_VMR'][:, 0]
+    y1 = data['WVSS2F_VMR'][:, 0]
+    y2 = data['VMR_CR2'][:, 0]
 
     # use only inflight data using weight on wheels
     x[data['WOW_IND'].ravel() != 0] = np.nan
@@ -92,19 +91,20 @@ def plot_humidity_scatter(ax, data):
 
     # converts dew point from GE to volume mixing ratio;
     # so that it matches the other humidity measurements
-    tdew_ge = data['TDEW_GE'][:,0].ravel()
-    ps_rvsm = data['PS_RVSM'][:,0].ravel()
+    tdew_ge = data['TDEW_GE'][:, 0].ravel()
+    ps_rvsm = data['PS_RVSM'][:, 0].ravel()
     vmr_ge = conv_ge(tdew_ge, ps_rvsm)
-    ax.plot(data['WVSS2R_VMR'][:].ravel(), vmr_ge,'.', label='GE')
+    ax.plot(data['WVSS2R_VMR'][:].ravel(), vmr_ge, '.', label='GE')
 
     axis_range = (min([ax.get_xlim()[0], ax.get_ylim()[0]]),
                   max([ax.get_xlim()[1], ax.get_ylim()[1]]))
     ax.set_xlim(axis_range)
     ax.set_ylim(axis_range)
     # plot a 1:1 line
-    ax.plot(ax.get_xlim(),
-            ax.get_ylim(),
-            linestyle='--', color=rcParams['grid.color'])
+    ax.plot([0, 1], [0, 1],
+            linestyle='--',
+            color=rcParams['grid.color'],
+            transform=ax.transAxes)
     ax.text(0.05, 0.98,
             'WVSS2R vs \n   WVSS2F\n   CR2\n   GE',
             axes_title_style, transform=ax.transAxes)
@@ -112,11 +112,6 @@ def plot_humidity_scatter(ax, data):
     ax.set_ylabel('VMR (ppb)')
     ax.set_xlabel('VMR (ppb)')
     ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-    # reduce the number of x and y-ticklabels; keep only every other label
-    for label in ax.get_xticklabels()[::2]:
-        label.set_visible(False)
-    for label in ax.get_yticklabels()[::2]:
-        label.set_visible(False)
     return ax
 
 
@@ -127,30 +122,31 @@ def plot_lwc(ax, data):
     """
     plt.setp(ax.get_xticklabels(), visible=False)
     plt.setp(ax.get_yticklabels(), visible=False)
-    #ax.grid(False)
-    #ax.text(0.5, 0.5, 'TODO: Will show cloud status IN/OUT', horizontalalignment='center', verticalalignment='center', transform=ax.transAxes)
+    ax.set_ylabel('lwc')
+    ax.set_ylim(0, 1.1)
+
     if 'LWC_JW_U' in data.keys():
-        lwc=data['LWC_JW_U'][:,0]
+        lwc = data['LWC_JW_U'][:, 0]
     elif 'NV_LWC_C' in data.keys():
-        lwc=data['NV_LWC_C'][:,0]
+        lwc = data['NV_LWC_C'][:, 0]
     elif 'NV_LWC_U' in data.keys():
-        lwc=data['NV_LWC_U'][:,0]
+        lwc = data['NV_LWC_U'][:, 0]
     else:
         return
     lwc = np.clip(lwc, 0, 1)
-    ax.plot_date(data['mpl_timestamp'][:,0], lwc, '-')
-    ax.set_ylabel('lwc')
-    ax.set_ylim(0, 1.1)
+    ax.plot_date(data['mpl_timestamp'][:, 0], lwc, '-')
     return ax
 
 
-def plot_alt(ax,data):
+def plot_alt(ax, data):
     """
     Plots altitude timeseries from the GIN instrument
 
     """
-    ax.plot_date(data['mpl_timestamp'][:].ravel(), data['ALT_GIN'][:].ravel(),'-', label= 'ALT_GIN')
-    plt.setp(ax.get_xticklabels(),visible=False)
+    ax.plot_date(data['mpl_timestamp'][:].ravel(),
+                 data['ALT_GIN'][:].ravel(),
+                 '-', label='ALT_GIN')
+    plt.setp(ax.get_xticklabels(), visible=False)
     ax.text(0.05, 0.98, 'Altitude', axes_title_style, transform=ax.transAxes)
     ax.set_ylabel('Altitude (m)')
     labels = ax.get_yticklabels()
@@ -160,25 +156,32 @@ def plot_alt(ax,data):
 
 def plot_humidity(ax, data):
     """
-    Plots timeseries of 4 instruments that measure humidity; WVSS2R, WVSS2F, VMR_CR2, TDEW_GE
+    Plots timeseries of 4 instruments that measure humidity:
+      WVSS2R
+      WVSS2F
+      VMR_CR2
+      TDEW_GE
 
     """
-    ax.plot_date(data['mpl_timestamp'][:,0].ravel(),
+    ax.plot_date(data['mpl_timestamp'][:, 0].ravel(),
                  data['WVSS2F_VMR'][:].ravel(),
-                 '-', label = 'WVSS2-F')
-    ax.plot_date(data['mpl_timestamp'][:,0].ravel(),
+                 '-', label='WVSS2-F')
+    ax.plot_date(data['mpl_timestamp'][:, 0].ravel(),
                  data['WVSS2R_VMR'][:].ravel(),
                  '-', label='WVSS2-R')
-    ax.plot_date(data['mpl_timestamp'][:,0].ravel(),
+    ax.plot_date(data['mpl_timestamp'][:, 0].ravel(),
                  data['VMR_CR2'][:].ravel(),
                  '-', label='VMR_CR2')
 
-    # converts dew point from GE to volume mixing ratio; so that it matches the other humidity measurements
-    tdew_ge = data['TDEW_GE'][:,0].ravel()
-    ps_rvsm = data['PS_RVSM'][:,0].ravel()
+    # converts dew point from GE to volume mixing ratio,
+    # so that it matches the other humidity measurements
+    tdew_ge = data['TDEW_GE'][:, 0].ravel()
+    ps_rvsm = data['PS_RVSM'][:, 0].ravel()
     vmr_ge = conv_ge(tdew_ge, ps_rvsm)
 
-    ax.plot_date(data['mpl_timestamp'][:,0].ravel(), vmr_ge, '-', label = 'GE')
+    ax.plot_date(data['mpl_timestamp'][:, 0].ravel(),
+                 vmr_ge,
+                 '-', label='GE')
 
     ax.text(0.05, 0.98,
             'Humidity timeseries',
@@ -193,9 +196,8 @@ def plot_humidity(ax, data):
     ax.set_ylabel('Volume Mixing Ratio (ppb)')
     ax.legend(loc='lower right')
 
-    labels=ax.get_yticklabels()
+    labels = ax.get_yticklabels()
     labels[-1].set_visible(False)
-
     return ax
 
 
@@ -205,46 +207,51 @@ def main(ds):
 
     """
     # Setup up axes layout: 4 axes in one column
-    gs = gridspec.GridSpec(2, 1, height_ratios=[1,4])
-    top_cell = gs[0,0]
-    bottom_cell = gs[1,0]
+    gs = gridspec.GridSpec(2, 1, height_ratios=[1, 4])
+    top_cell = gs[0, 0]
+    bottom_cell = gs[1, 0]
 
     gs1 = gridspec.GridSpecFromSubplotSpec(3, 1,
                                            bottom_cell,
-                                           height_ratios=[2,5,10],
+                                           height_ratios=[2, 5, 10],
                                            hspace=0.05)
 
     fig = QaQc_Figure().setup()
-    fig.add_subplot(gs1[2,:])
-    fig.add_subplot(gs1[1,:], sharex=fig.get_axes()[0])
-    fig.add_subplot(gs1[0,:], sharex=fig.get_axes()[0])
-    gs2=gridspec.GridSpecFromSubplotSpec(1,1, top_cell)
-    fig.add_subplot(gs2[0,:], aspect='equal')
-
+    fig.add_subplot(gs1[2, :])
+    fig.add_subplot(gs1[1, :], sharex=fig.get_axes()[0])
+    fig.add_subplot(gs1[0, :], sharex=fig.get_axes()[0])
     set_suptitle(fig, ds, 'QA-Humidity')
+
+    for ax in fig.get_axes():
+        ax.callbacks.connect('xlim_changed', adjust_ylim)
 
     data = get_data(ds, VARIABLE_NAMES)
     data['VMR_CR2'][data['VMR_CR2'] < 0] = np.nan  # remove unreasonable data
-    tdew_ge=data['TDEW_GE'][:,0].ravel()
-    ps_rvsm=data['PS_RVSM'][:,0].ravel()
+    tdew_ge = data['TDEW_GE'][:, 0].ravel()
+    ps_rvsm = data['PS_RVSM'][:, 0].ravel()
 
     vp_ge = dp2vp(tdew_ge)
     vmr_ge = vp2vmr(vp_ge, ps_rvsm)
     vmr_ge = vmr_ge*1E6
 
-    #call the plotting methods below
+    # call the plotting methods below
     plot_humidity(fig.get_axes()[0], data)
     plot_alt(fig.get_axes()[1], data)
     plot_lwc(fig.get_axes()[2], data)
-    plot_humidity_scatter(fig.get_axes()[3], data)
 
-    # adds grey bar showing takeoff/landing and only plots the flight
+    # adds grey bar showing take-off/landing and only plots the flight
     ax = fig.get_axes()[0]
     zoom_to_flight_duration(ax, data)
     add_time_buffer(ax)
 
-    for ax in fig.get_axes()[:-1]:
+    for ax in fig.get_axes():
         add_takeoff(ax, data)
         add_landing(ax, data)
+
+    gs2 = gridspec.GridSpecFromSubplotSpec(1, 1, top_cell)
+    fig.add_subplot(gs2[0, :], aspect='equal')
+
+    plot_humidity_scatter(fig.get_axes()[3], data)
+
     fig.canvas.draw()
     return fig
