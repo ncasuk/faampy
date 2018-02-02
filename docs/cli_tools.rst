@@ -24,6 +24,22 @@ nc_to_gpx
    :prog: faampy nc_to_gpx
    :nodefault:
 
+ge_avaps
+~~~~~~~~
+.. argparse::
+   :module: faampy.avaps.dropsonde
+   :func: _argparser
+   :prog: faampy ge_avaps
+   :nodefault:
+
+ge_flight_track
+~~~~~~~~~~~~~~~
+.. argparse::
+   :module: faampy.mapping.ge_flight_track
+   :func: _argparser
+   :prog: faampy ge_flight_track
+   :nodefault:
+
 ge_ncas_airquality
 ~~~~~~~~~~~~~~~~~~
 .. argparse::

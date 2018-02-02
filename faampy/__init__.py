@@ -22,6 +22,8 @@ __status__ = 'a'
 # this has to be maintained manually and has to be
 # checked/updated with every release
 MODULES = [('data_download',      'faampy.utils.data_download'),
+           ('ge_avaps',           'faampy.avaps.dropsonde'),
+           ('ge_flight_track',    'faampy.mapping.ge_flight_track'),
            ('ge_ncas_airquality', 'faampy.mapping.ge_ncas_airquality'),
            ('ge_nimrod_to_kmz',   'faampy.mapping.ge_nimrod_to_kmz'),
            ('ge_photo_album',     'faampy.mapping.ge_photo_album'),
