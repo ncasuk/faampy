@@ -2,8 +2,7 @@ import os
 import sys
 import numpy as np
 
-
-# column names for the udp package
+# column names and data types for the udp package
 udp_def = [('id', '|S9'),
            ('packet_length', '<u4'),
            ('utc_time', '<u4'),
@@ -119,23 +118,29 @@ def rmfield(a, *fieldnames_to_remove):
 
 def so2_udp_to_tcp(ifilename, ofilename, tcp_def_version='v4', verbose=False, to_dataframe=False):
     """
-    Tool to convert the SO2 udp package into a tcp data package. This
+    Tool to convert the SO2 UDP package into a TCP data package. This
     utilitity became necessary after the VANAHEIM2017 campaign when the SO2
     package was unavailable and had to be recreated from the udp package for
-    post processing.
+    post processing with ppodd.
 
-    :param ifilename: udp data file
+    :param ifilename: UDP data text file
+    :param ifilename: str
     :param ofilename: outputfilename
+    :param ofilename: str
     :param tcp_def_version: tcp definition version to be used (default: v4)
     :type tcp_def_version: str
     :param verbose: Makes the function a little bit more chatty
     :param to_dataframe: converts result to pandas.DataFrame
     :type to_dataframe: boolean (default: False)
-    :return: udp data either as numpy.recarray or pandas.DataFrame (if keyword set)
+    :return: SO2 udp data either as numpy.recarray or pandas.DataFrame (if keyword set)
     """
 
     if not os.path.exists(ifilename):
         sys.stdout.write('Input file does not exist. Leaving ...\n')
+        sys.exit(1)
+
+    if not tcp_def_version in list(tcp_def.keys()):
+        sys.stdout.write('No definition availabe for TCP Version %s ...\nLeaving ...\n' % (tcp_def_version,))
         sys.exit(1)
 
     # read the udp text file
@@ -166,7 +171,8 @@ def so2_udp_to_tcp(ifilename, ofilename, tcp_def_version='v4', verbose=False, to
             new_recs[var] = arr[var].astype(_dt)
 
     new_recs = new_recs[::-1]
-    # get unique indices
+    # Data are recorded up to three times, therefore we need to filter for 
+    # unique indices
     _, ix = np.unique(new_recs['utc_time'], return_index=True)
     new_recs = new_recs[ix]
 

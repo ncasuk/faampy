@@ -1,22 +1,32 @@
-import datetime
+
 import os
 import sys
 import netCDF4
+
+from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
 
 
 def read_nox(ifile):
-    _date = datetime.datetime.strptime(os.path.basename(ifile).split('_')[1], '%y%m%d')
+    """
+    Reads the NOx data from a simple txt file
+    
+    :param ifile: input data filename
+    :type ifile: str
+    :rtype: pandas.Dataframe
+    
+    """
+    _date = datetime.strptime(os.path.basename(ifile).split('_')[1], '%y%m%d')
     year = _date.year
     month = _date.month
     day = _date.day
     nox_dateparse = lambda x: pd.datetime(year, month, day) + \
-          datetime.timedelta(seconds=int(float(float(x) % 1)*86400.))
+          timedelta(seconds=int(float(float(x) % 1)*86400.))
 
     df_nox = pd.read_csv(ifile, parse_dates=[0], date_parser=nox_dateparse)
-    df_nox = df_nox.set_index('TheTime')  # Setting index
+    df_nox = df_nox.set_index('TheTime')  # Setting index using 'TheTime' col
     t = df_nox.index.values
     df_nox['timestamp'] = t.astype('datetime64[s]')  # Converting index data type
     df_nox = df_nox[['timestamp', 'no_conc', 'no2_conc', 'nox_conc']]
@@ -24,8 +34,15 @@ def read_nox(ifile):
     return df_nox
 
 
-def read_fgga_txt(ifile)    :
+def read_fgga_txt(ifile):
+    """
+    Reads the FGGA data from a txt file
+
+    :param ifile: data filename
+    :rtype: pandas.Dataframe
+    """
     fgga_dateparse = lambda x: pd.datetime.utcfromtimestamp(int(x))
+    # column names for the FGGA txt file
     fgga_names = ['identifier', 'packet_length', 'timestamp', 'ptp_sync',
                   'MFM', 'flight_num', 'CPU_Load', 'USB_disk_space', 'ch4',
                   'co2', 'h2o', 'press_torr', 'temp_c', 'fit_flag',
@@ -41,7 +58,7 @@ def read_fgga_txt(ifile)    :
                           date_parser=fgga_dateparse,
                           skiprows=100)     # To be sure to skip the header
 
-    # Using the Valve states for flagging out calibration periods
+    # Using the valve states for flagging out calibration periods
     # TODO: add time buffer around calibration periods
     df_fgga.loc[df_fgga['V1'] != 0, 'ch4_ppb'] = np.nan
     df_fgga.loc[df_fgga['V2'] != 0, 'co2_ppm'] = np.nan
@@ -53,7 +70,10 @@ def read_fgga_na(ifile):
     """
     Reads the FGGA data
 
-    :param ifile: nasaAmes input filename"""
+    :param ifile: nasaAmes input filename
+    :rtype: pandas.Dataframe
+    
+    """
     try:
         import nappy
     except:
@@ -87,14 +107,16 @@ def read_fgga(ifile):
 
 
 def read_icl_na(ifile, apply_flag=False):
-    """Reads in the ICL data from the Aerodyne Tunable IR Laser Direct
-    Absorption Spectrometer (TILDAS) model QC-TILDAS-DUAL
+    """Reads in the ICL data from the Manchester Aerodyne Tunable IR Laser
+    Direct Absorption Spectrometer (TILDAS) model QC-TILDAS-DUAL
 
     :param ifile: nasaAmes input filename
-    :type ifile:
-    :param apply_flag:
+    :type ifile: str
+    :param apply_flag: flagged data are replaced by np.nan
     :type apply_flag: boolean
-    :return: pandas.DataFrame"""
+    :return: pandas.DataFrame
+    
+    """
 
     try:
         import nappy
@@ -116,8 +138,3 @@ def read_icl_na(ifile, apply_flag=False):
     if apply_flag:
         df['c2h6_conc'][df['c2h6_flag'] != 0] = np.nan
     return df
-
-icl_file = '/home/axel/gdrive/atsc/py-code/../data/faam/c065-oct-12/man-tildas_faam_20171012_rX_c065.na'
-df = read_icl_na(icl_file, apply_flag=True)
-
-

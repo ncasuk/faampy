@@ -12,7 +12,8 @@ def read_grimm_raw(ifile):
     particel counts for 32 bins
 
     :param ifile: Grimm data text file; RS232 rawoutput stream
-    :return df: pandas DataFrame; using the timestamp as index
+    :return: pandas DataFrame; using the timestamp as index
+    :rtype: pandas.DataFrame
     """
     f = open(ifile, 'r')
     lines = f.readlines()
@@ -47,7 +48,7 @@ def read_grimm(ifile, year, month, day, interp_1Hz=False):
     data file does not contain a date, that is why year, month and day have to
     be passed to the routine.
 
-    :param ifile: Grimm data text file; RS232 output stream
+    :param ifile: Grimm data text file; the raw RS232 output stream
     :type ifile: str
     :param year: year
     :type year: int
@@ -94,6 +95,5 @@ def read_grimm(ifile, year, month, day, interp_1Hz=False):
         df = df.reindex(index=new_index, method='nearest')
     return (df, size_table)
 
-
-ifile = '/home/axel/gdrive/atsc/data/faam/c065-oct-12/Grimm_UTC++.txt'
-df, st = read_grimm(ifile, 2017, 10, 12)
+#ifile = '/home/axel/gdrive/atsc/data/faam/c065-oct-12/Grimm_UTC++.txt'
+#df, st = read_grimm(ifile, 2017, 10, 12)
