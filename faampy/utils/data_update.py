@@ -69,10 +69,12 @@ def update_spatial_db(inpath, overwrite=False):
                                                                          fltsumm_file.filename),
                                                             os.path.join(f.path, f.filename))
         except:
+            sys.stdout.write('Error while processing %s ...\n' % f.filename)
             continue
 
-        if not fs.Entries:
-            sdb.close()
+        try:
+            fs.Entries
+        except:
             continue
 
         for ent in fs.Entries:

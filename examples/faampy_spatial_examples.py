@@ -33,8 +33,6 @@ import simplekml
 import faampy 
 from faampy.core.faam_spatial import FAAM_Spatial_DB
 
-LATEST_FID='c013'
-
 DB_FILE = os.path.join(faampy.FAAMPY_DATA_PATH, 'db', 'faam_spatial_db.sqlite')
 
 db = FAAM_Spatial_DB(DB_FILE)
@@ -61,9 +59,10 @@ print ''
 sql="""SELECT fid FROM flight_tracks ORDER BY fid;"""
 cur = db.conn.cursor()
 cur.execute(sql)
-fids = [i[0] for i in cur.fetchall()]
-#By today FAAM has flown a total of 991 missions
-all_fids = set(['b%0.3i' % i for i in range(int(LATEST_FID[1:]))])
+fids = sorted([i[0] for i in cur.fetchall()])
+print('Latest fid in db: %s' % fids[-1])
+all_fids = set(['b%0.3i' % i for i in range(1, 1000)] + \
+               ['c%0.3i' % i for i in range(1, int(fids[-1][1:]))])
 missing_fids = sorted(all_fids.difference(fids))
 
 print 'Number Missing flights: %i' % (len(missing_fids),) 
