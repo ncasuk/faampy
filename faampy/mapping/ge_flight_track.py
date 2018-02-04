@@ -7,7 +7,6 @@ Creates a kml-file viewable in google-earth from the core NetCDF data file.
 """
 
 import datetime
-import gpsbabel
 import kmldom
 import kmlbase
 import netCDF4
@@ -353,7 +352,7 @@ class FlightTrack(object):
         for i in range(len(self.lat)):
             coordinates.add_latlngalt(float(self.lat[i]), float(self.lon[i]), float(self.alt[i]))
 
-        #point feature
+        # point feature
         n = coordinates.get_coordinates_array_size()-1
         pt_lat = coordinates.get_coordinates_array_at(n).get_latitude()
         pt_lon = coordinates.get_coordinates_array_at(n).get_longitude()
@@ -364,16 +363,14 @@ class FlightTrack(object):
         pt.set_coordinates(pt_cor)
         pt.set_altitudemode(2)    #set absolute mode
 
-        #LineString which represents the fall of the dropsonde
+        # LineString which represents the flight track
         ls = factory.CreateLineString()
         ls.set_coordinates(coordinates)
         ls.set_extrude(True)
         ls.set_tessellate(True)
         ls.set_altitudemode(2)    #set absolute mode
 
-        ls_style = factory.CreateLineStyle()
-
-        #combine point and linestring into a multi geometry
+        #c ombine point and linestring into a multi geometry
         mg = factory.CreateMultiGeometry()
         mg.add_geometry(pt)
         mg.add_geometry(ls)
@@ -474,7 +471,7 @@ def _argparser():
     sys.argv.insert(0, 'faampy ge_flight_track')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('infile',
-                        action="store", type=str, help='FAAM core netCDF-filename')
+                        action="store", type=str, help='FAAM core netCDF filename')
     parser.add_argument('outfile',
                         action="store",
                         type=str, help='output kml filename')
@@ -482,12 +479,13 @@ def _argparser():
 
 
 def main():
+    parser = _argparser()
     args = parser.parse_args()
     ft = FlightTrack()
     if 'safire' in args.infile:
         from types import MethodType
         setattr(ft, 'set_rawlatlonalt_from_netcdf', MethodType(set_rawlatlonalt_from_netcdf_safire, ft, ft.__class__))
-    ft.process(args.infile,args.outfile)
+    ft.process(args.infile, args.outfile)
 
 if __name__ == '__main__':
     main()
