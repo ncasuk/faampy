@@ -1,16 +1,20 @@
 import numpy as np
 
 
-def is_slr(ds, s_ix, e_ix):
-    """Checks if a time interval is a straight and level run using
+def is_slr(ds, s_ix, e_ix, roll_threshold=1.5, press_threshold=2):
+    """
+    Checks if a time interval is a straight and level run using
     the ROLL_GIN and P9_STAT variables from the FAAM core netcdf.
     
+    :param ds: netCDF4.Dataset
+    
     """
-    criteria = {'ROLL_GIN': 3, 'P9_STAT': 2}
+    criteria = {'ROLL_GIN': roll_threshold,
+                'P9_STAT': press_threshold}
     roll_gin = ds.variables['ROLL_GIN'][s_ix:e_ix, :]
     p9_stat = ds.variables['P9_STAT'][s_ix:e_ix, :]
     ix1 = (np.where(np.abs(roll_gin ) > criteria['ROLL_GIN']))[0].size
-    ix2 = (np.max(p9_stat) - np.min(p9_stat)) > criteria['P9_STAT']
+    ix2 = (np.max(p9_stat)-np.min(p9_stat)) > criteria['P9_STAT']
     if ix1 or ix2:
         result = False
     else:
@@ -19,7 +23,10 @@ def is_slr(ds, s_ix, e_ix):
 
 
 def calc_flight_level(pressure):
-    """https://www.brisbanehotairballooning.com.au/faqs/education/113-pressure-altitude-conversion.html
+    """
+    :param float pressure: air pressure in mb
+    :return: flight level
+    https://www.brisbanehotairballooning.com.au/faqs/education/113-pressure-altitude-conversion.html
     
     """
     fl = (10**((np.log10(np.array(pressure) / 1013.25))/5.2558797) -1) / (-6.8755856 * 10**-6*100)
@@ -27,10 +34,13 @@ def calc_flight_level(pressure):
     
 
 def calc_qnh(pressure, height_amsl):
-    """pressure in mb
-    and height_amsl: height above mean sea level in meters
+    """
+    :param float pressure: air pressure in mb
+    :param float height_amsl: height above mean sea level in meters
+    :return qnh:
     
-    http://en.wikipedia.org/wiki/Barometric_formula
+    :Reference::
+      http://en.wikipedia.org/wiki/Barometric_formula
     
     """
     L = 0.0065     # temperature lapse rate [K/m]

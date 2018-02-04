@@ -4,4 +4,7 @@
 _build
 _static
 _templates
+build/
+dist/
+faampy.egg-info/
 
