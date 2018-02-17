@@ -2,6 +2,7 @@ import datetime
 import numpy as np
 import os
 import subprocess
+import sys
 import time
 import tempfile
 
@@ -10,14 +11,20 @@ import georasters as gr
 _TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 def conv_bearing_to_angle(bearing):
-    """bearing is the angle on a compass
+    """Converts a compass bearing to and angle.
 
+    :param float angle: bearing in degrees
     """
     result = np.mod(450-bearing, 360)
     return result
 
 
 def conv_angle_to_bearing(angle):
+    """Converts and angle to a compass bearing.
+    
+    :param float angle: angle
+    :returns float: compass bearing in degrees
+    """
     result = np.mod(450-angle, 360)
     return result
 
@@ -39,8 +46,12 @@ def dec_to_dms_(deg, direction):
 
 
 def translate_coord(lon, lat, origin):
-    """coordinate translation to a global origin
+    """Coordinate translation with respect to a new origin.
 
+    :param float lon: longitude
+    :param float lat: latitude
+    :param tuple origin: coordinates of origin as tuple (longitude, latitude)
+    :returns tuple (x, y): coordinates of translated point; units is meters
     """
     start_long = lon*0 + np.radians(origin[0])
     start_latt = lat*0 + np.radians(origin[1])
@@ -64,38 +75,44 @@ def translate_coord(lon, lat, origin):
     y = 6371.0 * c * 1000.0
     ix = np.where(end_latt < start_latt)
     y[ix] = y[ix] * -1.0
-    return(x,y)
+    return (x,y)
 
 
 def rotate_coord(x, y, angle):
-    """coordinate system rotation
-
+    """Coordinate system rotation
+    
+    :param float x: x coordinate
+    :param float y: y coordinate
+    :param float angle: rotation angle; anit-counter clockwise
+    :returns: rotated coordinate tuple (x, y) 
+    :rtype: float
     """
     x_rot = x * np.cos(np.deg2rad(angle)) + y * np.sin(np.deg2rad(angle))
     y_rot = -x * np.sin(np.deg2rad(angle)) + y * np.cos(np.deg2rad(angle))
-    return(x_rot, y_rot)
+    return (x_rot, y_rot)
 
 
 def get_wgs84_offset(coords):
-    """Uses the GeoidEval routines from [1] to get the offset between GPS data
-    and mean sea level.
+    """Uses the GeoidEval routines from [1] to get the offset between GPS height
+    and mean sea level. GPS height is the height above the theoretical WGS84
+    spheroid. The offset around the UK is ~50m. For further details see the article
+    on the ESRI website [2].
 
-    #to get the difference between WGS84 and mean sea level
-    GeoidEval --input-file /tmp/tmpt35as
+    [1] http://geographiclib.sourceforge.net/
+    [2] http://www.esri.com/news/arcuser/0703/geoid1of3.html
 
-    example:
+    Example::
+    
+      >>> from faampy.mapping.utils import get_wgs84_offset
       >>> coord = [(50, 0), (51, 2), (54, 2)]
       >>> offset = get_wgs84_offset(coord)
       >>> print(offset
       [45.0389, 44.4422, 42.6927]
 
-    [1] http://geographiclib.sourceforge.net/
-    [2] http://www.esri.com/news/arcuser/0703/geoid1of3.html
     """
 
     if not isinstance(coords, list):
         coords = [coords, ]
-
 
     lon, lat = zip(*coords)
     lon = list(lon)
@@ -109,7 +126,7 @@ def get_wgs84_offset(coords):
         if abs(lat[i]) > 90.:
             lat[i] = 90.
             bad_ix.append(i)
-    bad_ix = unique(bad_ix)
+    bad_ix = np.unique(bad_ix)
 
     lat_str = [dec_to_dms_(l, 'ns') for l in lat]
     lon_str = [dec_to_dms_(l, 'ew') for l in lon]
@@ -127,16 +144,42 @@ def get_wgs84_offset(coords):
     return result
 
 
-def calc_distance_to_point(coords, origin):
-    #TODO
-    if not isinstance(coords, list):
-        coords = [coords, ]
+def calc_distance_to_point(coords1, coords2):
+    """Function calculates the distance between two points that are
+    given as coordinate tuple. This function is more or less just
+    a wrapper for the haversine package [1].
+    
+    :param tuple coords: (longitude, latitude)
+    :param tuple origin: (longitude, latitude)
+    :returns: distance between points in meters
+    :rtype: float
+    
+    [1] https://pypi.python.org/pypi/haversine
+    
+    Example::
+    
+        In [1]: from faampy.mapping.utils import *
+        
+        In [2]: pt1 = (52.072222, -0.616667)  # Cranfield
+        
+        In [3]: pt2 = (52.831111, -1.327778)  # EMA
+        
+        In [4]: calc_distance_to_point(pt1, pt2)
+        
+        Out[2]: 97173.56497048707
 
+    """
+    from faampy._3rdparty.haversine import haversine
+    
+    distance = haversine(coords1, coords2)
+    distance *= 1000.  # convert to meters
+    return distance
 
 
 def calc_distance_to_line(coords, line):
-    """ This works in a cartesian coordinate system
+    """This works for coordinates in a cartesian coordinate system
 
+    :param tuple coords: (x,y) coordindates of point in meters
     point should be list of tuples tuple (x, y)
     line should be tuple ((x1, y1), (x2, y2))
     """
@@ -161,12 +204,15 @@ def calc_distance_to_line(coords, line):
     return dist
 
 
-#TODO: needs speed improvement
 def simplify(coords, error=None, distance=None, timestep=None):
     """uses the simplify option from gpsbabel
 
     """
-    import gpsbabel
+    try:
+        import gpsbabel
+    except ImportError:
+        sys.stdout.write('gpsbabel required for this function.\n Leaving ...')
+        sys.exit(0)
 
     if not error:
         error = '0.2k'
@@ -228,22 +274,33 @@ def simplify(coords, error=None, distance=None, timestep=None):
 
 
 def is_point_on_land(coords, shape_file=None):
-    """Checks if a coords are over land or over water. This is done useing
-    a shape file of world boundaries and looping over all Polygons to see
-    if the point is in any of it.
+    """Checks if a point is over land or over water. This is done using
+    a shape file of world boundaries and looping over all its Polygons
+    to see if the point is inside any of it (contained).
 
+    This routine requires a shape file with the worlds countries borders [1].
+
+    [1] http://thematicmapping.org/downloads/world_borders.php
+    
+    :param tuple coords: coordinates of the point of interest as tuple (lon, lat)
+    :returns: True or False.
+    :rtype: bool
     """
 
-    import fiona
-    from shapely.geometry import Point, shape
+    try:
+        import fiona
+        from shapely.geometry import Point, shape
+    except ImportError:
+        sys.stdout.write('The libraries fiona and shapely are required for the function to work. Leaving ...\n')
+        sys.exit(0)
 
     if not shape_file:
         shape_file='/home/data/mapdata/other/tm_world/TM_WORLD_BORDERS-0.3.shp'
 
-    lon, lat=coords
-    pt=Point(lon, lat)
+    lon, lat = coords
+    pt = Point(lon, lat)
     try:
-        fc=fiona.open(shape_file)
+        fc = fiona.open(shape_file)
     except:
         pass
     result=False
