@@ -169,8 +169,10 @@ def process(ncfile, ncvar, time_lag, offset, scale_factor, outpath, *fltsumm):
                  conv_secs_to_time(ds.variables['Time'][ix_min], no_colons=True),
                  conv_secs_to_time(ds.variables['Time'][ix_max], no_colons=True)),]
 
-    #kml_filename=os.path.join(out_path, fid + '-' + os.path.basename(ncfile).split('_')[2] + '_' + ncvar.lower() + '.kml')
-    kml_filename = os.path.join(outpath, fid+'-'+datestring+'_'+ncvar.lower()+'.kml')
+    if datestring:
+        kml_filename = os.path.join(outpath, fid+'-'+datestring+'_'+ncvar.lower()+'.kml')
+    else:
+        kml_filename = os.path.join(outpath, fid+'_'+ncvar.lower()+'.kml')
     kml = open(kml_filename, 'w')
     kml.write(KML_HEADER % (fid + '-' +datetime.datetime(ds.DATE[2], ds.DATE[1], ds.DATE[0]).strftime('%d-%m-%Y') + '-' + ncvar))
 
