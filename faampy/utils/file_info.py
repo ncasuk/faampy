@@ -1,10 +1,10 @@
 import os
 import re
 
-DATA_TYPES = {'core-hires':        'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_.*_r\d_[bBcC][0-9][0-9][0-9].nc$',
-              'core-lowres':       'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_.*_r\d_[bBcC][0-9][0-9][0-9]_1[Hh]z.nc$',
-              'core-descrip':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bBcC][0-9][0-9][0-9]_descrip.txt$',
-              'core-quality':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bBcC][0-9][0-9][0-9]_quality.txt$',
+DATA_TYPES = {'core-hires':        'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r\d_[bBcC][0-9][0-9][0-9].nc$',
+              'core-lowres':       'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r\d_[bBcC][0-9][0-9][0-9]_1[Hh]z.nc$',
+              'core-descrip':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r\d_[bBcC][0-9][0-9][0-9]_descrip.txt$',
+              'core-quality':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9].*_r\d_[bBcC][0-9][0-9][0-9]_quality.txt$',
               'dropsonde-proc':    '.*dropsonde_faam_.*_r.*_[bBcC][0-9][0-9][0-9]_proc.nc$',
               'dropsonde-raw':     '.*dropsonde_faam_.*_r.*_[bBcC][0-9][0-9][0-9]_raw.nc$',
               'dropsonde-descrip': '.*dropsonde_faam_.*_r.*_[bBcC][0-9][0-9][0-9]_descrip.txt$',
