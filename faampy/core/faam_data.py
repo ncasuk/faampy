@@ -249,6 +249,8 @@ class Coords(list):
         """
 
         xyz = [list(i) for i in self]  # copy the coordinates into a list
+        if not xyz:
+            return
         # in the case that the first and the last coordinate are identical the
         # rdp algorithmen fails; a quick pop fixes that
         while xyz[0] == xyz[-1]:
@@ -277,7 +279,6 @@ class FAAM_Dataset(object):
     """
     Dataset class which has much in common with the netCDF4.Dataset. The class
     has methods that helps to perform common tasks like merging and can copy
-
 
     """
 
@@ -356,8 +357,8 @@ class FAAM_Dataset(object):
         self.index = base_time + np.array(self.variables['Time'][:].ravel(), dtype=np.int)
 
         self._set_coordinates_()
-
-        self.Geometry=osgeo.ogr.CreateGeometryFromWkt("LINESTRING (" + ','.join(['%f %f %f' % tuple(i) for i in self.coords.simplified()])+ ")")
+        if self.coords:
+            self.Geometry=osgeo.ogr.CreateGeometryFromWkt("LINESTRING (" + ','.join(['%f %f %f' % tuple(i) for i in self.coords.simplified()])+ ")")
 
     def _set_coordinates_(self):
         lon_var_name = None
