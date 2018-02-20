@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 """
 This script goes through all the data files in a DATA_ROOT_PATH directory
-and 
+and looks for defined instrument data files.
 
-TODO: Script should print the dat next to the fid
+As output the script prints a list of instrument identifier and the last
+flight id, that data are available.
 
-Created on Tue Jan 17 09:54:07 2017
-
-@author: axel
 """
 
 import os
 import re
 import sys
 
+from datetime import datetime
 from collections import OrderedDict
 
 
@@ -25,7 +24,8 @@ instrument_data = [('AIMMS',             ["metoffice-aimms_faam_\d{8}.*[bc]\d{3}
                    ('ARIES',             ["metoffice-aries_faam_\d{8}.*[bc]\d{3}.*['insb', 'mct'].nc",]),
                    ('AVAPS',             ["faam-dropsonde_faam_\d{14}.*[bBcC]\d{3}.*['proc', 'raw'].nc",]),
                    ('BUCK',              ["faam-cr2-hygro_faam_\d{8}.*[bc]\d{3}.*.na",]),
-                   ('CCN',               ["faam-ccnrack_faam_\d{8}.*[bBcC]\d{3}.na",]),
+                   ('CCN',               ["faam-ccnrack_faam_\d{8}.*[bBcC]\d{3}.na",
+                                          "faam-ccnrack_faam_\d{8}.*_v\d{3}_[bBcC]\d{3}.nc",]),
                    ('CFGC',              ["rhul-cf-gc-irms_faam_\d{8}.*[bBcC]\d{3}.*csv",]),
                    ('CIMS',              ["man-cims_faam_\d{8}.*[bBcC]\d{3}.na",]),
                    ('CIP100',            ["faam-cip100_faam_\d{8}.*",]),
@@ -85,11 +85,14 @@ instrument_data = [('AIMMS',             ["metoffice-aimms_faam_\d{8}.*[bc]\d{3}
 
 ### SETTINGS ###############################################################
 
+# list of file names that should be ignored
 NON_DATA_FILES = ['.ftpaccess', '.ftpaccess.org', '.checksums', '.listing', '.summary', '00README', 'ARIES_readme.txt']
 
 DATA_ROOT_PATH = '/home/data/faam/badc'
 DATA_ROOT_PATH = '/mnt/faamarchive/badcMirror/data'
+DATA_ROOT_PATH = '/home/data/faam/badcMirror'
 
+# if True will print of files that haven't been assorted to an instrument
 PRINT_RESIDUALS = False
 
 ###########################################################################
@@ -134,7 +137,11 @@ for f in FULL_FILE_LIST:
 for k,v in result.items():
     if v:
         fids = [re.findall('[bc]\d{3}', i.lower())[0] for i in v]
-        sys.stdout.write('%20s  %-15s\n' % (k, max(fids)))
+        datestring = []
+        for i in v:
+            if re.findall('_\d{8,}_', i.lower()):
+                datestring.append(datetime.strptime(re.findall('_\d{8,}_', i.lower())[0][1:9], '%Y%m%d').strftime('%Y-%m-%d'))
+        sys.stdout.write('%20s  %-15s\n' % (k, max(fids)+ 3*' '+max(datestring)))
     else:
         sys.stdout.write('%20s  %-15s\n' % (k, 'EMPTY'))
 
