@@ -52,7 +52,7 @@ MOCK_MODULES = ['numpy', 'numpy.ma',
 #sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 for mod in MOCK_MODULES:
-    sys.modules[mod] = mock.Mock()
+    sys.modules[mod] = mock.MagicMock()
 
 #sys.modules['matplotlib'] = mock.MagicMock()
 

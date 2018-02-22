@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
 """
-The FAAM_Dataset class handles the core_faam*nc files and smoothes out the
+The FAAM_Dataset class handles the core_faam*nc files and smooths out the
 reading process of the data and ensures that older files are read in the same
 way as newer ones. The class copies the behaviour of netCDF4.Dataset class.
 
 A nifty method of the class is the merge method, which allows you to merge data
 from other data sources. The data type that can be merged is a numpy.recarray.
 The index for the procedure is the timestamp, of the FAAM_Dataset.
-Care is taken off gaps in the recarray.
+Care is taken off gaps in the numpy.recarray.
 
 A convenient option is exporting the Dataset into a pandas DataFrame, which
 then gives you all the amazing features of pandas. Due to the fact that pandas
 can not deal with multidimensional arrays, only the first measurement within a
-row is used for the DataFrame.
+row is used for the pandas.DataFrame.
 """
 
 import itertools
@@ -496,7 +496,7 @@ class FAAM_Dataset(object):
     def as_kml(self, extrude=1, tessellate=1):
         """
         Returns a kml linestring which represents the flight track of the
-        current dataset
+        current dataset.
 
         :param extrude: whether the linestring is extruded
         :type extrude: boolean
@@ -533,20 +533,19 @@ class FAAM_Dataset(object):
 
     def write(self, outfilename, v_name_list=[], as_1Hz=True, clobber=False):
         """
-        Writing dataset out as NetCDF
+        Writing dataset out as netCDF.
 
-        :param outfilename: path for the new NetCDF
+        :param outfilename: path for the new netCDF
         :type outfilename: str
         :param v_name_list: list of variables names that should be written. By
-          default all variables are added to the NetCDF
+          default all variables are added to the netCDF
         :type v_name_list: list
         :param as_1Hz: Writes only 1Hz data out. If the variable
-          is avaiable in higher frequency only the first value within the
+          is available in higher frequency only the first value within the
           second is used rather than the average from the number of data
           points
         :type as_1Hz: boolean
-        :param clobber: Overwrites the files if it exists
-        :type clobber: boolean
+        :param bool clobber: Overwrites the files if it exists
         """
 
         if os.path.exists(outfilename) :
@@ -566,9 +565,8 @@ class FAAM_Dataset(object):
         if not v_name_list:
             v_name_list = self.variables.keys()
 
-
         # Now the dimensions
-        for dname, the_dim in self.ds.dimensions.iteritems():
+        for dname, the_dim in self.ds.dimensions.items():
             dsout.createDimension(dname, len(the_dim) if not the_dim.isunlimited() else None)
             try:
                 dim_var=self.variables[dname][:]

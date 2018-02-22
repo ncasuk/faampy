@@ -1,13 +1,14 @@
+
 # -*- coding: utf-8 -*-
 """
-Created on Wed Nov 30 11:00:50 2016
 
-@author: axel
 """
 
 import os
-import pyspatialite.dbapi2 as db
 import sys
+
+import sqlite3
+import sqlite3.dbapi2 as db
 
 
 class FAAM_Spatial_DB(object):
@@ -19,6 +20,11 @@ class FAAM_Spatial_DB(object):
         else:
             exists = False
         self.conn = db.connect(db_file)
+        # Enable spatial extensions
+        # see: https://groups.google.com/forum/#!topic/spatialite-users/o0jUwMUqx_g
+        self.conn.enable_load_extension(True) 
+        self.conn.execute("SELECT load_extension('mod_spatialite')") 
+
         if not exists:
             self.setup()
             sys.stdout.write('DB created ... \n')

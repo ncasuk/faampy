@@ -431,16 +431,16 @@ def process(iput, opath):
 
 def _argparser():
     import argparse
-    sys.argv.insert(0, 'faampy ge_avaps')
+    #sys.argv.insert(0, 'faampy ge_avaps')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--outpath',
                         action="store", type=str,
                         default=os.path.expanduser('~'),
                         help='Directory where the kmz file will be saved to. Default: $HOME.')
-    parser.add_argument('input',
+    parser.add_argument('faam_dropsonde_file',
                         action="store",
                         type=str,
-                        help='Individual dropsonde file or direcotry name which contains dropsonde data.')
+                        help='Individual dropsonde file or directory name which contains dropsonde data.')
     return parser
 
 

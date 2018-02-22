@@ -8,7 +8,7 @@ The usage is for example
 
 
 import argparse
-import ConfigParser
+from configparser import ConfigParser
 import importlib
 import os
 import sys
@@ -21,7 +21,8 @@ __status__ = 'a'
 # list of subcommands and assosciated python script
 # this has to be maintained manually and has to be
 # checked/updated with every release
-MODULES = [('data_download',      'faampy.utils.data_download'),
+MODULES = [('core_diff',          'faampy.utils.core_diff'),
+           ('data_download',      'faampy.utils.data_download'),
            ('ge_avaps',           'faampy.avaps.dropsonde'),
            ('ge_flight_track',    'faampy.mapping.ge_flight_track'),
            ('ge_ncas_airquality', 'faampy.mapping.ge_ncas_airquality'),
@@ -49,7 +50,7 @@ def command_line():
     # exclude the rest of the args too, or validation will fail
     args = parser.parse_args(sys.argv[1:2])
     # check if subcommand is available. If not leave
-    if args.command not in zip(*MODULES)[0]:
+    if args.command not in list(zip(*MODULES))[0]:
         sys.stdout.write('Unrecognized command\n')
         parser.print_help()
         sys.exit(1)

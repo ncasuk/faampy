@@ -1,7 +1,7 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Example for post flight analysis of a Chemistry flight (b991)
+Example for post flight analysis of a Chemistry flight (b991 on 24-10-2016)
 """
 
 
@@ -18,11 +18,13 @@ from faampy.core.faam_data import FAAM_Dataset
 year, month, day = 2016, 10, 24
 FID = 'b991'
 
+# This is the FAAM core netCDF, which holds most of the data
 core_file = os.path.join(faampy.FAAMPY_EXAMPLE_DATA_PATH,
                          'b991',
                          'core',
                          'core_faam_20161024_v004_r0_b991.nc')
 
+# This is the FAAM flight-summary file, which is a log of the mission
 fltsumm_file = os.path.join(faampy.FAAMPY_EXAMPLE_DATA_PATH,
                             'b991',
                             'core',
@@ -57,15 +59,20 @@ fgga_file = os.path.join(faampy.FAAMPY_EXAMPLE_DATA_PATH,
 
 df_fgga = read_fgga(fgga_file)
 
-# Using the valve states for flagging out calibration periods
-df_fgga.loc[df_fgga['V1'] != 0, 'ch4_ppb'] = np.nan
-df_fgga.loc[df_fgga['V2'] != 0, 'co2_ppm'] = np.nan
-df_fgga.loc[df_fgga['V2'] != 0, 'ch4_ppb'] = np.nan
+# Using the valve states to get calibration periods
+cal_ix = np.where(df_fgga['V1']+df_fgga['V2'] != 0)[0]
+# add 5 secs time buffer around cal periods
+for i in range(-5, 6):
+    cal_ix = np.concatenate([cal_ix, cal_ix+i])
 
+cal_ix = np.clip(cal_ix, 0, df_fgga.shape[0]-1)
+cal_ix = list(set(cal_ix))
+
+df_fgga['ch4_ppb'].iloc[cal_ix] = np.nan
+df_fgga['co2_ppm'].iloc[cal_ix] = np.nan
 
 # Last but not least: Reading in the FAAM core data file using the FAAM_Dataset
 # object from the faampy module
-
 ds = FAAM_Dataset(core_file)
 #=== Step:End:Reading in data =================================================
 
@@ -107,9 +114,10 @@ core_file2 = os.path.join(os.path.expanduser('~'),
 
 opath = os.path.expanduser('~')
 
-ge_ncvar_to_kml.process(core_file2, 'CO_AERO', 0, -100, 500, opath)
-ge_ncvar_to_kml.process(core_file2, 'co2_ppm', 0, -435, 1500, opath)
-ge_ncvar_to_kml.process(core_file2, 'ch4_ppb', 0, -2115, 500, opath)
+# create kml profiles for three chemicals
+process(core_file2, 'CO_AERO', 0, -100, 500, opath, color='firebrick')
+process(core_file2, 'co2_ppm', 0, -435, 1500, opath, color='coral')
+process(core_file2, 'ch4_ppb', 0, -2115, 500, opath, color='plum')
 #=== Step:End:Create google-earth profiles ====================================
 
 
@@ -122,7 +130,7 @@ Plot_Config = [[['TSC_BLUU', 'TSC_GRNU', 'TSC_REDU'],
                [['ch4_ppb'], ['co2_ppm']],
                [['no_conc'], ['no2_conc'], ['nox_conc']]]
 
-# define the outpath, where all the figures should be saved to
+# define the outpath, where all the figures will be saved to
 quicklooks_outpath = os.path.join(os.path.expanduser('~'), 'b991_quicklooks')
 
 # Check if directory exists; if not create it
@@ -167,7 +175,7 @@ xmax = -2.0
 FID = 'b991'
 year, month, day = 2016, 10, 24
 
-
+# Define Runs with start and end time (format: HHMMSS)
 _RUNS = [('Run 2@100ft',  '121217', '122142'),
          ('Run 3@500ft',  '122257', '122937'),
          ('Run 4@1000ft', '123134', '124152'),
@@ -183,7 +191,7 @@ rng = (0, 30000)
 ###############################################################################
 
 
-#http://nbviewer.jupyter.org/github/dpsanders/matplotlib-examples/blob/master/colorline.ipynb
+# http://nbviewer.jupyter.org/github/dpsanders/matplotlib-examples/blob/master/colorline.ipynb
 def colorline(x, y, z=None, cmap=plt.get_cmap('copper'),
               norm=plt.Normalize(0.0, 1.0), linewidth=3, alpha=1.0):
     """
@@ -218,9 +226,10 @@ def make_segments(x, y):
 
 
 # Read in the merged data file
-core_file2 = os.path.join(os.path.expanduser('~'), '%s_merged.nc' % (FID.lower()))
+core_file2 = os.path.join(os.path.expanduser('~'),
+                          '%s_merged.nc' % (FID.lower()))
 ds = FAAM_Dataset(core_file2)
-# Get the data as a pandas dataframe
+# Get the data as a pandas.DataFrame
 df = ds.as_dataframe()
 
 # set up the map
@@ -230,7 +239,7 @@ ax = plt.axes(projection=proj)
 ax.set_extent([xmin, xmax, ymin, ymax])
 ax.coastlines(resolution='10m', color='black', linewidth=1)
 
-# add the cities as dots to the map
+# add the cities as dots on the map
 for city in cities:
     x, y = proj.transform_point(city[2], city[1], wgs84)
     ax.scatter(x, y, color='grey')
@@ -240,12 +249,12 @@ for city in cities:
 coords = proj.transform_points(wgs84,
                                df['LON_GIN'].values,
                                df['LAT_GIN'].values)
-x = coords[:,0]
-y = coords[:,1]
+x = coords[:, 0]
+y = coords[:, 1]
 
 z = df[VARIABLE_NAME].values
 
-# extract the data for the run
+# extract the data each run defined above
 start_time = datetime.datetime(year, month, day,
                                int(_run[1][0:2]),
                                int(_run[1][2:4]),
@@ -262,15 +271,15 @@ x = x[ixs[0]:ixs[1]]
 y = y[ixs[0]:ixs[1]]
 z = z[ixs[0]:ixs[1]]
 
-#http://matplotlib.org/examples/pylab_examples/multicolored_line.html
+# http://matplotlib.org/examples/pylab_examples/multicolored_line.html
 lc = colorline(x, y, z=z,
                cmap=plt.get_cmap('gnuplot2'),
                norm=plt.Normalize(rng[0], rng[1]),
                linewidth=5)
 
-# No the wind barbs
-# Reduce the number of data points by averaging the data; otherwise
-# the plot will look messy
+# Now the wind barbs
+# Reduce the number of data points by averaging the data over 30 seconds,
+# because otherwise the plot will look messy
 df_30s = df[ixs[0]:ixs[1]].resample('30s').mean()
 
 # calculate the coords for the figure
@@ -291,7 +300,7 @@ plt.barbs(x, y, u, v,
           zorder=2)
 
 # add a colorbar to the plot
-cb = plt.colorbar(lc, label="NOx (ppt)")
+cb = plt.colorbar(lc, label='NOx (ppt)')
 
 ax.set_title(_run[0])
 #=== Step:End:Coloured Line ===================================================
@@ -300,7 +309,7 @@ ax.set_title(_run[0])
 #=== Step:Start:Transect Figure ===============================================
 import matplotlib.gridspec as gridspec
 
-# seaborn changes the plot layout
+# seaborn changes the plot layout, but if you don't have it don't worry
 try:
     import seaborn
 except:
@@ -337,16 +346,16 @@ for i, _run in list(enumerate(_RUNS)):
              df_extracted.nox_conc.values,
              label=_run[0], lw=3)
     plt.xlabel('Latitude')
-    plt.ylabel(r"NOx (ppt)")
+    plt.ylabel(r'NOx (ppt)')
     plt.grid()
 
     plt.sca(fig.get_axes()[1])
     ax = plt.gca()
-    plt.setp(ax.get_xticklabels(), visible=False) # remove the xtick labels
+    plt.setp(ax.get_xticklabels(), visible=False) # remove the xtick-labels
     plt.plot(df_extracted.LAT_GIN.values,
              df_extracted.ch4_ppb.values,
              label=_run[0], lw=3)
-    plt.ylabel(r"CH4 (ppb)")
+    plt.ylabel(r'CH4 (ppb)')
 
     plt.sca(fig.get_axes()[2])
     ax = plt.gca()
@@ -354,7 +363,7 @@ for i, _run in list(enumerate(_RUNS)):
     plt.plot(df_extracted.LAT_GIN.values,
              df_extracted.co2_ppm.values,
              label=_run[0], lw=3)
-    plt.ylabel(r"CO2 (ppm)")
+    plt.ylabel(r'CO2 (ppm)')
 
     plt.sca(fig.get_axes()[3])
     ax = plt.gca()
@@ -362,7 +371,7 @@ for i, _run in list(enumerate(_RUNS)):
     plt.plot(df_extracted.LAT_GIN.values,
              df_extracted.CO_AERO.values,
              label=_run[0], lw=3)
-    plt.ylabel(r"CO (ppb)")
+    plt.ylabel(r'CO (ppb)')
     ax.set_ylim(150, 260)
     plt.legend()
 

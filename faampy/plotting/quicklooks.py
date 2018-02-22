@@ -1,9 +1,8 @@
 """
-Module to create quicklooks from a netCDF using the flight summary
-and a configuration file, that defines the plot layout (quicklook.cfg)
+Module to create quicklooks figures from a netCDF using the flight summary
+and a configuration file, that defines the plot layout (quicklook.cfg).
 
-
-The config file should look similar to this::
+Below is an example quicklook.cfg file::
 
 [['BTHEIM_U']]
 [['TSC_BLUU', 'TSC_GRNU', 'TSC_REDU'], ['BSC_BLUU', 'BSC_GRNU', 'BSC_REDU']]
@@ -24,17 +23,18 @@ import re
 import numpy as np
 
 import matplotlib as mpl
-if __name__ == '__main__': mpl.use('Agg')
+if __name__ == '__main__':
+    mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 from faampy.core.utils import get_fid, conv_time_to_secs, \
                               get_index_from_hhmmss, \
                               conv_secs_to_time, get_flight_duration
 from faampy.core.flight_summary import FlightSummary, Event
-from timeseries import Timeseries
-from profile import Profile
-from skewt import SkewT
-from atlas import Map
+from .timeseries import Timeseries
+from .profile import Profile
+from .skewt import SkewT
+from .atlas import Map
 
 try:
     import seaborn
@@ -186,10 +186,10 @@ class Quicklooks(object):
                             pres=np.mean(ds.variables['PS_RVSM'][:], axis=1).ravel()[s_ix:e_ix]
                             dewp=np.mean(ds.variables['TDEW_GE'][:], axis=1).ravel()[s_ix:e_ix]-273.15
 
-                            if 'U_C' in ds.variables.keys():
+                            if 'U_C' in list(ds.variables.keys()):
                                 u=np.mean(ds.variables['U_C'][:], axis=1).ravel()[s_ix:e_ix]
                                 v=np.mean(ds.variables['V_C'][:], axis=1).ravel()[s_ix:e_ix]
-                            elif 'U_NOTURB' in ds.variables.keys():
+                            elif 'U_NOTURB' in list(ds.variables.keys()):
                                 u=np.mean(ds.variables['U_NOTURB'][:], axis=1).ravel()[s_ix:e_ix]
                                 v=np.mean(ds.variables['V_NOTURB'][:], axis=1).ravel()[s_ix:e_ix]
                             else:
@@ -201,10 +201,10 @@ class Quicklooks(object):
                             pres=ds.variables['PS_RVSM'][:][s_ix:e_ix]
                             dewp=ds.variables['TDEW_GE'][:][s_ix:e_ix]-273.15
 
-                            if 'U_C' in ds.variables.keys():
+                            if 'U_C' in list(ds.variables.keys()):
                                 u=ds.variables['U_C'][:][s_ix:e_ix]
                                 v=ds.variables['V_C'][:][s_ix:e_ix]
-                            elif 'U_NOTURB' in ds.variables.keys():
+                            elif 'U_NOTURB' in list(ds.variables.keys()):
                                 u=ds.variables['U_NOTURB'][:][s_ix:e_ix]
                                 v=ds.variables['V_NOTURB'][:][s_ix:e_ix]
                             else:

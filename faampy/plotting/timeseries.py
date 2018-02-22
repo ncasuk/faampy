@@ -22,8 +22,9 @@ plt.rcParams.update(params)
 
 
 class Timeseries(object):
-    """Timeseries plotting class to create matplotlib figures from the FAAM
-    core netcdf data files. This is especially useful for creating quick
+    """
+    Time series plotting class to create matplotlib figures from the FAAM
+    core netCDF data files. This is especially useful for creating quick
     overview plots for qa purposes.
 
     Several parameters can be plotted in one axes or axes are stacked
@@ -41,14 +42,13 @@ class Timeseries(object):
         self.y_data = []
         self.label = []
 
-
     def __get_mask__(self, parname):
-        if not parname+'_FLAG' in self.ds.variables.keys():
+        if not parname+'_FLAG' in list(self.ds.variables.keys()):
             flag_data = np.zeros(self.ds.variables[parname].shape).astype(bool)
         else:
             flag_data = self.ds.variables[parname+'_FLAG'][:]
         mask = np.ones(flag_data.shape).astype(bool)
-        if not parname+'_FLAG' in self.ds.variables.keys():
+        if not parname+'_FLAG' in list(self.ds.variables.keys()):
             return mask
 
         flag_data = self.ds.variables[parname+'_FLAG'][:]
@@ -58,15 +58,16 @@ class Timeseries(object):
         return mask
 
     def setup(self, ds, vars, *args):
-        """ds: netCDF4.Dataset
-        vars: list of variable names that should be plotted
+        """
+        :param ds: netCDF4.Dataset
+        :param vars: list of variable names that should be plotted
         """
         self.ds=ds
         self.vars=list(vars)
         self.index=range(self.ds.variables['Time'].shape[0])
 
-        #check that all the pars exist in netcdf file
-        is_var = lambda var: var.upper() in [i.upper() for i in self.ds.variables.keys()]
+        # check that all the pars exist in netcdf file
+        is_var = lambda var: var.upper() in [i.upper() for i in list(self.ds.variables.keys())]
         pars = []
         for l in self.vars:
             pars.append([item for item in l if is_var(item)])

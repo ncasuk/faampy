@@ -28,9 +28,9 @@ def dlfile(url, local_zipfile):
             local_file.write(f.read())
 
     # handle errors
-    except urllib2.HTTPError, e:
+    except urllib2.HTTPError as e:
         sys.stdout.write("HTTP Error: %i %s\n" % (e.code, url))
-    except urllib2.URLError, e:
+    except urllib2.URLError as e:
         sys.stdout.write("URL Error: %i %s\n" % (e.reason, url))
     return
 

@@ -5,19 +5,19 @@ import os
 def read_tcp_defin(deffile):
     defin=csv.reader(open(deffile,'rb'),delimiter=',')
     conv={'text': 'S'}
-    for en in {'':'>','>':'>','<':'<'}.items():
-        for ty in {'unsigned_int': 'u',
-                   'int': 'i',
-                   'signed_int': 'i',
-                   'double': 'f',
-                   'single_float': 'f',
-                   'float': 'f',
-                   'single': 'f',
-                   'double_float': 'f',
-                   'boolean': 'u',
-                   'f':'f',
-                   'i': 'i',
-                   'u': 'u'}.items():
+    for en in list({'':'>','>':'>','<':'<'}.items()):
+        for ty in list({'unsigned_int': 'u',
+                        'int': 'i',
+                        'signed_int': 'i',
+                        'double': 'f',
+                        'single_float': 'f',
+                        'float': 'f',
+                        'single': 'f',
+                        'double_float': 'f',
+                        'boolean': 'u',
+                        'f':'f',
+                        'i': 'i',
+                        'u': 'u'}.items()):
             conv[en[0]+ty[0]]=en[1]+ty[1]
     label=''
     outputs=[]
@@ -49,19 +49,19 @@ def read_tcp_defin(deffile):
 def read_udp_defin(deffile):
     defin=csv.reader(open(deffile,'rb'),delimiter=',')
     conv={'text': 'S'}
-    for en in {'':'>','>':'>','<':'<'}.items():
-        for ty in {'unsigned_int': 'i',
-                   'int': 'i8',
-                   'signed_int': 'i8',
-                   'double': 'f8',
-                   'single_float': 'f8',
-                   'float': 'f8',
-                   'single': 'f8',
-                   'double_float': 'f8',
-                   'boolean': 'u',
-                   'f':'f8',
-                   'i': 'i8',
-                   'u': 'u'}.items():
+    for en in list({'':'>','>':'>','<':'<'}.items()):
+        for ty in list({'unsigned_int': 'i',
+                        'int': 'i8',
+                        'signed_int': 'i8',
+                        'double': 'f8',
+                        'single_float': 'f8',
+                        'float': 'f8',
+                        'single': 'f8',
+                        'double_float': 'f8',
+                        'boolean': 'u',
+                        'f':'f8',
+                        'i': 'i8',
+                        'u': 'u'}.items()):
             conv[en[0]+ty[0]]=en[1]+ty[1]
     label=''
     outputs=[]
@@ -93,7 +93,7 @@ def read_tcp(ifilelist, deffile):
     :param ifilelist: tcp data file as stored by the decades system
     :param def_file: definition file
     """
-    if isinstance(ifilelist, basestring):
+    if isinstance(ifilelist, str):
         ifilelist = [ifilelist,]
     ifilelist.sort(key=lambda x: os.path.basename(x))
 
@@ -107,7 +107,7 @@ def read_tcp(ifilelist, deffile):
 
 
 def read_udp(ifilelist, deffile):
-    if isinstance(ifilelist, basestring):
+    if isinstance(ifilelist, str):
         ifilelist = [ifilelist,]
     ifilelist.sort(key=lambda x: os.path.basename(x))
 

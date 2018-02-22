@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 """
-Creates a profile plot for a specfic netCDF variable that is viewable in google-earth.
+Creates a profile plot for a specfic netCDF variable that is viewable in
+google-earth.
 
 """
 
 import datetime
 import netCDF4
+import simplekml
 import numpy as np
 import os
 import re
@@ -16,7 +18,7 @@ from faampy.core.utils import conv_time_to_secs, conv_secs_to_time, \
                               get_index_from_secs, get_fid
 
 
-KML_HEADER="""<?xml version="1.0" encoding="UTF-8"?>
+KML_HEADER = """<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengi
 s.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
 <Folder>
@@ -24,19 +26,18 @@ s.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
         <open>1</open>
 """
 
-KML_FOOTER="""</Folder></kml>"""
+KML_FOOTER = """</Folder></kml>"""
 
-KML_PLACEMARK_TEMPLATE="""
-<Placemark>
+KML_PLACEMARK_TEMPLATE = """<Placemark>
         <name>%s@%im</name>
         <open>0</open>
         <Style>
         <LineStyle>
-      <color>4b000000</color>
+      <color>%s</color>
       <width>3</width>
     </LineStyle>
     <PolyStyle>
-      <color>32000000</color>
+      <color>%s</color>
       <fill>1</fill>
       <outline>1</outline>
     </PolyStyle>
@@ -61,47 +62,48 @@ KML_PLACEMARK_TEMPLATE="""
 """
 
 
-def get_run_kml(run_data, ds, var, offset, scale_factor, time_lag):
-    """extracts the data for the specific run
+def get_run_kml(run_data, ds, var, offset, scale_factor, time_lag, color='#C35D48'):
     """
-    s_index=get_index_from_secs(ds, conv_time_to_secs(run_data[1]))
-    e_index=get_index_from_secs(ds, conv_time_to_secs(run_data[2]))
+    extracts the data for the specific run
+    """
+    s_index = get_index_from_secs(ds, conv_time_to_secs(run_data[1]))
+    e_index = get_index_from_secs(ds, conv_time_to_secs(run_data[2]))
 
-    lon=ds.variables['LON_GIN'][:]
+    lon = ds.variables['LON_GIN'][:]
     if len(lon.shape) > 1:
-        lon=lon[s_index:e_index,0]
+        lon = lon[s_index:e_index,0]
     else:
-        lon=lon[s_index:e_index]
-    lon=list(lon)
+        lon = lon[s_index:e_index]
+    lon = list(lon)
 
-    lat=ds.variables['LAT_GIN'][:]
+    lat = ds.variables['LAT_GIN'][:]
     if len(lat.shape) > 1:
-        lat=lat[s_index:e_index,0]
+        lat = lat[s_index:e_index,0]
     else:
-        lat=lat[s_index:e_index]
-    lat=list(lat)
+        lat = lat[s_index:e_index]
+    lat = list(lat)
 
-    gin_alt=ds.variables['ALT_GIN'][:]
+    gin_alt = ds.variables['ALT_GIN'][:]
     if len(gin_alt.shape) > 1:
-        gin_alt=gin_alt[s_index:e_index,0]
+        gin_alt = gin_alt[s_index:e_index,0]
     else:
-        gin_alt=gin_alt[s_index:e_index]
-    gin_alt=list(gin_alt)
+        gin_alt = gin_alt[s_index:e_index]
+    gin_alt = list(gin_alt)
 
     if len(ds.variables[var][:].shape) > 1:
         alt=(ds.variables[var][:][int(s_index+time_lag):int(e_index+time_lag), 0]+offset)*scale_factor
     else:
         alt=(ds.variables[var][:][int(s_index+time_lag):int(e_index+time_lag)]+offset)*scale_factor
 
-    if var+'_FLAG' in ds.variables.keys():
-        alt_flag=ds.variables[var+'_FLAG'][:]
+    if var+'_FLAG' in list(ds.variables.keys()):
+        alt_flag = ds.variables[var+'_FLAG'][:]
         if len(alt_flag.shape) > 1:
-            alt_flag=alt_flag[s_index+time_lag:e_index+time_lag, 0]
+            alt_flag = alt_flag[s_index+time_lag:e_index+time_lag, 0]
         else:
-            alt_flag=alt_flag[s_index+time_lag:e_index+time_lag]
+            alt_flag = alt_flag[s_index+time_lag:e_index+time_lag]
         #alt_flag=list(alt_flag)
 
-        alt[alt_flag != 0]=0
+        alt[alt_flag != 0] = 0
 
     alt=list(alt)
 
@@ -120,26 +122,31 @@ def get_run_kml(run_data, ds, var, offset, scale_factor, time_lag):
     alt = alt2
     linestring_txt = ['%.5f,%.5f,%.5f' % (lon[i], lat[i], alt[i]) for i in range(len(lon))]
     linestring_txt = '\n'.join(linestring_txt)
+    kml_color = simplekml.Color.hex(matplotlib.colors.to_hex(color))
+    if hasattr(simplekml.Color, color):
+        kml_color = getattr(simplekml.Color, color)
+    else:
+        kml_color = getattr(simplekml.Color, 'firebrick')
     try:
-        result = KML_PLACEMARK_TEMPLATE % (run_data[0], gin_alt[0], lon[0], lat[0], alt[0], linestring_txt)
+        result = KML_PLACEMARK_TEMPLATE % (run_data[0], gin_alt[0], kml_color, kml_color, lon[0], lat[0], alt[0], linestring_txt)
     except:
         result = None
     return result
 
 
-def process(ncfile, ncvar, time_lag, offset, scale_factor, outpath, *fltsumm):
+def process(ncfile, ncvar, time_lag, offset, scale_factor, outpath,
+            color='firebrick', *fltsumm):
     ds = netCDF4.Dataset(ncfile, 'r')
     fid = get_fid(ds)
-    
+
     datestring = ''
-    
+
     for v in os.path.basename(ncfile).split('_'):
         try:
             _date = datetime.datetime.strptime(v, '%Y%m%d')
             datestring = _date.strftime('%Y%m%d')
         except:
             pass
-
 
     if fltsumm:
         from faampy.core.flight_summary import FlightSummary
@@ -177,7 +184,7 @@ def process(ncfile, ncvar, time_lag, offset, scale_factor, outpath, *fltsumm):
     kml.write(KML_HEADER % (fid + '-' +datetime.datetime(ds.DATE[2], ds.DATE[1], ds.DATE[0]).strftime('%d-%m-%Y') + '-' + ncvar))
 
     for run in _RUNS:
-        run_kml = get_run_kml(run, ds, ncvar, offset, scale_factor, time_lag)
+        run_kml = get_run_kml(run, ds, ncvar, offset, scale_factor, time_lag, color=color)
         if not run_kml:
             continue
         kml.write(run_kml)
@@ -189,20 +196,22 @@ def process(ncfile, ncvar, time_lag, offset, scale_factor, outpath, *fltsumm):
 
 def _argparser():
     import argparse
-    sys.argv.insert(0, 'faampy ge_ncvar_to_kml')
+    #sys.argv.insert(0, 'faampy ge_ncvar_to_kml')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--offset', action='store', type=float, default=0.0,
-                        help='Offset value. Value is removed from variable before profiles are created')
+                        help='Offset value. Value is removed from variable before profiles are created.')
     parser.add_argument('--scale_factor', action='store', type=float, default=45,
                         help='Scaling factor, mulitplier for the netCDF variable.')
     parser.add_argument('--time_lag', action='store', type=float, default=0.0,
                         help='time lag between variable and GIN measurement caused by inlets')
     parser.add_argument('--fltsumm', action='store', type=str,
                         help='Path to flight summary file for the specific flight')
+    parser.add_argument('--colour', action='store', type=str, default='firebrick',
+                        help='colour in HEX format.')
     parser.add_argument('ncvar', action='store', type=str,
                         help="FAAM core netCDF variable name used for the profile.")
     parser.add_argument('faam_core_netcdf', action='store', type=str,
-                        help="FAAM core netCDF data file")
+                        help="FAAM core netCDF data file.")
     parser.add_argument('outpath', action='store', type=str,
                         help='Path to where the kml file is written to.')
     return parser
@@ -218,8 +227,9 @@ def main():
             args.offset,
             args.scale_factor,
             args.outpath,
+            color=args.color.
             args.fltsumm)
 
 
-if __name__ == '__main__':
+if __name__ == '__xmain__':
     main()

@@ -1,7 +1,7 @@
 import os
 import sys
 import faampy
-import file_info
+import faampy.utils.file_info as file_info
 
 
 class File_List(list):
@@ -22,7 +22,7 @@ class File_List(list):
         If no path is supplied the directories that are defined in the
         .faampy_config file are searched.
 
-        :param str path: path which will be walked and checked for
+        :param str path: path or list of paths which will be walked and checked for
           FAAM data files
 
         :Example:
@@ -34,13 +34,14 @@ class File_List(list):
           1: core_faam_20150806_r0_b919_rawdlu.zip
           2: flight-cst_faam_20150806_r0_b919.txt
           3: flight-cst_faam_20150806_r1_b919.txt
+          
         """
         if args:
             path_list = args[0]
-            if not hasattr(path_list, "__iter__"):
-                path_list = [path_list, ]
+            if isinstance(path_list, str):
+                path_list = [path_list,]
         else:
-            path_list = faampy.DATA_SEARCH_PATH_LIST
+            path_list = [faampy.DATA_SEARCH_PATH_LIST,]
 
         self.Path_List = path_list[:]
         for path in self.Path_List:

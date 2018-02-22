@@ -1,10 +1,10 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
-Scripts finds all FAAM core data files and filters for the latest revision.
+This script finds all FAAM core data files and filters for the latest revision.
 The FAAM_Dataset object from the faampy module is used, which makes processing
-easier, by synchronicing variables names and adding an artificial WOW FLag for
+easier, by synchronizing variables names and adding an artificial WOW FLag for
 old flights.
 
 """
@@ -16,12 +16,12 @@ import numpy as np
 from faampy.core.faam_data import FAAM_Dataset
 from faampy.utils.file_list import File_List
 
-#================================================================
+# ================================================================
 
 ROOT_DATA_PATH = '/mnt/faamarchive/badcMirror/data/'
 OUTFILENAME = os.path.join(os.path.expanduser('~'), 'chemistry_spatial.csv')
 
-#================================================================
+# ================================================================
 
 # Get all hires FAAM core data that are in the ROOT_DATA_PATH directory
 fl = File_List(ROOT_DATA_PATH)
@@ -31,37 +31,40 @@ fl.filter_latest_revision()
 
 def extract(core_netcdf):
     """
-    Extracts all CO and O3 data from a FAAM core netCDF.
+    Extracts CO and O3 data from a FAAM core netCDF.
 
+    :param str core_netcdf: FAAM core netCDF file name
     """
 
     ncfilename = os.path.join(core_netcdf.path, core_netcdf.filename)
     ds = FAAM_Dataset(ncfilename)
     _ds_index = ds.index.ravel()
     units = 'seconds since %s 00:00:00 +0000' % str(_ds_index[0])[:10]
+    # create timestamp
     timestamp = netCDF4.num2date(ds.variables['Time'][:].ravel(), units)
     n = timestamp.size
 
-    if 'CO_AERO' in ds.variables.keys():
+    if 'CO_AERO' in list(ds.variables.keys()):
         co_aero = ds.variables['CO_AERO'][:]
         co_aero_flag = ds.variables['CO_AERO_FLAG'][:]
         co_aero[co_aero_flag != 0] = -9999.0
     else:
         co_aero = np.zeros(n)-9999.0
 
-    if 'O3_TECO' in ds.variables.keys():
+    if 'O3_TECO' in list(ds.variables.keys()):
         o3_teco = ds.variables['O3_TECO'][:]
         o3_teco_flag = ds.variables['O3_TECO_FLAG'][:]
         o3_teco[o3_teco_flag != 0] = -9999.0
     else:
         o3_teco = np.zeros(n)-9999.0
 
-    # Old FAAM files didn't have the GIN instrument fitted
-    if 'LAT_GIN' in ds.variables.keys():
+    # Old FAAM files did not have the GIN instrument fitted
+    # if no GIN data are available we use the GPS instrument
+    if 'LAT_GIN' in list(ds.variables.keys()):
         lon_var_name = 'LON_GIN'
         lat_var_name = 'LAT_GIN'
         alt_var_name = 'ALT_GIN'
-    elif 'LAT_GPS' in ds.variables.keys():
+    elif 'LAT_GPS' in list(ds.variables.keys()):
         lon_var_name = 'LON_GPS'
         lat_var_name = 'LAT_GPS'
         alt_var_name = 'GPS_ALT'
@@ -78,7 +81,7 @@ def extract(core_netcdf):
     wow = ds.variables['WOW_IND'][:].ravel()
 
     timestamp_string = [t.strftime('%Y-%m-%dT%H:%M:%S') for t in timestamp]
-    fid = [core_netcdf.fid,]*n
+    fid = [core_netcdf.fid, ]*n
     result = zip(list(np.array(timestamp_string)[wow == 0]),
                  list(np.array(fid)[wow == 0]),
                  list(x[wow == 0]),
@@ -91,6 +94,7 @@ def extract(core_netcdf):
 
 # open the output file and write the column labels out
 ofile = open(OUTFILENAME, 'w')
+# write the column names
 ofile.write('timestamp,fid,lon,lat,alt,co,o3\n')
 
 # loop over all core files
@@ -108,4 +112,3 @@ for core_netcdf in fl:
     ofile.flush()
 
 ofile.close()
-

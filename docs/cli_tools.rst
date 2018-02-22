@@ -8,6 +8,14 @@ The faampy module provides a number of command line tools. All those commands ar
 
 A list of available subcommands is shown by just typing "faampy" on the command line.
 
+core_diff
+~~~~~~~~~
+.. argparse::
+   :module: faampy.utils.core_diff
+   :func: _argparser
+   :prog: faampy core_diff
+   :nodefault:
+
 nimrod_to_nc
 ~~~~~~~~~~~~
 .. argparse::

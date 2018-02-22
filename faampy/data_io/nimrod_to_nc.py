@@ -82,7 +82,8 @@ def read_nimrod(pathed_file, quite=True):
 
     record_length,=struct.unpack(">l", file_id.read(4))
     if record_length != 512:
-        raise ("Unexpected record length", record_length)
+        print("Unexpected record length", record_length)
+        raise
 
     chars=characters.tostring()
 
@@ -93,7 +94,7 @@ def read_nimrod(pathed_file, quite=True):
         sys.stdout.write("Data source is %s\n" % chars[8:32])
         sys.stdout.write("Parameter is %s\n" % chars[32:55])
         for i in range(gen_ints[22]):
-            print (i+108, spec_ints[i])
+            print(i+108, spec_ints[i])
         for i in gen_reals:
             print(i)
         for i in spec_reals:

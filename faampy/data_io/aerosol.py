@@ -30,11 +30,11 @@ def read_grimm_raw(ifile):
             key = line.split(',')[0]
             data = [int(i) for i in line.strip()[15:].split()]
             # check if key exist
-            if key in result.keys():
+            if key in list(result.keys()):
                 result[key] += data
             else:
                 result[key] = data
-    ts = [datetime.datetime.utcfromtimestamp(float(i)) for i in result.keys()]
+    ts = [datetime.datetime.utcfromtimestamp(float(i)) for i in list(result.keys())]
     # Transform dictionary to a pandas.DataFrame
     df = pd.DataFrame.from_dict(result, orient='index')
     df = df.set_index(pd.to_datetime(ts))
@@ -84,7 +84,7 @@ def read_grimm(ifile, year, month, day, interp_1Hz=False):
         else:
             pass
     ts = [datetime.datetime(year, month, day, 0, 0, 0)+
-          datetime.timedelta(seconds=int(sec)) for sec in data.keys()]
+          datetime.timedelta(seconds=int(sec)) for sec in list(data.keys())]
     # Transform dictionary to a pandas.DataFrame
     df = pd.DataFrame.from_dict(data, orient='index')
     df = df.set_index(pd.to_datetime(ts))

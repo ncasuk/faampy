@@ -93,15 +93,15 @@ class FlightTrack(object):
     def __extract_data__(self, ds, par1, par2):
         """Data extractor"""
         quality = 0.0
-        if par1 in ds.variables.keys():
+        if par1 in list(ds.variables.keys()):
             par_name = par1
-        elif par2 in ds.variables.keys():
+        elif par2 in list(ds.variables.keys()):
             par_name = par2
         else:
             return(None, None, 0)
-        if par_name + '_FLAG' in ds.variables.keys():
+        if par_name + '_FLAG' in list(ds.variables.keys()):
             flag_name = par_name + '_FLAG'
-        elif par_name + 'FLAG' in ds.variables.keys():
+        elif par_name + 'FLAG' in list(ds.variables.keys()):
             flag_name = par_name + 'FLAG'
         else:
             flag_name = None
@@ -111,7 +111,7 @@ class FlightTrack(object):
             flag = ds.variables[flag_name][:,0].data.ravel()
         except:
             flag = ds.variables[flag_name][:,0].ravel()
-        quality = float(len(np.where(flag == 0.0)[0])) / float(len(flag))
+        quality = float(len(np.where(flag == 0.0)[0]))/float(len(flag))
         return (data, flag, quality)
 
     def set_rawlatlonalt_from_netcdf(self, ifile):

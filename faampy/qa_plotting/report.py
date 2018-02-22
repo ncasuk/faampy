@@ -6,8 +6,9 @@ specialised users of the FAAM BAe 146 aircraft; especially the FAAM team and
 project/campaigns PIs.
 
 It summarises the core instruments used on each flight and provides a first
-quick look at the data from an individual flight. Instrument issues might be
-spotted in those plots.
+look at the data from an individual flight. The figures are designed to spot
+instrument issues and validate instrument performance. The plots are not
+necessarily useful for scientific purposes.
 
 """
 
@@ -21,7 +22,6 @@ import tempfile
 import os
 import shutil
 import sys
-
 
 import temperature
 import bbr
@@ -55,6 +55,7 @@ TEX_PREAMBLE = r"""\documentclass{article}
 \usepackage[a4paper,left=1cm,right=1cm,top=2.0cm]{geometry}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
+\usepackage{siunitx}
 \usepackage{xcolor}
 \usepackage{rotating}
 \usepackage{longtable}
@@ -110,6 +111,13 @@ def create_preamble():
     doc = TEX_PREAMBLE
     return doc
 
+def get_appendix():
+    ifile = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'appendix.tex')
+    f = open(ifile, 'r')
+    tex = f.read()
+    f.close()
+    return tex
+
 
 def create_figure(ds, instr):
     """
@@ -117,6 +125,7 @@ def create_figure(ds, instr):
     (e.g. temperature, nevzorov, bbr, buck, nephelometer, psap, cabin_pressure,
     CO, humidity, twc, static_pressure, turbulence)
 
+    :param ds: decades.dataset
     """
     doc = ''
 
@@ -141,6 +150,7 @@ def flag_table(ds):
     """
     Creates flag table to be included in the report.
 
+    :param ds: decades.dataset
     """
     flag_array = flags.get_flag_data(ds)
     doc = ''
@@ -289,10 +299,16 @@ def process(decades_dataset=None, core_rawdlu_zip=None, ncfilename=None, outpath
         doc += flag_table(nc_dataset)
     if core_rawdlu_zip:
         doc += file_table(core_rawdlu_zip)
+
+    #doc += '\n'
+    #doc += r'\clearpage'
+    #doc += '\n'
+    #doc += get_appendix()
     doc += TEX_FINAL
 
     tmppath = tempfile.mkdtemp()
-    texfile = os.path.join(tmppath, 'qa-report_faam_%s.tex' % (fid,))
+    texfile = os.path.join(tmppath, 'qa-report_faam_%s_%s.tex' %
+                           (date.strftime('%Y%m%d'), fid))
     f = open(texfile, 'w')
     f.write(doc)
     f.close()

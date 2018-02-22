@@ -47,7 +47,7 @@ def get_data_type_from_filename(filename):
     dictionary
     """
 
-    for key in DATA_TYPES.keys():
+    for key in list(DATA_TYPES.keys()):
         if re.match(DATA_TYPES[key], os.path.basename(filename)):
             return key
     return
