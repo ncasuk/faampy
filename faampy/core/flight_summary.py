@@ -156,9 +156,9 @@ def __two_point_event_as_kml__(self):
         ls_coord_string+='%f,%f,%f\n' % (c[0], c[1], c[2])
 
     result=TEMPLATE % (self.Name,
-		       pt1_coord_string,
-		       pt2_coord_string,
-		       ls_coord_string)
+                       pt1_coord_string,
+                       pt2_coord_string,
+                       ls_coord_string)
     self.kml=result
     return result
 
@@ -234,19 +234,27 @@ class Event(object):
             self.Index=faampy.core.utils.get_index_from_hhmmss(ds, start_time)
 
     def set_coords(self, ds):
-        lon_gin=ds.variables['LON_GIN'][self.Index, 0]
-        lat_gin=ds.variables['LAT_GIN'][self.Index, 0]
-        alt_gin=ds.variables['ALT_GIN'][self.Index, 0]
-        if lon_gin.size > 1:
-            self.Coords=zip(lon_gin.tolist(),
-                            lat_gin.tolist(),
-                            alt_gin.tolist())
+        if 'LON_GIN' in list(ds.variables.keys()):
+            lon = ds.variables['LON_GIN'][self.Index, 0]
+            lat = ds.variables['LAT_GIN'][self.Index, 0]
+            alt = ds.variables['ALT_GIN'][self.Index, 0]
+        elif 'PARA0581' in list(ds.variables.keys()):
+            lon = ds.variables['PARA0581'][self.Index, 0]
+            lat = ds.variables['PARA0580'][self.Index, 0]
+            alt = ds.variables['PARA0582'][self.Index, 0]
         else:
-            self.Coords=(float(lon_gin),
-                         float(lat_gin),
-                         float(alt_gin))
+            self.Coords = None
+            return
+        if lon.size > 1:
+            self.Coords=zip(lon.tolist(),
+                            lat.tolist(),
+                            alt.tolist())
+        else:
+            self.Coords=(float(lon),
+                         float(lat),
+                         float(alt))
             if np.all(np.isnan(self.Coords)):
-                self.Coords=None
+                self.Coords = None
 
     def as_kml(self):
         if self.Stop_time:
@@ -418,13 +426,13 @@ class FlightSummary(object):
 <Folder>
     <name>%s-Flight-Summary</name>
         <Style id="line">
-		<LineStyle>
-			<color>ff0000ff</color>
-		</LineStyle>
-		<PolyStyle>
-			<color>ff0000aa</color>
-		</PolyStyle>
-	</Style>
+          <LineStyle>
+            <color>ff0000ff</color>
+          </LineStyle>
+          <PolyStyle>
+            <color>ff0000aa</color>
+          </PolyStyle>
+        </Style>
         <description>%s-%s</description>
         <open>1</open>
 """ % (fid, fid, date)
@@ -490,17 +498,17 @@ Time    Time     Event               Height (s)        Hdg Comments
             html+='<tr>\n<td>'+'</td><td>'.join(row)+'</td>\n</tr>\n'
         html+='</table>\n'
         if ofile:
-            f=open(ofile, 'w')
+            f = open(ofile, 'w')
             f.write(html)
             f.close()
         return html
 
 
 def process(fltsummfile, ncfile, *outpath):
-    ds=netCDF4.Dataset(ncfile, 'r')
-    basetime=faampy.core.utils.get_base_time(ds)
-    fid=faampy.core.utils.get_fid(ds)
-    fs=FlightSummary(fltsummfile)
+    ds = netCDF4.Dataset(ncfile, 'r')
+    basetime = faampy.core.utils.get_base_time(ds)
+    fid = faampy.core.utils.get_fid(ds)
+    fs = FlightSummary(fltsummfile)
     #for i in range(len(fs.Entries)):
     for ent in fs.Entries:
         try:
@@ -512,9 +520,11 @@ def process(fltsummfile, ncfile, *outpath):
     basename='flight-sum_faam_%s_r0_%s' % (basetime.strftime('%Y%m%d'), fid)
     if outpath:
         outpath = outpath[0]
-        fs.as_kml(ofile=os.path.join(outpath, basename+'.kml'), fid=fid, date=basetime.strftime('%d/%m/%Y'))
+        fs.as_kml(ofile=os.path.join(outpath, basename+'.kml'), fid=fid,
+                  date=basetime.strftime('%d/%m/%Y'))
         fs.as_html(ofile=os.path.join(outpath, basename+'.html'))
-        fs.as_txt(ofile=os.path.join(outpath, basename+'.txt'), fid=fid, date=basetime.strftime('%d/%m/%Y'))
+        fs.as_txt(ofile=os.path.join(outpath, basename+'.txt'), fid=fid,
+                  date=basetime.strftime('%d/%m/%Y'))
     ds.close()
     return fs
 

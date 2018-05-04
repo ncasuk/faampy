@@ -24,7 +24,7 @@ import zipfile
 import time
 
 import faampy
-from faampy._3rdparty.haversine import points2distance
+import faampy._3rdparty.haversine as haversine
 
 
 _KML_HEADER = """<?xml version="1.0" encoding="UTF-8"?>
@@ -387,17 +387,17 @@ class Dropsonde(object):
         end_point = (self.__decdeg2dms__(self.lon[0]),
                      self.__decdeg2dms__(self.lat[0]))
         # calculate north-south drift
-        self.drift_ns = points2distance((self.__decdeg2dms__(self.lon[-1]),
+        self.drift_ns = haversine((self.__decdeg2dms__(self.lon[-1]),
                                          self.__decdeg2dms__(self.lat[-1])),
                                         (self.__decdeg2dms__(self.lon[-1]),
                                          self.__decdeg2dms__(self.lat[0])))
         # calculate east-west drift
-        self.drift_ew = points2distance((self.__decdeg2dms__(self.lon[-1]),
-                                         self.__decdeg2dms__(self.lat[-1])),
-                                        (self.__decdeg2dms__(self.lon[0]),
-                                         self.__decdeg2dms__(self.lat[-1])))
+        self.drift_ew = haversine((self.__decdeg2dms__(self.lon[-1]),
+                                   self.__decdeg2dms__(self.lat[-1])),
+                                  (self.__decdeg2dms__(self.lon[0]),
+                                   self.__decdeg2dms__(self.lat[-1])))
         # calculate total drift
-        self.drift_tot = points2distance(start_point, end_point)
+        self.drift_tot = haversince(start_point, end_point)
 
 
 def process(iput, opath):

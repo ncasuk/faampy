@@ -109,12 +109,12 @@ def get_wgs84_offset(coords):
         if abs(lat[i]) > 90.:
             lat[i] = 90.
             bad_ix.append(i)
-    bad_ix = unique(bad_ix)
+    bad_ix = np.unique(bad_ix)
 
     lat_str = [dec_to_dms_(l, 'ns') for l in lat]
     lon_str = [dec_to_dms_(l, 'ew') for l in lon]
-    coords_str =  zip(lat_str, lon_str)
-    fd, fn =  tempfile.mkstemp()
+    coords_str = zip(lat_str, lon_str)
+    fd, fn = tempfile.mkstemp()
     fd = open(fn, 'w')
     fd.writelines(['%s %s\n' % l for l in coords_str])
     fd.close()
@@ -159,72 +159,6 @@ def calc_distance_to_line(coords, line):
     dy = y - y3
     dist = np.sqrt(dx*dx + dy*dy)
     return dist
-
-
-#TODO: needs speed improvement
-def simplify(coords, error=None, distance=None, timestep=None):
-    """uses the simplify option from gpsbabel
-
-    """
-    import gpsbabel
-
-    if not error:
-        error = '0.2k'
-    if not distance:
-        distance = '10k'
-    if not timestep:
-        timestep = 120
-    #crosstracked track
-    (lon, lat, alt) = zip(*coords)
-    now = datetime.datetime.utcnow()
-    timestamp = [(now+datetime.timedelta(seconds=i)).strftime(_TIMESTAMP_FORMAT) for i in range(len(lon))]
-    #gpxd = lonlatalt_to_gpx(lon, lat, alt)
-    gpxr = gpsbabel.GPXRoute()
-    n = len(lon)
-    for i in range(n):
-        gpxr.rtepts.append(gpsbabel.GPXWaypoint())
-        gpxr.rtepts[-1].lat = lat[i]
-        gpxr.rtepts[-1].lon = lon[i]
-        gpxr.rtepts[-1].ele = alt[i]
-        gpxr.rtepts[-1].time = timestamp[i]
-    gpxd = gpsbabel.GPXData()
-    gpxd.rtes.append(gpxr)
-
-    track_ct = gpsbabel.GPSBabel()
-    track_ct.procRoutes = True
-    track_ct.setInGpx(gpxd)
-    track_ct.addFilter('simplify', {'crosstrack': None, 'error': error})
-    track_ct.captureStdOut()
-    (retcode, gpxd_crosstracked) = track_ct.execCmd()
-
-    lon_tmp, lat_tmp, alt_tmp, timestamp_tmp = ([], [], [], [])
-    for rte in gpxd_crosstracked.rtes:
-        for pt in rte.rtepts:
-            lon_tmp.append(pt.lon)
-            lat_tmp.append(pt.lat)
-            alt_tmp.append(pt.ele)
-            timestamp_tmp.append(pt.time)
-
-    track_ip = gpsbabel.GPSBabel()
-    track_ip.procRoutes = True
-    track_ip.setInGpx(gpxd)
-    track_ip.addFilter('position', {'distance': '50m'})
-    track_ip.captureStdOut()
-    (retcode, gpxd_interpolated) = track_ip.execCmd()
-
-    for rte in gpxd_interpolated.rtes:
-        for pt in rte.rtepts:
-            if (pt.time.hour * 3600 + pt.time.minute * 60 + pt.time.second) % timestep == 0:
-                lon_tmp.append(pt.lon)
-                lat_tmp.append(pt.lat)
-                alt_tmp.append(pt.ele)
-                timestamp_tmp.append(pt.time)
-    timesort = [time.mktime(tstamp.timetuple()) for tstamp in timestamp_tmp]
-    ix = list(index for index, item in sorted(enumerate(timesort), key=lambda item: item[1]))
-    lon = [float(lon_tmp[i]) for i in ix]
-    lat = [float(lat_tmp[i]) for i in ix]
-    alt = [float(alt_tmp[i]) for i in ix]
-    return (lon, lat, alt)
 
 
 def is_point_on_land(coords, shape_file=None):

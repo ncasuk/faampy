@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 """
 Quality Assurance-Quality Check (QA-QC) plotting for the FAAM Core Nevzorov
-vane, that is measuring liquid and total water content (LWC and TWC).
-
+vane, that is measuring liquid and total water content (LWC and TWC). The code
+works for both vane designs (old: with two reference sensors and new with only
+one reference sensor).
 
 Layout (landscape):
 
   -------------------------------------------
   |                                         |
-  | Timeseries of liquid water content      |
+  | Timeseries of lwc raw counts            |
   |                                         |
   -------------------------------------------
   -------------------------------------------
   |                                         |
-  | Timeseries of total water content       |
+  | Timeseries of twc raw counts            |
   |                                         |
   -------------------------------------------
   -------------------------------------------
@@ -134,12 +135,12 @@ def main(ds):
     Creates overview plot for nevzorov vane for a single flight
 
     """
-    #Setup up axes layout: 3 axes in one column
+    # Setup up axes layout: 3 axes in one column
     gs = gridspec.GridSpec(3, 1, hspace=0.03)
     fig = QaQc_Figure(landscape=True).setup()
-    fig.add_subplot(gs[2,:])
-    fig.add_subplot(gs[1,:], sharex=fig.get_axes()[0])
-    fig.add_subplot(gs[0,:], sharex=fig.get_axes()[0])
+    fig.add_subplot(gs[2, :])
+    fig.add_subplot(gs[1, :], sharex=fig.get_axes()[0])
+    fig.add_subplot(gs[0, :], sharex=fig.get_axes()[0])
     for ax in fig.get_axes():
         ax.callbacks.connect('xlim_changed', adjust_ylim)
 

@@ -23,7 +23,7 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 
 
-# TODO: This list needs tidying up at some point, when I have figured out which modules breack the
+# TODO: This list needs tidying up at some point, when I have figured out which modules break the
 #       building process on readthedocs
 MOCK_MODULES = ['numpy', 'numpy.ma',
                 'scipy', 'scipy.ndimage', 'scipy.stats', 'scipy.interpolate',
@@ -97,7 +97,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'faampy'
-copyright = u'2017, Axel Wellpott'
+copyright = u'2018, Axel Wellpott'
 author = u'Axel Wellpott'
 
 # The version info for the project you're documenting, acts as replacement for

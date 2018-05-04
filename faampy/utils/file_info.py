@@ -1,20 +1,20 @@
 import os
 import re
 
-DATA_TYPES = {'core-hires':        'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_.*_r\d_[bBcC][0-9][0-9][0-9].nc$',
-              'core-lowres':       'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_.*_r\d_[bBcC][0-9][0-9][0-9]_1[Hh]z.nc$',
-              'core-descrip':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bBcC][0-9][0-9][0-9]_descrip.txt$',
-              'core-quality':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bBcC][0-9][0-9][0-9]_quality.txt$',
-              'dropsonde-proc':    '.*dropsonde_faam_.*_r.*_[bBcC][0-9][0-9][0-9]_proc.nc$',
-              'dropsonde-raw':     '.*dropsonde_faam_.*_r.*_[bBcC][0-9][0-9][0-9]_raw.nc$',
-              'dropsonde-descrip': '.*dropsonde_faam_.*_r.*_[bBcC][0-9][0-9][0-9]_descrip.txt$',
-              'flight-cst':        'flight-cst_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bBcC][0-9][0-9][0-9].txt$',
-              'flight-log':        'flight-log_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bBcC][0-9][0-9][0-9].pdf$',
-              'flight-sum':        'flight-sum_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bBcC][0-9][0-9][0-9].txt$',
-              'rawdrs':            'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bB][0-9][0-9][0-9]_rawdrs.zip$',
-              'rawgin':            'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bB][0-9][0-9][0-9]_rawgin.zip$',
-              'rawgps':            'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bB][0-9][0-9][0-9]_rawgps.zip$',
-              'rawdlu':            'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bBcC][0-9][0-9][0-9]_rawdlu.zip$'}
+DATA_TYPES = {'core-hires':        'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_.*r\d+_[bBcC]\d{3}.nc$',
+              'core-lowres':       'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_.*r\d+_[bBcC]\d{3}_1[Hh]z.nc$',
+              'core-descrip':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d+_[bBcC][0-9]\d{3}_descrip.txt$',
+              'core-quality':      'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d+_[bBcC]\d{3}_quality.txt$',
+              'dropsonde-proc':    '.*dropsonde_faam_.*_r.*_[bBcC]\d{3}_proc.nc$',
+              'dropsonde-raw':     '.*dropsonde_faam_.*_r.*_[bBcC]\d{3}_raw.nc$',
+              'dropsonde-descrip': '.*dropsonde_faam_.*_r.*_[bBcC]\d{3}_descrip.txt$',
+              'flight-cst':        'flight-cst_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d+_[bBcC]\d{3}.txt$',
+              'flight-log':        'flight-log_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d+_[bBcC]\d{3}.pdf$',
+              'flight-sum':        'flight-sum_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d+_[bBcC]\d{3}.txt$',
+              'rawdrs':            'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bB]\d{3}_rawdrs.zip$',
+              'rawgin':            'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bB]\d{3}_rawgin.zip$',
+              'rawgps':            'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bB]\d{3}_rawgps.zip$',
+              'rawdlu':            'core_faam_20[0-9][0-9][0-1][0-9][0-3][0-9]_r\d_[bBcC]\d{3}_rawdlu.zip$'}
 
 
 def get_revision_from_filename(filename):

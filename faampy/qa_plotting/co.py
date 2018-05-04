@@ -113,7 +113,7 @@ def plot_co_ts(ax, data):
     calpress=data['AL52CO_calpress'][:].ravel()
     cal_status=np.zeros(data['AL52CO_calpress'].shape)
 
-    cal_status_ix=np.where((calpress > 3.4))[0]
+    cal_status_ix=np.where((calpress > 1.6))[0]
     # add time buffer to cal_status
     cal_status_buffer=8
     for i in range(cal_status_buffer*-1, cal_status_buffer+1):
@@ -165,7 +165,7 @@ def plot_co_ts(ax, data):
     else:
         lines = line1+line2+line3
     labs = [l.get_label() for l in lines]
-    ax_r.legend(lines,labs)
+    ax_r.legend(lines, labs, loc='upper left')
     return ax
 
 
@@ -210,7 +210,7 @@ def get_cal_coefficients(data):
         if np.isnan(zero[ix1]):
             zero_string='   nan'
         else:
-	    zero_string='%6i' % (zero[ix1],)
+            zero_string='%6i' % (zero[ix1],)
         table.append([timestamp_start, timestamp_end, sens_string, zero_string])
 
     return table
@@ -245,7 +245,7 @@ def main(ds):
 
     fig.add_subplot(gs[1,:])
     fig.add_subplot(gs[0,:], sharex=fig.get_axes()[0])
-
+    plt.subplots_adjust(right=0.8)
     set_suptitle(fig, ds, 'QA-Carbon Monoxide')
 
     data = get_data(ds, VARIABLE_NAMES)
@@ -264,42 +264,3 @@ def main(ds):
         add_landing(ax, data)
     fig.canvas.draw()
     return fig
-
-#plt.close('all')
-#ds=d
-#ds=netCDF4.Dataset('./data/co_extract_20160317_b952.nc', 'r')
-#fig=main(ds)
-
-
-#plt.close('all')
-
-
-#FID='c007'
-#DATE='20170302'
-#SEARCH_PATH='/home/axel/Dropbox/campaigns/moya2017/'
-#NC_REVISION='0'
-#WRITE_NC=True
-#OUTPATH='/home/axel/Dropbox/campaigns/moya2017/c007-mar-02/'
-
-##################################################################################
-
-
-
-#def find_file(pattern):
-#    matches = []
-#    for root, dirnames, filenames in os.walk(SEARCH_PATH):
-#        for filename in fnmatch.filter(filenames, pattern):
-#            matches.append(os.path.join(root, filename))
-#    matches.sort(key=os.path.basename)
-#    return matches[-1]
-
-
-#rawdlu_file=find_file('core_faam_%s*%s_rawdlu.zip' % (DATE, FID))
-#fltcst_file=find_file('flight-cst_faam_%s*%s.txt' % (DATE, FID))
-
-
-#d=decades_dataset()
-#d.add_file(rawdlu_file)
-#d.add_file(fltcst_file)
-#d.process()
-#f = main(d)

@@ -2,7 +2,7 @@
 """
 
 Quality Assurance-Quality Check (QA-QC) plotting for the FAAM Core Broadband
-Radiometers (BBRs, pyranometers and pyrogeometers)
+Radiometers (Pyranometers)
 
 
 Layout (landscape):
@@ -12,10 +12,6 @@ Layout (landscape):
   -------------------------------------------
   -------------------------------------------
   |            Sun position                 |
-  -------------------------------------------
-  |                                         |
-  |   Time series of longwave radiation;    |
-  |          from pyrgeometers              |
   -------------------------------------------
   -------------------------------------------
   |                                         |
@@ -36,9 +32,10 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import sys
 
-from general import *
-from utils import *
-from style import *
+from general import QaQc_Figure, \
+                    set_suptitle, get_data, add_takeoff, add_landing, \
+                    zoom_to_flight_duration, add_time_buffer, adjust_ylim
+from style import axes_title_style
 
 
 VARIABLE_NAMES = ['Time',     ## Time of measurement (seconds since midnight on start date)
@@ -51,8 +48,6 @@ VARIABLE_NAMES = ['Time',     ## Time of measurement (seconds since midnight on 
                   'RED_DN_C', ## Corrected downward short wave irradiance, red dome
                   'SW_UP_C',  ## Corrected upward short wave irradiance, clear dome
                   'RED_UP_C', ## Corrected upward short wave irradiance, red dome
-                  'IR_UP_C',  ## Corrected upward longwave irradiance (CGR4)
-                  'IR_DN_C',  ## Corrected downward longwave irradiance (CGR4)
                   'HDG_GIN',  ## Aircraft Heading from the GIN
                   'SOL_AZIM', ## Sun azimuth angle in degrees
                   'SOL_ZEN']  ## Sun zenith angle in degrees
@@ -71,10 +66,6 @@ def calc_sun_position(data):
 
     """
     # sun position in reference to the aircraft heading
-    #   0: sun on the nose
-    #  90: sun starboard
-    # 180: sun from behind
-    # 270: sun on port side
     sp = data['SOL_AZIM'][:].ravel()-data['HDG_GIN'][:, 0].ravel()
     sp[sp < 0] += 360.0
     data['sun_position'] = sp
@@ -98,9 +89,12 @@ def plot_sun_position(ax, data):
     #  90: sun starboard
     # 180: sun from behind
     # 270: sun on port side
-    ax.plot_date(data['mpl_timestamp'][:, 0].ravel(),
-                 data['sun_position'],
-                 '-', lw=2, label='Sun position')
+    x = data['mpl_timestamp'][:, 0].ravel()
+    y = np.ma.array(data['sun_position'])
+    y.mask = [False,] * len(y)
+    ix = np.where(np.abs(np.diff(y.compressed())) > 180)[0]
+    y.mask[ix] = True
+    ax.plot_date(x, y, '-', lw=2, label='Sun position')
     ax.set_ylim(0, 360)
     ax.yaxis.set_ticks(np.arange(0.0, 361.0, 90.0))
     ax.legend(loc='upper right')
@@ -156,13 +150,14 @@ def calc_clearsky_irradiance(data, step=30):
 
 def plot_altitude(ax, data):
     """
-    Time series plot of the GPS altitude
+    Time series plot of the GPS altitude.
 
     :param ax: axes object
     :param data: data dictionary
     """
     alt = data['ALT_GIN'][:, 0].ravel()/1000.
-    ax.plot_date(data['mpl_timestamp'][:, 0].ravel(), alt, '-', lw=2, label='GPS alt')
+    ax.plot_date(data['mpl_timestamp'][:, 0].ravel(),
+                 alt, '-', lw=2, label='GPS alt')
     ax.set_ylabel('alt (km)')
     ax.legend(loc='upper right')
     plt.setp(ax.get_xticklabels(), visible=False)
@@ -216,76 +211,27 @@ def plot_pyranometers_ts(ax, data):
     return ax
 
 
-def plot_pyrgeometers_ts(ax,data):
-    """
-    Creates timeseries plot for the pyrgeometers
-
-    """
-    # these are yet to be fitted; will update to include when ready.
-    plt.setp(ax.get_xticklabels(), visible=False)
-    ax.text(0.05, 0.98,
-            'Pyrgeometers - corrected longwave irradiance',
-            axes_title_style,
-            transform=ax.transAxes)
-    ax.set_ylabel('Irradiance (W m -2)')
-    yl = ax.get_ylim()
-    if yl[1] > 1500:
-        ax.set_ylim(yl[0], 1500)
-    ax.legend()
-    return ax
-
-
 def main(ds):
     """
-    Creates an overview plot for the BBR instruments; pyranometers and pyrogeometers.
-    It calls all plotting functions and sets up axes layout.
-
+    Creates an overview plot for the BBR instruments (pyranometers).
+    It calls all plotting functions and set up axes layout.
     """
 
     data = get_data(ds, VARIABLE_NAMES)
     data = calc_sun_position(data)
     data = calc_clearsky_irradiance(data)
 
-    # Check if Pyrgeometer data are available
-    pyrgeometers_fitted = False
-    try:
-        pyrgeometer_data = np.array(data['IR_DN_C'])
-        pyrgeometer_data = pyrgeometer_data[(pyrgeometers_data > 0) & \
-                                            (pyrgeometer_data < 200)]
+    gs = gridspec.GridSpec(3, 1, wspace=0.1, height_ratios=[1, 1, 6])
+    fig = QaQc_Figure(landscape=True).setup()
 
-        if pyrgeometer_data.size > 3600:
-             pyrgeometers_fitted = True
-        else:
-            pyrgeometers_fitted = False
-    except:
-        pass
-
-    if pyrgeometers_fitted:
-        gs = gridspec.GridSpec(4, 1, wspace=0.05, height_ratios=[1, 1, 4, 4])
-        fig = QaQc_Figure(landscape=True).setup()
-
-        fig.add_subplot(gs[3, :])
-        fig.add_subplot(gs[2, :], sharex=fig.get_axes()[0])
-        fig.add_subplot(gs[1, :], sharex=fig.get_axes()[0])
-        fig.add_subplot(gs[0, :], sharex=fig.get_axes()[0])
-        plot_pyranometers_ts(fig.get_axes()[0], data)
-        if 'clearsky_irradiance_ghi' in data.keys():
-            plot_clearsky_irradiance(fig.get_axes()[0], data)
-        plot_pyrgeometers_ts(fig.get_axes()[1], data)
-        plot_sun_position(fig.get_axes()[2], data)
-        plot_altitude(fig.get_axes()[3], data)
-    else:
-        gs = gridspec.GridSpec(3, 1, wspace=0.1, height_ratios=[1, 1, 6])
-        fig = QaQc_Figure(landscape=True).setup()
-
-        fig.add_subplot(gs[2, :])
-        fig.add_subplot(gs[1, :], sharex=fig.get_axes()[0])
-        fig.add_subplot(gs[0, :], sharex=fig.get_axes()[0])
-        plot_pyranometers_ts(fig.get_axes()[0], data)
-        if 'clearsky_irradiance_ghi' in data.keys():
-            plot_clearsky_irradiance(fig.get_axes()[0], data)
-        plot_sun_position(fig.get_axes()[1], data)
-        plot_altitude(fig.get_axes()[2], data)
+    fig.add_subplot(gs[2, :])
+    fig.add_subplot(gs[1, :], sharex=fig.get_axes()[0])
+    fig.add_subplot(gs[0, :], sharex=fig.get_axes()[0])
+    plot_pyranometers_ts(fig.get_axes()[0], data)
+    if 'clearsky_irradiance_ghi' in data.keys():
+        plot_clearsky_irradiance(fig.get_axes()[0], data)
+    plot_sun_position(fig.get_axes()[1], data)
+    plot_altitude(fig.get_axes()[2], data)
 
     # adjust ylim for GIN_ALT figure
     fig.get_axes()[-1].callbacks.connect('xlim_changed', adjust_ylim)

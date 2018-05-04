@@ -1,0 +1,133 @@
+
+General information
+-------------------
+In time series figures the grey vertical lines in the time series plots indicate take-off and landing times of the flight. 
+
+Temperature
+-----------
+This figure deals with the tow Rosemount temperature sensors (de-iced and non-deiced). These two sensors are the only ones measuring air temperature on the FAAM aircraft. The quality of the measurements is validated by comparing the data from the two sensors. The delta between the two measurements should usually (outside of icing conditions) be less than 0.2 degC.
+
+IAT_DI vs IAT_ND figure
+"""""""""""""""""""""""
+This shows Indicated Air Temperature from both the deiced and non-deiced probes. It should show a straight upward sloping line of y=x (with gradient 1). If the gradient is higher or lower than 1, then it implies the two 
+probes are not reading the same temperature i.e. one of both of the probes is out of calibration. If an offset is apparent then check other temperature figures for potential probe damage during the flight. In certain situations, such as icing, it is to be expected that they won't read the same temperature. This should be a short-lived
+effect that will rectify itself within the flight (shown as a slight deviation from the x=y line). 
+
+Delta IAT figure
+""""""""""""""""
+This shows the temperature difference between the two probes (IAT_DI minus the IAT_ND) during the flight (as a percentage). When the aircraft is on the ground (potentially during a double flight) the deiced probe reads
+a higher temperature (because the housing is darker). This will be shown as a peak in the positive. 
+
+Power spectrum figure
+"""""""""""""""""""""
+This shows the amount of power that is associated with each different frequency in the temperature timeseries. If the data is good this plot should have two overlapping lines of gradient -5/3 (a downwards slope).
+If spikes are present, it suggests some kind of interference (the temperature probes are picking up noise from external sources not real atmospheric variability). If this occurs please contact the primary instrument scientist
+(as of 2015 - Hannah Price).  
+
+Heater figure
+"""""""""""""
+This shows when the deiced heater is switched on i.e. during icing conditions. Plot shows 1 when the heater is on, 0 when the heater is off. 
+
+LWC figure
+""""""""""
+This shows liquid water content from the Johnson Williams probe. This indicates the presence of liquid or mixed-phase clouds. The Johnson-Williams probe was retired in 2017 and replaced by the SEADAS instrument.
+
+IAT/TAT figures
+"""""""""""""""
+These show time series of IAT (indicated air temperature) and TAT (true air temperature). The third line on each plot shows the delta of the two measurements.
+
+Nevzorov
+--------
+Time series show the water content measurements for total and liquid water. The two top plots show the raw counts from the data channels, and the bottom plot shows the derived water contents. Depending on the vane type the parameters displayed are (i) NV_TWC_C and NV_LWC_C or (ii) NV_TWC_V, NV_LWC1_C and NV_LWC2_C. 
+
+Broadband radiometers
+---------------------
+The upper plot shows the sun position with respect to the aircraft heading (0: Sun on the nose; 90: sun is starboard side; 180: sun on the tail; 270: sun on board side). From this plot heading dependencies should be visible, which might indicate that the ROLL and PITCH offset values are not adjusted correctly in the flight constant file. Those can be derived from calibration manoeuvres.
+
+The bottom time series plot shows the time series of all four pyranometers. In normal circumstances it is expect that the red dome measures half the flux of the clear dome. 
+
+
+BUCK-CR2
+--------
+Altitude figure:
+GIN = GPS Inertial Navigation System
+
+BUCK mixing ratio time series figure
+""""""""""""""""""""""""""""""""""""
+The BUCK is a chilled mirror hygrometer which measures the temperature at which liquid water or ice condenses from the gas phase. This dew/frost point temperature is then used to calculate a volume mixing ratio. 
+The uncertainty in this measured temperature increases between 0 and -40 degrees celsius because it is not possible to know if you've got liquid water or ice (so you don't know if it is a frost or dew point). 
+
+Dewpoint timeseries figure
+""""""""""""""""""""""""""
+This shows the General Eastern (GE) instrument and the BUCK because they are both chilled mirror hygrometers and therefore the data should agree. If minor excursions (less than 5 minutes) are present (due to instrument stabilisation) 
+then please ignore. Likewise, small short-term differences between the BUCK and GE.
+
+Nephelometer
+------------
+The top plot shows the house keeping data from the Nephelometer instrument. The plotted time series of temperature and relative humidity are those measured by the Nephelometer instrument itself. The two other plots show the back and toal scatter from the instrument for the three channels (blue, green, red).
+
+Condensation Particle Counter - CPC3781
+---------------------------------------
+The top plot shows the flows from the CPC instrument. Total flow is supposed to be 600 ml*min-1 and 300 ml*min-1 for sample and sheath flow. The middle plot shows three temperatures that are part of the house keeping of the instrument. Finally the bottom plot gives the particle counts.
+
+
+Particle Soot Absorption Photometer - PSAP
+------------------------------------------
+PSAP-lin flag figures:
+
+PSAP flow figure
+""""""""""""""""
+The flow data will be shown as zero if the flight manager has turned it off due to cloud. As this a manual process, the PSAP data can sometimes be unreliable if the flight manager has been unable to 
+turn the instrument off before entering cloud. 
+
+
+PSAP-lin and PSAP-log figure:
+
+
+Cabin pressure/temperature
+--------------------------
+Cabin temperature is measured at the core console. 
+
+Carbon monoxide
+---------------
+
+explain...
+
+Static pressure
+---------------
+PS_RVSM = static pressure from the aircraft RVSM system
+P9_STAT = Static pressure from the S9 fuselage ports 
+
+There is expected to be a reasonably constent offset in the static pressure measurements due to the location of the P9_static and the fact that is has never been properly characterised as a true static port.
+
+Humidity
+--------
+Humidity time series figure:
+WVSS2-F = water vapour measurement from Flush inlet
+WVSS2-R = water vapour measurement from Rosemount inlet
+
+Total water content probe
+-------------------------
+Dewpoint temperature figure:
+The TWC should match with WVSS2R except when in cloud. 
+
+The TWC probe is reference to the GE instrument, so if the GE isn't run then the TWC will either not appear or will look inaccurate. 
+
+Turbulence
+----------
+Pressure figure:
+If there is a significant change in one of the pressure measurements then this could indicate a bias introduced by icing. 
+
+The figures show the difference between the data using the turbulence probe in the nose and the wind data derived from the difference between airspeed and ground speed vectors (known as the _NOTURB wind). The data are filtered for straight conditions, because the _NOTURB parameters can not be calculated in turns. Alternating time periods below and above the '0' line indicate calibration offset issues in the pressure transducers.
+
+
+Parameter Flags
+---------------
+The data are 
+
+The flags have different meanings for different instruments. Flag 3 indicates bad data that shouldn't be used, if a significant proportion of the data is flagged then it should be investigated. 
+
+TCP Data File Summary
+---------------------
+Checking data and end time. Completeness can be greater than 100 percent if the same data line is sent several times per second. If completeness is less than 100 percent this could indicate missing data or simply an instrument that reports
+less frequently than once per second (e.g. WVSS2).  

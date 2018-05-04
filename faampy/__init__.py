@@ -14,7 +14,7 @@ import os
 import sys
 
 
-__version__ = '0.1.5'
+__version__ = '0.2'
 __status__ = 'a'
 
 
@@ -69,12 +69,11 @@ SRTM_DATA_PATH = os.path.join(FAAMPY_DATA_PATH, 'srtm')
 
 # parse the .faampy_config configuration file
 
-
-
 def getlist(option, sep=',', chars='[,]'):
     """Return a list from a ConfigParser option. By default,
        split on a comma and strip whitespaces."""
-    return [ chunk.strip(chars).strip() for chunk in option.split(sep) ]
+    return [chunk.strip(chars).strip() for chunk in option.split(sep)]
+
 
 config_file = os.path.join(os.path.expanduser('~'), '.faampy_config')
 if os.path.exists(config_file):

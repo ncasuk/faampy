@@ -1,10 +1,9 @@
 
 Recipe - FAAM meets cis
-=======================
-
+-----------------------
 
 CIS Installation
-----------------
+^^^^^^^^^^^^^^^^
 
 Information about installing anaconda2 and cis:
 
@@ -15,7 +14,7 @@ Please note that the cis instructions say that you should install python 2.7 and
 
   
 FAAM netCDF preparation
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 The FAAM core data do not work with the cis tool straight away. The netCDF data product need a little tweaking to make them fully CF compliant, so that cis interprets the data correctly. The global attributes "Conventions" and "Coordinates" need to be added. A small bash snippet can do the changes using nc utilities. The example netCDF has already been edited and works with cis.
 
@@ -46,7 +45,7 @@ The example data (core_faam_20161024_v004_r0_b991_1hz_editted.nc) are for flight
 
 
 Starting cis
-------------
+^^^^^^^^^^^^
 
 The next thing to do is to start the cis environment that we installed earlier. Go to the bin directory of your conda installation::
     
@@ -61,7 +60,7 @@ From now on the shell should have the string '(cis_env)' in front indicating tha
 
 
 Working with cis and FAAM data
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below are several one line examples that show the functionality of the cis tools. Most of the examples have been taken and adapted from the cis online documentation.
 

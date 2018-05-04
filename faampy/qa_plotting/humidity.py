@@ -55,8 +55,10 @@ VARIABLE_NAMES = ['ALT_GIN',           # Altitude from POS AV 510 GPS-aided Iner
                   'WOW_IND',           # Weight on wheels indicator
                   'Time',              # Time of measurement (seconds since midnight on start date)
                   'LWC_JW_U',          # Liquid water from the Johnson Williams
-                  'NV_LWC_C',          # Nevzorov liquid water calibrated
                   'NV_LWC_U',          # Nevzorov liquid water uncalibrated
+                  'NV_LWC_C',          # Nevzorov liquid water calibrated
+                  'NV_LWC1_U',          # Nevzorov liquid water uncalibrated
+                  'NV_LWC1_C',          # Nevzorov liquid water calibrated
                   'AERACK_buck_ppm']   # Raw data from the BUCK CR2
 
 

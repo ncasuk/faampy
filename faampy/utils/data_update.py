@@ -27,7 +27,8 @@ def time_convert(base_time, time_string):
 
 def update_fltcons_db(inpath):
     """
-    :param str inpath: directory that will be searched for flight constant files
+    :param str inpath: directory that will be searched for flight
+      constant files
     """
     faampy.fltcons.update.update(inpath=inpath, clean=True)
     return
@@ -56,6 +57,7 @@ def update_spatial_db(inpath, overwrite=False):
     fltsumm_file_list.filter_latest_revision()
 
     for f in core_file_list:
+        fs = None
         try:
             # check if the fid exists in the db, otherwise just move on
             ds = FAAM_Dataset(os.path.join(f.path, f.filename))
@@ -75,6 +77,8 @@ def update_spatial_db(inpath, overwrite=False):
         try:
             fs.Entries
         except:
+            sys.stdout.write('Error: No flight summary for %s ...\n' % \
+                             (f.fid,))
             continue
 
         for ent in fs.Entries:
@@ -90,19 +94,16 @@ def update_spatial_db(inpath, overwrite=False):
                                              wkt,
                                              overwrite=overwrite)
                     sys.stdout.write('Added %s:%s to %s ...\n' % \
-                              (f.fid, ent.Name, os.path.basename(sdb.db_file)))
+                                     (f.fid, ent.Name, os.path.basename(sdb.db_file)))
                 except:
                     sys.stdout.write('Errors adding %s to %s ...\n' % \
-                              (f.fid, os.path.basename(sdb.db_file)))
-
+                                     (f.fid, os.path.basename(sdb.db_file)))
     sdb.close()
     return
 
 
 def _argparser():
     import argparse
-    #if not __name__ == '__main__':
-    #    sys.argv.insert(0, 'faampy data_update')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-i', '--inpath',
                         action="store",

@@ -16,9 +16,11 @@ Contents:
    installation
    faam_data
    cli_tools
-   recipe/*
+   recipes
+   cis_workshop
+   qaqc_report
    full_list
-
+   
    
 Indices and tables
 ==================

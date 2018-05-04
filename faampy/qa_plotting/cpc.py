@@ -91,7 +91,7 @@ def plot_temperatures(ax, data):
     plt.setp(ax.get_xticklabels(), visible=False)
     lines = line_growth_tube + line_optics + line_saturator
     labs = [l.get_label() for l in lines]
-    ax_2.legend(lines, labs)
+    ax_2.legend(lines, labs, loc='lower left')
     ax_2.set_ylabel('Saturator (degC)')
     ax.text(0.05, 0.98, 'CPC Temperatures', axes_title_style,
             transform=ax.transAxes)

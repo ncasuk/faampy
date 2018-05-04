@@ -156,7 +156,7 @@ def get_data(ds, var_names):
         df = df.dropna()
         new_result={}
         if isinstance(df.index, pd.DatetimeIndex):
-            secs_past_midnight = (df.index - pd.to_datetime(df.index.date)) / np.timedelta64(1, 's')
+            secs_past_midnight = (df.index - pd.to_datetime(df.index[0].date())) / np.timedelta64(1, 's')
             df.index = secs_past_midnight
 
         new_result['Time']=np.array(df.index, dtype=np.uint32)
