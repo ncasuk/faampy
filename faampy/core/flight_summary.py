@@ -360,7 +360,7 @@ class FlightSummary(object):
                 if tmp: e.Stop_height=tmp[0]
                 e.Hdg=line[2]
                 if len(line) > 11:
-                    e.Comment=line[12]
+                    e.Comment=','.join(line[12:])
                 else:
                     e.Comment=''
                 e.format='decades'
