@@ -1,0 +1,27 @@
+
+name: FAAMDemo
+channels:
+  - conda-forge
+dependencies:
+  - basemap    
+  - ephem
+  - exifread
+  - fiona
+  - gdal
+  - georasters
+  - haversine
+  - matplotlib
+  - netCDF4
+  - numpy
+  - pandas
+  - pillow
+  - requests
+  - scipy
+  - setuptools-git
+  - simplekml
+  - xarray
+  - sphinx-argparse
+  - geopandas
+  - folium
+  - pip:
+         - "--editable=git+https://github.com/ncasuk/faampy.git#egg=faampy"
