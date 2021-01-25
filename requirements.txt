@@ -7,7 +7,6 @@ scikit-learn
 ephem
 exifread
 fiona
-gdal
 georasters
 haversine
 netCDF4
