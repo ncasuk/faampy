@@ -3,7 +3,8 @@ name: FAAMDemo
 channels:
   - conda-forge
 dependencies:
-  - basemap    
+  - basemap   
+  - cartopy 
   - ephem
   - exifread
   - fiona
