@@ -1,4 +1,4 @@
-# basemap  ;basemap is currently not available via pip; will need to find a workaround or switch to cartopy completely
+basemap
 cartopy
 ephem
 exifread
