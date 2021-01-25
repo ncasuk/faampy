@@ -29,6 +29,12 @@ In case you do not have superuser rights on the computer you can use the "--user
     cd faampy
     python setup.py build
     python setup.py install --user
+    
+============
+Examples
+============
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ncasuk/faampy/HEAD)
 
     
 ============
