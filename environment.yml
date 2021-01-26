@@ -18,6 +18,7 @@ dependencies:
   - pillow
   - requests
   - scipy
+  - ConfigParser
   - setuptools-git
   - simplekml
   - xarray
