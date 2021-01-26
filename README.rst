@@ -34,7 +34,8 @@ In case you do not have superuser rights on the computer you can use the "--user
 Examples
 ============
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ncasuk/faampy/HEAD)
+.. image:: https://mybinder.org/badge_logo.svg
+ :target: https://mybinder.org/v2/gh/ncasuk/faampy/HEAD
 
     
 ============
